@@ -16,6 +16,12 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    location = /api/health {
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:4747;
+    }
+
     location /api/ {
         proxy_http_version 1.1;
         proxy_set_header Host $host;
