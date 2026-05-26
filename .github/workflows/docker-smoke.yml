@@ -1,4 +1,4 @@
-name: Docker smoke
+name: Container smoke (Podman)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: docker-smoke-${{ github.ref }}
+  group: container-smoke-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,13 +17,18 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
       - name: Build Nexus image
-        run: docker build -t beskid-nexus:ci .
+        run: podman build -t beskid-nexus:ci .
 
       - name: Smoke health endpoint
         run: |
-          cid=$(docker run -d --rm -p 8080:80 -e NEXUS_MCP_AUTH_TOKEN= beskid-nexus:ci)
-          trap "docker rm -f $cid" EXIT
+          cid=$(podman run -d --rm -p 8080:80 -e NEXUS_MCP_AUTH_TOKEN= beskid-nexus:ci)
+          trap "podman rm -f $cid" EXIT
           for i in $(seq 1 30); do
             if wget -q --spider http://127.0.0.1:8080/api/health; then
               echo "health ok"
@@ -31,5 +36,5 @@ jobs:
             fi
             sleep 2
           done
-          docker logs "$cid"
+          podman logs "$cid"
           exit 1

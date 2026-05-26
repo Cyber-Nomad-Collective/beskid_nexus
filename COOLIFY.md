@@ -1,20 +1,20 @@
 # Coolify: Beskid Nexus
 
-Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid`, branch `main`, base directory `/beskid_nexus`).
+Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `main`, repository root).
 
 ## Compose entry
 
-Use [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml). **Build context is the superrepo root** (not `beskid_nexus/` alone).
+Use [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml). **Build context is this repository root** (`context: .`, `dockerfile: Dockerfile`).
+
+For the Beskid superrepo checkout, use [`docker-compose.superrepo.yml`](docker-compose.superrepo.yml) instead (`context: ..`, `dockerfile: beskid_nexus/Dockerfile.superrepo`).
 
 ## Compiler submodule (required)
 
-Unlike the docs site and tracker, the Nexus image **indexes `compiler/` at build time**. Coolify must provide a checkout that includes the compiler tree:
+The Nexus image **indexes `compiler/` at build time**. This repo vendors the compiler as a **`compiler` git submodule** (`beskid_compiler`).
 
-1. Enable **`compiler` submodule** init on clone (non-shallow if SHA fetch fails).
-2. Or use a full clone with `git submodule update --init compiler`.
+1. Enable **recursive submodule init** on clone in Coolify (or run `git submodule update --init --recursive` before build).
+2. Prefer a **non-shallow** submodule fetch if the pinned SHA fails on shallow clones.
 3. Build fails fast if `compiler/Cargo.toml` is missing.
-
-Disable unrelated shallow submodules when possible (`pckg`, `references/bsharp`, etc.) to speed clones.
 
 ## Build
 
@@ -54,11 +54,19 @@ When `NEXUS_MCP_AUTH_TOKEN` is unset, `/api/` is unauthenticated (development on
 
 Container healthcheck: `wget -q --spider http://127.0.0.1/api/health`. Map Coolify’s public domain to container port **80**.
 
-## Local smoke test (superrepo root)
+## Local smoke test (this repo)
 
 ```bash
 git submodule update --init compiler
-docker compose -f beskid_nexus/docker-compose.yml up --build
+podman compose up --build
+# or: docker compose up --build (Podman exposes a Docker-compatible socket on macOS)
+```
+
+Superrepo checkout:
+
+```bash
+git submodule update --init beskid_nexus compiler
+podman compose -f beskid_nexus/docker-compose.superrepo.yml up --build
 ```
 
 Open `http://localhost/` — the UI auto-connects to the baked `compiler` index.

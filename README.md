@@ -6,12 +6,14 @@ Interactive knowledge graph of the [Beskid compiler](https://github.com/Cyber-No
 |---------|-------------|
 | Web UI | Sigma.js explorer for the baked `compiler/` index |
 | MCP | StreamableHTTP at `/api/mcp` via `gitnexus serve` |
-| Deploy | Docker / Coolify from the Beskid superrepo — [COOLIFY.md](COOLIFY.md) |
+| Deploy | Docker / Coolify from this repo — [COOLIFY.md](COOLIFY.md) |
 
-## Superrepo checkout
+## Checkout
 
 ```bash
-git submodule update --init beskid_nexus compiler
+git clone --recurse-submodules https://github.com/Cyber-Nomad-Collective/beskid_nexus.git
+# or after clone:
+git submodule update --init compiler
 ```
 
 ## Local development
@@ -38,12 +40,20 @@ bun run dev
 
 Open the Vite URL; the UI bootstraps the `compiler` repo automatically.
 
-## Docker
+## Container (Podman or Docker)
 
-From the **superrepo root** (requires `compiler/` submodule):
+From this repository (requires `compiler/` submodule):
 
 ```bash
-docker compose -f beskid_nexus/docker-compose.yml up --build
+git submodule update --init compiler
+podman compose up --build
+# Docker API compatible: docker compose up --build
+```
+
+Beskid superrepo (sibling `compiler/` at repo root):
+
+```bash
+podman compose -f beskid_nexus/docker-compose.superrepo.yml up --build
 ```
 
 ## MCP client
@@ -68,5 +78,6 @@ docker compose -f beskid_nexus/docker-compose.yml up --build
 | `gitnexus/` | CLI — `analyze`, `serve`, MCP |
 | `gitnexus-shared/` | Shared types |
 | `gitnexus-web/` | Beskid Nexus UI (`src/config`, `src/hooks/useServerBootstrap.ts`) |
-| `Dockerfile` | Superrepo build (context = repo root) |
+| `Dockerfile` | Standalone Coolify build (`context: .`) |
+| `Dockerfile.superrepo` | Beskid superrepo build (`context: ..`) |
 | `nginx/` | Static UI + `/api` proxy |
