@@ -1,12 +1,12 @@
 # Beskid Nexus — superrepo build (context = repo root, file = beskid_nexus/Dockerfile.superrepo)
 
 # ── gitnexus CLI (native deps) ─────────────────────────────────────────────
-FROM oven/bun:latest AS cli-builder
+FROM oven/bun:1.3.14 AS cli-builder
 
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm \
   && rm -rf /var/lib/apt/lists/*
 
 # Shared types
@@ -32,18 +32,17 @@ COPY compiler /workspace/compiler
 RUN test -f /workspace/compiler/Cargo.toml || (echo "compiler/ submodule missing — init before build" && exit 1)
 
 RUN node /app/gitnexus/dist/cli/index.js analyze /workspace/compiler \
-  --skip-embeddings \
   --skip-agents-md \
   --skip-git \
   --skip-skills
 
 # ── Web UI ─────────────────────────────────────────────────────────────────
-FROM oven/bun:latest AS web-builder
+FROM oven/bun:1.3.14 AS web-builder
 
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm \
   && rm -rf /var/lib/apt/lists/*
 
 # Shared types (needed as file: dependency for gitnexus-web)
@@ -53,7 +52,7 @@ COPY beskid_nexus/gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
 # Docs UI sources (Vite aliases; optional — stubs used when absent)
-COPY packages/beskid-docs-ui /app/packages/beskid-docs-ui
+COPY beskid_web_common/packages/docs-ui /app/beskid_web_common/packages/docs-ui
 
 # Web app
 COPY beskid_nexus/gitnexus-web/package.json ./gitnexus-web/package.json

@@ -62,7 +62,7 @@ jobs:
         run: |
           cd gitnexus-shared && bun install --frozen-lockfile && bun run build
           cd ../gitnexus && bun install --frozen-lockfile && bun run build
-          cd ../gitnexus && node -e "require('@ladybugdb/core'); console.log('ladybug native ok')"
+          cd ../gitnexus && bun -e "import '@ladybugdb/core'; console.log('ladybug native ok')"
 
       - name: Unit tests
         working-directory: gitnexus

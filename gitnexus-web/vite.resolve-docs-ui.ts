@@ -9,6 +9,8 @@ const docsUiCandidates = [
 	path.resolve(webRoot, '../../../node_modules/@cyber-nomad-collective/docs-ui/src'),
 	path.resolve(webRoot, '../../node_modules/@beskid/docs-ui/src'),
 	path.resolve(webRoot, '../../node_modules/@cyber-nomad-collective/docs-ui/src'),
+	path.resolve(webRoot, '../../beskid_web_common/packages/docs-ui/src'),
+	path.resolve(webRoot, '../../../beskid_web_common/packages/docs-ui/src'),
 ];
 
 const webStylesCandidates = [

@@ -26,7 +26,7 @@ bun install
 bun run build
 
 export GITNEXUS_HOME="$HOME/.gitnexus-beskid"
-node dist/cli/index.js analyze ../../compiler --skip-embeddings --skip-agents-md --skip-git
+node dist/cli/index.js analyze ../../compiler --skip-agents-md --skip-git --skip-skills
 node dist/cli/index.js serve --host 127.0.0.1 --port 4747
 ```
 

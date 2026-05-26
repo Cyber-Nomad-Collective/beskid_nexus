@@ -1,12 +1,12 @@
 # Beskid Nexus — standalone repo build (context = repository root)
 
 # ── gitnexus CLI (native deps) ─────────────────────────────────────────────
-FROM oven/bun:latest AS cli-builder
+FROM oven/bun:1.3.14 AS cli-builder
 
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm \
   && rm -rf /var/lib/apt/lists/*
 
 COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
@@ -31,18 +31,17 @@ RUN test -f /workspace/compiler/Cargo.toml \
   || (echo "compiler/ missing — run: git submodule update --init compiler" && exit 1)
 
 RUN node /app/gitnexus/dist/cli/index.js analyze /workspace/compiler \
-  --skip-embeddings \
   --skip-agents-md \
   --skip-git \
   --skip-skills
 
 # ── Web UI ─────────────────────────────────────────────────────────────────
-FROM oven/bun:latest AS web-builder
+FROM oven/bun:1.3.14 AS web-builder
 
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm \
   && rm -rf /var/lib/apt/lists/*
 
 COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
