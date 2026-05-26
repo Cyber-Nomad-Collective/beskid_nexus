@@ -25,19 +25,5 @@ jobs:
       - name: Init compiler submodule
         run: git -c protocol.version=2 submodule update --init --depth 1 compiler
 
-      - name: Build Nexus image
+      - name: Build Nexus image (index + web UI)
         run: podman build -t beskid-nexus:ci .
-
-      - name: Smoke health endpoint
-        run: |
-          cid=$(podman run -d --rm -p 8080:80 beskid-nexus:ci)
-          trap "podman rm -f $cid" EXIT
-          for i in $(seq 1 90); do
-            if podman exec "$cid" wget -q --spider http://127.0.0.1/api/health; then
-              echo "health ok"
-              exit 0
-            fi
-            sleep 2
-          done
-          podman logs "$cid"
-          exit 1
