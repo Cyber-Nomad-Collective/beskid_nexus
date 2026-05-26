@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.0"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install and build shared
+        run: |
+          cd gitnexus-shared
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Install and build CLI
+        run: |
+          cd gitnexus
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Install and build web
+        run: |
+          cd gitnexus-web
+          bun install --frozen-lockfile
+          bun run build
+        env:
+          VITE_NEXUS_DEFAULT_REPO: compiler
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.0"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install CLI deps
+        run: |
+          cd gitnexus-shared && bun install --frozen-lockfile && bun run build
+          cd ../gitnexus && bun install --frozen-lockfile && bun run build
+
+      - name: Unit tests
+        run: cd gitnexus && bun run test:unit
+        env:
+          NODE_OPTIONS: "--no-warnings"

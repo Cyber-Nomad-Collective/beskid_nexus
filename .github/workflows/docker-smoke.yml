@@ -1,0 +1,35 @@
+name: Docker smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: docker-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build Nexus image
+        run: docker build -t beskid-nexus:ci .
+
+      - name: Smoke health endpoint
+        run: |
+          cid=$(docker run -d --rm -p 8080:80 -e NEXUS_MCP_AUTH_TOKEN= beskid-nexus:ci)
+          trap "docker rm -f $cid" EXIT
+          for i in $(seq 1 30); do
+            if wget -q --spider http://127.0.0.1:8080/api/health; then
+              echo "health ok"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs "$cid"
+          exit 1
