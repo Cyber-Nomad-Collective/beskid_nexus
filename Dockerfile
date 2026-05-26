@@ -1,4 +1,4 @@
-# Beskid Nexus — superrepo build (context = repo root, file = beskid_nexus/Dockerfile)
+# Beskid Nexus — standalone repo build (context = repository root)
 
 # ── gitnexus CLI (native deps) ─────────────────────────────────────────────
 FROM oven/bun:latest AS cli-builder
@@ -9,16 +9,14 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget \
   && rm -rf /var/lib/apt/lists/*
 
-# Shared types
-COPY beskid_nexus/gitnexus-shared/package.json ./gitnexus-shared/package.json
-COPY beskid_nexus/gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
-COPY beskid_nexus/gitnexus-shared ./gitnexus-shared
+COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
+COPY gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
+COPY gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
-# CLI
-COPY beskid_nexus/gitnexus/package.json ./gitnexus/package.json
-COPY beskid_nexus/gitnexus/bun.lock ./gitnexus/bun.lock
-COPY beskid_nexus/gitnexus ./gitnexus
+COPY gitnexus/package.json ./gitnexus/package.json
+COPY gitnexus/bun.lock ./gitnexus/bun.lock
+COPY gitnexus ./gitnexus
 RUN cd gitnexus && bun install --frozen-lockfile && bun run build
 
 RUN ln -sf /app/gitnexus/dist/cli/index.js /usr/local/bin/gitnexus
@@ -29,7 +27,8 @@ ENV GITNEXUS_HOME=/data/gitnexus
 RUN mkdir -p /data/gitnexus
 
 COPY compiler /workspace/compiler
-RUN test -f /workspace/compiler/Cargo.toml || (echo "compiler/ submodule missing — init before build" && exit 1)
+RUN test -f /workspace/compiler/Cargo.toml \
+  || (echo "compiler/ missing — run: git submodule update --init compiler" && exit 1)
 
 RUN node /app/gitnexus/dist/cli/index.js analyze /workspace/compiler \
   --skip-embeddings \
@@ -46,19 +45,14 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget \
   && rm -rf /var/lib/apt/lists/*
 
-# Shared types (needed as file: dependency for gitnexus-web)
-COPY beskid_nexus/gitnexus-shared/package.json ./gitnexus-shared/package.json
-COPY beskid_nexus/gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
-COPY beskid_nexus/gitnexus-shared ./gitnexus-shared
+COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
+COPY gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
+COPY gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
-# Docs UI sources (Vite aliases)
-COPY packages/beskid-docs-ui /app/packages/beskid-docs-ui
-
-# Web app
-COPY beskid_nexus/gitnexus-web/package.json ./gitnexus-web/package.json
-COPY beskid_nexus/gitnexus-web/bun.lock ./gitnexus-web/bun.lock
-COPY beskid_nexus/gitnexus-web ./gitnexus-web
+COPY gitnexus-web/package.json ./gitnexus-web/package.json
+COPY gitnexus-web/bun.lock ./gitnexus-web/bun.lock
+COPY gitnexus-web ./gitnexus-web
 
 RUN cd gitnexus-web && bun install --frozen-lockfile
 ENV VITE_NEXUS_DEFAULT_REPO=compiler
@@ -82,8 +76,8 @@ COPY --from=cli-builder /app/gitnexus/vendor ./gitnexus/vendor
 RUN ln -sf /app/gitnexus/dist/cli/index.js /usr/local/bin/gitnexus
 
 COPY --from=web-builder /app/gitnexus-web/dist /usr/share/nginx/html
-COPY beskid_nexus/nginx/default.conf.template /etc/nginx/templates/default.conf.template
-COPY beskid_nexus/scripts/docker-entrypoint.sh /docker-entrypoint.sh
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENV GITNEXUS_HOME=/data/gitnexus \
