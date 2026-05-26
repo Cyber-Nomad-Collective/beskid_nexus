@@ -66,6 +66,7 @@ FROM node:22-bookworm-slim@sha256:9f6d5975c7dca860947d3915877f85607946403fc55349
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends nginx wget ca-certificates gettext-base \
+  && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

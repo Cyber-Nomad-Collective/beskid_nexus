@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eu
 
+# Debian nginx ships sites-enabled/default → /var/www/html ("Welcome to nginx!").
+rm -f /etc/nginx/sites-enabled/default
+
 export GITNEXUS_HOME="${GITNEXUS_HOME:-/data/gitnexus}"
 SERVE_PORT="${GITNEXUS_SERVE_PORT:-4747}"
 
@@ -11,8 +14,9 @@ if [ -n "${NEXUS_MCP_AUTH_TOKEN:-}" ]; then
 else
 	cat >/etc/nginx/conf.d/default.conf <<'EOF'
 server {
-    listen 80;
-    server_name localhost;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
     root /usr/share/nginx/html;
     index index.html;
 
