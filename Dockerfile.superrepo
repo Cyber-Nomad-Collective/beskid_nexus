@@ -58,6 +58,7 @@ RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 COPY beskid_web_common/packages/docs-ui /app/beskid_web_common/packages/docs-ui
 
 # Web app
+COPY beskid_nexus/gitnexus/package.json ./gitnexus/package.json
 COPY beskid_nexus/gitnexus-web/package.json ./gitnexus-web/package.json
 COPY beskid_nexus/gitnexus-web/bun.lock ./gitnexus-web/bun.lock
 COPY beskid_nexus/gitnexus-web ./gitnexus-web

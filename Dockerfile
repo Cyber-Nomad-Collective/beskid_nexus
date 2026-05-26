@@ -52,6 +52,7 @@ COPY gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
 COPY gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
+COPY gitnexus/package.json ./gitnexus/package.json
 COPY gitnexus-web/package.json ./gitnexus-web/package.json
 COPY gitnexus-web/bun.lock ./gitnexus-web/bun.lock
 COPY gitnexus-web ./gitnexus-web
