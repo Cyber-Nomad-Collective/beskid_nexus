@@ -4,9 +4,33 @@ set -eu
 export GITNEXUS_HOME="${GITNEXUS_HOME:-/data/gitnexus}"
 SERVE_PORT="${GITNEXUS_SERVE_PORT:-4747}"
 
-envsubst '${NEXUS_MCP_AUTH_TOKEN}' \
-	< /etc/nginx/templates/default.conf.template \
-	> /etc/nginx/conf.d/default.conf
+if [ -n "${NEXUS_MCP_AUTH_TOKEN:-}" ]; then
+	envsubst '${NEXUS_MCP_AUTH_TOKEN}' \
+		< /etc/nginx/templates/default.conf.template \
+		> /etc/nginx/conf.d/default.conf
+else
+	cat >/etc/nginx/conf.d/default.conf <<'EOF'
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/ {
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://127.0.0.1:4747;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+fi
 
 node /app/gitnexus/dist/cli/index.js serve \
 	--host 127.0.0.1 \

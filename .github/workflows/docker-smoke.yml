@@ -33,7 +33,7 @@ jobs:
           cid=$(podman run -d --rm -p 8080:80 beskid-nexus:ci)
           trap "podman rm -f $cid" EXIT
           for i in $(seq 1 90); do
-            if wget -q --spider http://127.0.0.1:8080/api/health; then
+            if podman exec "$cid" wget -q --spider http://127.0.0.1/api/health; then
               echo "health ok"
               exit 0
             fi
