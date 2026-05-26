@@ -61,8 +61,13 @@ jobs:
       - name: Install CLI deps
         run: |
           cd gitnexus-shared && bun install --frozen-lockfile && bun run build
-          cd ../gitnexus && bun install --frozen-lockfile && bun run build
-          cd ../gitnexus && bun -e "import '@ladybugdb/core'; console.log('ladybug native ok')"
+          cd ../gitnexus && bun install --frozen-lockfile \
+            && bun add --optional @ladybugdb/core-linux-x64@0.16.1 \
+            && ln -sf ../core-linux-x64/lbugjs.node node_modules/@ladybugdb/core/lbugjs.node \
+            && bun run build
+      - name: Verify Ladybug Linux native binding
+        working-directory: gitnexus
+        run: test -f node_modules/@ladybugdb/core/lbugjs.node
 
       - name: Unit tests
         working-directory: gitnexus

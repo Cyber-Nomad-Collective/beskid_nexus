@@ -6,7 +6,7 @@ FROM oven/bun:1.3.14 AS cli-builder
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
 
 COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
@@ -17,7 +17,10 @@ RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 COPY gitnexus/package.json ./gitnexus/package.json
 COPY gitnexus/bun.lock ./gitnexus/bun.lock
 COPY gitnexus ./gitnexus
-RUN cd gitnexus && bun install --frozen-lockfile && bun run build
+RUN cd gitnexus && bun install --frozen-lockfile \
+  && bun add --optional @ladybugdb/core-linux-x64@0.16.1 \
+  && ln -sf ../core-linux-x64/lbugjs.node node_modules/@ladybugdb/core/lbugjs.node \
+  && bun run build
 
 RUN ln -sf /app/gitnexus/dist/cli/index.js /usr/local/bin/gitnexus
 
@@ -30,7 +33,7 @@ COPY compiler /workspace/compiler
 RUN test -f /workspace/compiler/Cargo.toml \
   || (echo "compiler/ missing — run: git submodule update --init compiler" && exit 1)
 
-RUN node /app/gitnexus/dist/cli/index.js analyze /workspace/compiler \
+RUN gitnexus analyze /workspace/compiler \
   --skip-agents-md \
   --skip-git \
   --skip-skills
@@ -41,7 +44,7 @@ FROM oven/bun:1.3.14 AS web-builder
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
 
 COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
