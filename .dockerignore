@@ -1,15 +1,9 @@
-# Superrepo Docker build (context = beskid repo root) — keep image context small.
+# Standalone repo Docker build (context = repository root)
 .git
 .github
 **/.git
 **/node_modules
 **/dist
 **/coverage
-beskid_tracker
-pckg
-site
-beskid_vscode
-beskid_templates
-references
-.ci-cache
-.repo
+.env
+.env.*

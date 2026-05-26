@@ -1,9 +1,9 @@
-# Coolify / standalone repo (see COOLIFY.md). Build context is this repository root.
+# Beskid superrepo local/CI build (context = parent of beskid_nexus/).
 services:
   nexus:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: beskid_nexus/Dockerfile.superrepo
     restart: unless-stopped
     expose:
       - "80"

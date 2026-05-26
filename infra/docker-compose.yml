@@ -1,9 +1,9 @@
-# Coolify entrypoint (see ../COOLIFY.md). Build context is the superrepo root.
+# Coolify / standalone repo (see ../COOLIFY.md). Build context is the repository root.
 services:
   nexus:
     build:
       context: ..
-      dockerfile: beskid_nexus/Dockerfile
+      dockerfile: Dockerfile
     restart: unless-stopped
     expose:
       - "80"
@@ -15,4 +15,3 @@ services:
       timeout: 5s
       retries: 3
       start_period: 60s
-

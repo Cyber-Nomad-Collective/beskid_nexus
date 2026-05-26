@@ -5,8 +5,10 @@ import { fileURLToPath } from 'node:url';
 const webRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const docsUiCandidates = [
-	path.resolve(webRoot, '../../../packages/beskid-docs-ui/src'),
-	path.resolve(webRoot, '../../packages/beskid-docs-ui/src'),
+	path.resolve(webRoot, '../../../node_modules/@beskid/docs-ui/src'),
+	path.resolve(webRoot, '../../../node_modules/@cyber-nomad-collective/docs-ui/src'),
+	path.resolve(webRoot, '../../node_modules/@beskid/docs-ui/src'),
+	path.resolve(webRoot, '../../node_modules/@cyber-nomad-collective/docs-ui/src'),
 ];
 
 const webStylesCandidates = [
