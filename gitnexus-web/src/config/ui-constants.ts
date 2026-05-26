@@ -2,7 +2,8 @@
 export const ERROR_RESET_DELAY_MS = 3000;
 export const BACKEND_URL_DEBOUNCE_MS = 500;
 
-export const DEFAULT_BACKEND_URL = 'http://localhost:4747';
+export const DEFAULT_BACKEND_URL =
+	typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8452';
 export const DEFAULT_OLLAMA_BASE_URL = 'http://localhost:11434';
 export const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 

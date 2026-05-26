@@ -4,75 +4,52 @@ Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `ma
 
 ## Compose entry
 
-Use [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml). **Build context is this repository root** (`context: .`, `dockerfile: Dockerfile`).
+Use [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml). **Build context is this repository root**.
 
-Standalone builds set `FETCH_COMPILER=1` so the image clones [beskid_compiler](https://github.com/Cyber-Nomad-Collective/beskid_compiler) during the indexer stage (no `compiler/` submodule in this repo).
-
-For the Beskid superrepo checkout, use [`docker-compose.superrepo.yml`](docker-compose.superrepo.yml) (`context: ..`, `dockerfile: beskid_nexus/Dockerfile`) so the image indexes the sibling `compiler/` tree at the superrepo root.
+Superrepo local builds: [`docker-compose.superrepo.yml`](docker-compose.superrepo.yml) (same image, shared volume layout).
 
 ## Build
 
-- Image: [`Dockerfile`](Dockerfile) — `gitnexus` CLI + web UI (`gitnexus/web/`), `gitnexus analyze` on the compiler tree, **`gitnexus serve` on port 80** (API, MCP, and static UI; no nginx).
-- Graph data is **baked into the image**; redeploy after updating the compiler source (superrepo `compiler/` submodule pointer or `COMPILER_GIT_REF` build arg) to refresh.
-
-Optional build args (standalone clone):
-
-| Arg | Default | Purpose |
-|-----|---------|---------|
-| `COMPILER_GIT_URL` | `https://github.com/Cyber-Nomad-Collective/beskid_compiler.git` | Compiler repo to index |
-| `COMPILER_GIT_REF` | `main` | Branch or tag to clone |
+- Image: [`Dockerfile`](Dockerfile) — `gitnexus` + web UI, **`gitnexus serve` on port 8452** (no build-time index; no nginx).
+- Indexes are created at **runtime** when admins add catalog entries or GitHub push webhooks fire. Graph data persists in the **`nexus-data`** volume (`GITNEXUS_HOME=/data/gitnexus`).
 
 ## Runtime secrets
 
 | Variable | Required | Notes |
 |----------|----------|--------|
-| `NEXUS_MCP_AUTH_TOKEN` | recommended (production) | Bearer token for `/api/*` (including MCP). `/api/health` stays open. Leave empty for local smoke only. |
-| `GITNEXUS_HOME` | optional | Default `/data/gitnexus` (pre-populated in image) |
-| `PORT` | optional | `gitnexus serve` listen port; default `80` |
-| `GITNEXUS_SERVE_HOST` | optional | Bind address; default `0.0.0.0` |
+| `SESSION_SECRET` | yes (OAuth) | ≥32 chars; seals session cookies |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` / `GITHUB_OAUTH_CALLBACK_URL` | yes (or via first-run `/setup` UI → `nexus-config.json`) | GitHub OAuth app |
+| `NEXUS_ADMIN_GITHUB_LOGINS` | recommended | Comma-separated GitHub logins allowed to manage the catalog |
+| `NEXUS_SETUP_TOKEN` | recommended (production) | Protects `POST /api/admin/setup` when OAuth is not yet configured |
+| `NEXUS_MCP_AUTH_TOKEN` | recommended (production) | Bearer token for MCP and protected `/api/*` routes |
+| `GITHUB_WEBHOOK_SECRET` | optional | Verifies `POST /api/webhooks/github` push events for re-index |
+| `GITNEXUS_HOME` | set in compose | `/data/gitnexus` (volume) |
+| `PORT` | optional | Default **8452** |
+
+## First boot
+
+1. Map public URL to container port **8452**.
+2. Open the site → complete **GitHub OAuth setup** (or pre-set env vars).
+3. Sign in with GitHub as an admin → **Manage catalog** → add repos (display name, description, URL).
+4. Server clones and indexes each repo; graphs appear on the catalog home when ready.
 
 ## MCP over HTTP
 
-GitNexus `serve` exposes StreamableHTTP MCP at **`/api/mcp`** on the same port as the UI.
-
-Example `mcp.json` (Cursor / compatible clients):
-
-```json
-{
-  "mcpServers": {
-    "beskid-nexus": {
-      "url": "https://<nexus-host>/api/mcp",
-      "headers": {
-        "Authorization": "Bearer <NEXUS_MCP_AUTH_TOKEN>"
-      }
-    }
-  }
-}
-```
-
-When `NEXUS_MCP_AUTH_TOKEN` is unset, `/api/` is unauthenticated (development only).
+`https://<nexus-host>:8452/api/mcp` with `Authorization: Bearer <NEXUS_MCP_AUTH_TOKEN>` when the token is set.
 
 ## Health
 
-Container healthcheck: `wget -q --spider http://127.0.0.1/api/health`. Map Coolify’s public domain to container port **80**.
+`wget -q --spider http://127.0.0.1:8452/api/health`
 
-## Local smoke test (this repo)
+## Local smoke
 
 ```bash
 podman compose up --build
-# or: docker compose up --build
 ```
 
-Superrepo checkout (indexes `../compiler`):
+Open `http://localhost:8452/`.
 
-```bash
-git submodule update --init compiler
-podman compose -f beskid_nexus/docker-compose.superrepo.yml up --build
-```
+## Related
 
-Open `http://localhost/` — the UI auto-connects to the baked `compiler` index.
-
-## Related applications
-
-- [Docs site](../site/COOLIFY.md) — `https://beskid-lang.org`
-- [Tracker](../beskid_tracker/COOLIFY.md) — roadmap / issues
+- [Docs site](../site/COOLIFY.md)
+- [Tracker](../beskid_tracker/COOLIFY.md)

@@ -29,6 +29,7 @@ import { searchFTSFromLbug } from '../core/search/bm25-index.js';
 import { hybridSearch } from '../core/search/hybrid-search.js';
 import { LocalBackend } from '../mcp/local/local-backend.js';
 import { mountMCPEndpoints } from './mcp-http.js';
+import { mountGithubWebhook, mountNexusRoutes } from './nexus/mount-nexus-routes.js';
 import { fork } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { JobManager } from './analyze-job.js';
@@ -658,12 +659,45 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
       },
     }),
   );
+
+  // Initialize MCP backend early (needed for Nexus routes and analyze jobs).
+  const backend = new LocalBackend();
+  await backend.init();
+  const cleanupMcp = mountMCPEndpoints(app, backend);
+  const jobManager = new JobManager();
+
+  const activeRepoPaths = new Set<string>();
+  const acquireRepoLock = (repoPath: string): string | null => {
+    if (activeRepoPaths.has(repoPath)) {
+      return `Another job is already active for this repository`;
+    }
+    activeRepoPaths.add(repoPath);
+    return null;
+  };
+  const releaseRepoLock = (repoPath: string): void => {
+    activeRepoPaths.delete(repoPath);
+  };
+
+  const nexusDeps = { jobManager, backend, acquireRepoLock, releaseRepoLock };
+  mountGithubWebhook(app, nexusDeps);
+
   app.use(express.json({ limit: '10mb' }));
 
   const apiAuthToken = process.env.NEXUS_MCP_AUTH_TOKEN?.trim();
+  const isPublicApiPath = (p: string): boolean => {
+    if (p === '/api/health') return true;
+    if (p.startsWith('/api/auth')) return true;
+    if (p === '/api/catalog' || p.startsWith('/api/catalog/')) return true;
+    if (p === '/api/admin/setup/status') return true;
+    if (p === '/api/admin/setup') return true;
+    if (p.startsWith('/api/admin/')) return true;
+    if (p === '/api/webhooks/github') return true;
+    return false;
+  };
+
   if (apiAuthToken) {
     app.use((req, res, next) => {
-      if (!req.path.startsWith('/api') || req.path === '/api/health') {
+      if (!req.path.startsWith('/api') || isPublicApiPath(req.path)) {
         next();
         return;
       }
@@ -675,6 +709,8 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
       res.status(401).json({ error: 'Unauthorized' });
     });
   }
+
+  mountNexusRoutes(app, nexusDeps);
 
   // Support Chromium Private Network Access (required since Chrome 130+).
   // Without this header, Chrome/Edge/Brave/Arc block public->loopback requests
@@ -691,28 +727,6 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
   app.options('*', (_req, res, next) => {
     next();
   });
-
-  // Initialize MCP backend (multi-repo, shared across all MCP sessions)
-  const backend = new LocalBackend();
-  await backend.init();
-  const cleanupMcp = mountMCPEndpoints(app, backend);
-  const jobManager = new JobManager();
-
-  // Shared repo lock — prevents concurrent analyze + embed on the same repo path,
-  // which would corrupt LadybugDB (analyze calls closeLbug + initLbug while embed has queries in flight).
-  const activeRepoPaths = new Set<string>();
-
-  const acquireRepoLock = (repoPath: string): string | null => {
-    if (activeRepoPaths.has(repoPath)) {
-      return `Another job is already active for this repository`;
-    }
-    activeRepoPaths.add(repoPath);
-    return null;
-  };
-
-  const releaseRepoLock = (repoPath: string): void => {
-    activeRepoPaths.delete(repoPath);
-  };
 
   /**
    * Maximum time the hold-queue will wait for an active analysis job to complete.

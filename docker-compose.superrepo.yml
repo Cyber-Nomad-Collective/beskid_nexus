@@ -4,17 +4,29 @@ services:
     build:
       context: ..
       dockerfile: beskid_nexus/Dockerfile
-      args:
-        FETCH_COMPILER: "0"
     restart: unless-stopped
-    expose:
-      - "80"
+    ports:
+      - "8452:8452"
     environment:
+      GITNEXUS_HOME: /data/gitnexus
       NEXUS_MCP_AUTH_TOKEN: ${NEXUS_MCP_AUTH_TOKEN:-}
-      PORT: "80"
+      PORT: "8452"
+      GITNEXUS_SERVE_HOST: "0.0.0.0"
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_OAUTH_CALLBACK_URL: ${GITHUB_OAUTH_CALLBACK_URL:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      NEXUS_ADMIN_GITHUB_LOGINS: ${NEXUS_ADMIN_GITHUB_LOGINS:-}
+      NEXUS_SETUP_TOKEN: ${NEXUS_SETUP_TOKEN:-}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-}
+    volumes:
+      - nexus-data:/data/gitnexus
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/api/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8452/api/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 60s
+
+volumes:
+  nexus-data:

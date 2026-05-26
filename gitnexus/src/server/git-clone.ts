@@ -7,14 +7,14 @@
 
 import { spawn } from 'child_process';
 import path from 'path';
-import os from 'os';
 import fs from 'fs/promises';
 import { isIP } from 'net';
 import { logger } from '../core/logger.js';
 import { parseRepoNameFromUrl } from '../storage/git.js';
+import { getCloneRoot } from '../storage/repo-manager.js';
 
 /** Root directory for all cloned repositories. Targets must resolve inside this. */
-const CLONE_ROOT = path.resolve(path.join(os.homedir(), '.gitnexus', 'repos'));
+const cloneRoot = (): string => getCloneRoot();
 
 // A valid git repository name is filesystem-safe: alphanumerics plus `. _ -`.
 // Rejecting anything else (including `..`, `/`, `\`, shell metacharacters)
@@ -50,7 +50,7 @@ export function getCloneDir(repoName: string): string {
   if (!repoName || repoName === '.' || repoName === '..' || !REPO_NAME_PATTERN.test(repoName)) {
     throw new Error('Invalid repository name');
   }
-  return path.join(CLONE_ROOT, repoName);
+  return path.join(cloneRoot(), repoName);
 }
 
 // Cloud metadata hostnames that must never be reachable via user-supplied URLs
@@ -391,9 +391,10 @@ export async function cloneOrPull(
   // model considers it out of scope; CodeQL js/path-injection accepts the
   // lexical form. Tracked as a follow-up if defense-in-depth is needed.
   const safeTarget = path.resolve(targetDir);
-  const rel = path.relative(CLONE_ROOT, safeTarget);
+  const root = cloneRoot();
+  const rel = path.relative(root, safeTarget);
   if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
-    throw new Error(`Clone target must be a subdirectory of ${CLONE_ROOT}`);
+    throw new Error(`Clone target must be a subdirectory of ${root}`);
   }
 
   // Always validate the requested URL — the prior shape only ran this in

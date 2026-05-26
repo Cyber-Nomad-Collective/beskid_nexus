@@ -373,6 +373,9 @@ export const getGlobalDir = (): string => {
   return process.env.GITNEXUS_HOME || path.join(os.homedir(), '.gitnexus');
 };
 
+/** Directory for server-side git clones (`gitnexus serve` / POST /api/analyze). */
+export const getCloneRoot = (): string => path.join(getGlobalDir(), 'repos');
+
 /**
  * Get the path to the global registry file
  */

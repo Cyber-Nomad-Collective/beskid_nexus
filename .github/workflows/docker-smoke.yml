@@ -20,5 +20,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y podman
 
-      - name: Build Nexus image (index + web UI)
-        run: podman build -t beskid-nexus:ci --build-arg FETCH_COMPILER=1 .
+      - name: Build Nexus image
+        run: podman build -t beskid-nexus:ci .
+
+      - name: Run container with empty volume
+        run: |
+          podman run -d --name nexus-smoke \
+            -e SESSION_SECRET=ci-smoke-secret-at-least-32-chars \
+            -e GITNEXUS_HOME=/data/gitnexus \
+            -p 18452:8452 \
+            beskid-nexus:ci
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:18452/api/health; then
+              echo "Health OK"
+              curl -sf http://127.0.0.1:18452/api/catalog
+              exit 0
+            fi
+            sleep 2
+          done
+          podman logs nexus-smoke
+          exit 1

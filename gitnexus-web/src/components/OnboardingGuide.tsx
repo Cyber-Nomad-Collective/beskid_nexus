@@ -309,7 +309,7 @@ export const OnboardingGuide = ({ isPolling }: OnboardingGuideProps) => {
         </span>
         <span className="mx-1 text-border-default">·</span>
         <Terminal className="h-3 w-3 shrink-0" />
-        <span>Port 4747</span>
+        <span>Port 8452</span>
       </div>
     </div>
   );
