@@ -9,12 +9,21 @@ const _require = createRequire(import.meta.url);
 const gitnexusPkg = _require('../gitnexus/package.json');
 
 const docsUiCandidates = [
-  path.resolve(__dirname, '../../packages/beskid-docs-ui/src'),
   path.resolve(__dirname, '../../../packages/beskid-docs-ui/src'),
+  path.resolve(__dirname, '../../packages/beskid-docs-ui/src'),
 ];
-const docsUiSrc =
-  docsUiCandidates.find((candidate) => fs.existsSync(path.join(candidate, 'styles/theme.material.css'))) ??
-  docsUiCandidates[0];
+const docsUiSrc = docsUiCandidates.find((candidate) =>
+  fs.existsSync(path.join(candidate, 'styles/theme.material.css')),
+);
+const docsUiHubEntry = docsUiSrc
+  ? path.join(docsUiSrc, 'client/beskid-hub-entry.ts')
+  : path.resolve(__dirname, './src/stubs/beskid-hub-stub.ts');
+const docsUiThemeCss = docsUiSrc
+  ? path.join(docsUiSrc, 'styles/theme.material.css')
+  : path.resolve(__dirname, './src/styles/beskid-fallback-theme.css');
+const docsUiHubCss = docsUiSrc
+  ? path.join(docsUiSrc, 'styles/hub.css')
+  : path.resolve(__dirname, './src/stubs/beskid-hub-stub.css');
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -24,7 +33,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@beskid/docs-ui': docsUiSrc,
+      ...(docsUiSrc ? { '@beskid/docs-ui': docsUiSrc } : {}),
+      '#beskid-hub-entry': docsUiHubEntry,
+      '#beskid-theme-css': docsUiThemeCss,
+      '#beskid-hub-css': docsUiHubCss,
       '@shared': path.resolve(__dirname, '../shared'),
       'gitnexus-shared': path.resolve(__dirname, '../gitnexus-shared/src/index.ts'),
       // Fix for Rollup failing to resolve this deep import from @langchain/anthropic

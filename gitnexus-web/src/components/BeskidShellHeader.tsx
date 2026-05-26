@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { Search, Settings, HelpCircle } from '@/lib/lucide-icons';
 import { useAppState } from '../hooks/useAppState';
 import { useMemo, useRef, useState, useEffect } from 'react';
@@ -152,17 +153,8 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 				>
 					<Settings className="h-4 w-4" />
 				</button>
-				<beskid-hub />
+				{createElement('beskid-hub')}
 			</div>
 		</header>
 	);
 };
-
-declare global {
-	// eslint-disable-next-line @typescript-eslint/no-namespace
-	namespace JSX {
-		interface IntrinsicElements {
-			'beskid-hub': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-		}
-	}
-}

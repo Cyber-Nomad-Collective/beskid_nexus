@@ -1,0 +1,12 @@
+:root {
+	--sl-color-black: #0a0a0f;
+	--sl-color-gray-1: #e4e4ed;
+	--sl-color-gray-2: #a0a0b8;
+	--sl-color-gray-3: #8888a0;
+	--sl-color-gray-5: #2a2a3a;
+	--sl-color-gray-6: #1e1e2e;
+	--background: #0a0a0f;
+	--foreground: #e4e4ed;
+	--border: #2a2a3a;
+	--muted-foreground: #8888a0;
+}

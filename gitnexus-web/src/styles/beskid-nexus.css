@@ -1,8 +1,7 @@
 /**
  * Beskid Nexus chrome — aligns with beskid_tracker / docs site tokens.
  */
-@import "@beskid/docs-ui/styles/theme.material.css";
-@import "@beskid/docs-ui/styles/hub.css";
+@import '#beskid-theme-css';
 
 :root {
 	--void: var(--sl-color-black, #0a0a0f);

@@ -1,4 +1,5 @@
-import '@beskid/docs-ui/client/beskid-hub-element-entry';
+import '#beskid-hub-entry';
+import '#beskid-hub-css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
