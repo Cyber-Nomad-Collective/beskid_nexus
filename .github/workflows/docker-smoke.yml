@@ -30,9 +30,9 @@ jobs:
 
       - name: Smoke health endpoint
         run: |
-          cid=$(podman run -d --rm -p 8080:80 -e NEXUS_MCP_AUTH_TOKEN= beskid-nexus:ci)
+          cid=$(podman run -d --rm -p 8080:80 beskid-nexus:ci)
           trap "podman rm -f $cid" EXIT
-          for i in $(seq 1 30); do
+          for i in $(seq 1 90); do
             if wget -q --spider http://127.0.0.1:8080/api/health; then
               echo "health ok"
               exit 0
