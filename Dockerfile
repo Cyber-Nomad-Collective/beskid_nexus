@@ -48,8 +48,7 @@ RUN npm ci --prefix gitnexus-web
 
 COPY packages/beskid-docs-ui /app/packages/beskid-docs-ui
 COPY beskid_nexus/gitnexus-web ./gitnexus-web
-ENV VITE_NEXUS_SINGLE_REPO=1 \
-    VITE_NEXUS_DEFAULT_REPO=compiler
+ENV VITE_NEXUS_DEFAULT_REPO=compiler
 RUN npm run build --prefix gitnexus-web
 
 # ── Runtime: nginx + gitnexus serve ────────────────────────────────────────

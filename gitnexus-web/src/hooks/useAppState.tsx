@@ -204,9 +204,7 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => (
 
 const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
   // View state
-  const [viewMode, setViewMode] = useState<ViewMode>(
-    import.meta.env.VITE_NEXUS_SINGLE_REPO === '1' ? 'loading' : 'onboarding',
-  );
+  const [viewMode, setViewMode] = useState<ViewMode>('loading');
 
   const {
     graph,

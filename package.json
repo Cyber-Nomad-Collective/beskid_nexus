@@ -1,31 +1,18 @@
 {
-  "name": "gitnexus-monorepo",
+  "name": "beskid-nexus",
   "private": true,
+  "description": "Beskid compiler knowledge graph (GitNexus fork)",
   "scripts": {
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "gitnexus:refresh": "gitnexus analyze --embeddings --skills",
-    "gitnexus:full": "gitnexus analyze --force --embeddings --skills"
+    "build:shared": "npm run build --prefix gitnexus-shared",
+    "build:web": "npm run build --prefix gitnexus-web",
+    "build:cli": "npm run build --prefix gitnexus",
+    "build": "npm run build:shared && npm run build:cli && npm run build:web",
+    "dev:web": "npm run dev --prefix gitnexus-web",
+    "format": "prettier --write \"gitnexus-web/src/**/*.{ts,tsx,css}\" \"*.{md,json,yml}\"",
+    "format:check": "prettier --check \"gitnexus-web/src/**/*.{ts,tsx,css}\" \"*.{md,json,yml}\""
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.57.2",
-    "@typescript-eslint/parser": "^8.57.2",
-    "eslint": "^9.39.4",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-unused-imports": "^4.4.1",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.5.0",
     "prettier": "^3.8.0",
     "prettier-plugin-tailwindcss": "^0.7.0"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{js,jsx,mjs,json,css,yml,yaml}": "prettier --write"
   }
 }

@@ -1,8 +1,13 @@
-import { createElement } from 'react';
-import { Search, Settings, HelpCircle } from '@/lib/lucide-icons';
+import { createElement, useEffect, useMemo, useRef, useState } from 'react';
+
+import { Search, HelpCircle } from '@/lib/lucide-icons';
+import type { GraphNode } from 'gitnexus-shared';
+
 import { useAppState } from '../hooks/useAppState';
-import { useMemo, useRef, useState, useEffect } from 'react';
-import { GraphNode } from 'gitnexus-shared';
+
+interface BeskidShellHeaderProps {
+	onFocusNode?: (nodeId: string) => void;
+}
 
 const NODE_TYPE_COLORS: Record<string, string> = {
 	Folder: '#6366f1',
@@ -16,12 +21,8 @@ const NODE_TYPE_COLORS: Record<string, string> = {
 	Type: '#a78bfa',
 };
 
-interface BeskidShellHeaderProps {
-	onFocusNode?: (nodeId: string) => void;
-}
-
 export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
-	const { projectName, graph, setSettingsPanelOpen, setHelpDialogBoxOpen } = useAppState();
+	const { projectName, graph, setHelpDialogBoxOpen } = useAppState();
 	const [searchQuery, setSearchQuery] = useState('');
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -44,16 +45,16 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 	}, [graph, searchQuery]);
 
 	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (searchRef.current && e.target instanceof HTMLElement && !searchRef.current.contains(e.target)) {
+		const onPointerDown = (e: PointerEvent) => {
+			if (searchRef.current && e.target instanceof Node && !searchRef.current.contains(e.target)) {
 				setIsSearchOpen(false);
 			}
 		};
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => document.removeEventListener('mousedown', handleClickOutside);
+		document.addEventListener('pointerdown', onPointerDown);
+		return () => document.removeEventListener('pointerdown', onPointerDown);
 	}, []);
 
-	const handleSelectNode = (node: GraphNode) => {
+	const selectNode = (node: GraphNode) => {
 		onFocusNode?.(node.id);
 		setSearchQuery('');
 		setIsSearchOpen(false);
@@ -103,7 +104,7 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 									setSelectedIndex((i) => Math.max(i - 1, 0));
 								} else if (e.key === 'Enter') {
 									e.preventDefault();
-									handleSelectNode(searchResults[selectedIndex]);
+									selectNode(searchResults[selectedIndex]!);
 								} else if (e.key === 'Escape') {
 									setIsSearchOpen(false);
 								}
@@ -119,7 +120,7 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 										className={`flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent ${
 											idx === selectedIndex ? 'bg-accent' : ''
 										}`}
-										onClick={() => handleSelectNode(node)}
+										onClick={() => selectNode(node)}
 									>
 										<span
 											className="font-medium"
@@ -145,14 +146,7 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 				>
 					<HelpCircle className="h-4 w-4" />
 				</button>
-				<button
-					type="button"
-					className="rounded-md p-2 hover:bg-accent"
-					title="Settings"
-					onClick={() => setSettingsPanelOpen(true)}
-				>
-					<Settings className="h-4 w-4" />
-				</button>
+
 				{createElement('beskid-hub')}
 			</div>
 		</header>

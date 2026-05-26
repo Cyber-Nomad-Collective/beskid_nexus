@@ -17,7 +17,9 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/*"],
+      "#beskid-theme-css": ["./src/styles/beskid-fallback-theme.css"],
+      "#beskid-hub-css": ["./src/stubs/beskid-hub-stub.css"]
     },
     "types": ["vite/client"]
   },
