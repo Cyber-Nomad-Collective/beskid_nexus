@@ -16,18 +16,24 @@ git submodule update --init beskid_nexus compiler
 
 ## Local development
 
-Terminal 1 — index and serve (from `beskid_nexus/gitnexus` after `npm ci && npm run build`):
+Terminal 1 — index and serve:
 
 ```bash
+cd gitnexus
+bun install
+bun run build
+
 export GITNEXUS_HOME="$HOME/.gitnexus-beskid"
-gitnexus analyze ../../compiler --skip-embeddings --skip-agents-md --skip-git
-gitnexus serve --host 127.0.0.1 --port 4747
+node dist/cli/index.js analyze ../../compiler --skip-embeddings --skip-agents-md --skip-git
+node dist/cli/index.js serve --host 127.0.0.1 --port 4747
 ```
 
 Terminal 2 — web (proxies `/api` to the server):
 
 ```bash
-cd gitnexus-web && npm ci && npm run dev
+cd gitnexus-web
+bun install
+bun run dev
 ```
 
 Open the Vite URL; the UI bootstraps the `compiler` repo automatically.

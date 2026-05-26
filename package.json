@@ -3,16 +3,10 @@
   "private": true,
   "description": "Beskid compiler knowledge graph (GitNexus fork)",
   "scripts": {
-    "build:shared": "npm run build --prefix gitnexus-shared",
-    "build:web": "npm run build --prefix gitnexus-web",
-    "build:cli": "npm run build --prefix gitnexus",
-    "build": "npm run build:shared && npm run build:cli && npm run build:web",
-    "dev:web": "npm run dev --prefix gitnexus-web",
-    "format": "prettier --write \"gitnexus-web/src/**/*.{ts,tsx,css}\" \"*.{md,json,yml}\"",
-    "format:check": "prettier --check \"gitnexus-web/src/**/*.{ts,tsx,css}\" \"*.{md,json,yml}\""
-  },
-  "devDependencies": {
-    "prettier": "^3.8.0",
-    "prettier-plugin-tailwindcss": "^0.7.0"
+    "build:shared": "cd gitnexus-shared && bun run build",
+    "build:web": "cd gitnexus-web && bun run build",
+    "build:cli": "cd gitnexus && bun run build",
+    "build": "bun run build:shared && bun run build:cli && bun run build:web",
+    "dev:web": "cd gitnexus-web && bun run dev"
   }
 }
