@@ -4,11 +4,14 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      args:
+        FETCH_COMPILER: "1"
     restart: unless-stopped
     expose:
       - "80"
     environment:
       NEXUS_MCP_AUTH_TOKEN: ${NEXUS_MCP_AUTH_TOKEN:-}
+      PORT: "80"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/api/health || exit 1"]
       interval: 30s

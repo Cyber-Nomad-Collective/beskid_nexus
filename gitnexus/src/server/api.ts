@@ -660,6 +660,22 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
   );
   app.use(express.json({ limit: '10mb' }));
 
+  const apiAuthToken = process.env.NEXUS_MCP_AUTH_TOKEN?.trim();
+  if (apiAuthToken) {
+    app.use((req, res, next) => {
+      if (!req.path.startsWith('/api') || req.path === '/api/health') {
+        next();
+        return;
+      }
+      const header = req.headers.authorization;
+      if (header === `Bearer ${apiAuthToken}`) {
+        next();
+        return;
+      }
+      res.status(401).json({ error: 'Unauthorized' });
+    });
+  }
+
   // Support Chromium Private Network Access (required since Chrome 130+).
   // Without this header, Chrome/Edge/Brave/Arc block public->loopback requests
   // which breaks bridge mode entirely.

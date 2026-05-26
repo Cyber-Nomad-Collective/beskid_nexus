@@ -1,7 +1,6 @@
-# Beskid Nexus — standalone repo build (context = repository root)
+# Beskid Nexus — gitnexus serve (REST API, MCP, and static web UI)
 
-# ── gitnexus CLI (native deps) ─────────────────────────────────────────────
-FROM oven/bun:1.3.14 AS cli-builder
+FROM oven/bun:1.3.14 AS builder
 
 WORKDIR /app
 
@@ -9,14 +8,16 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
 
-COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
-COPY gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
+COPY gitnexus-shared/package.json gitnexus-shared/bun.lock ./gitnexus-shared/
 COPY gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
-COPY gitnexus/package.json ./gitnexus/package.json
-COPY gitnexus/bun.lock ./gitnexus/bun.lock
+COPY gitnexus/package.json gitnexus/bun.lock ./gitnexus/
 COPY gitnexus ./gitnexus
+COPY gitnexus-web/package.json gitnexus-web/bun.lock ./gitnexus-web/
+COPY gitnexus-web ./gitnexus-web
+
+ENV VITE_NEXUS_DEFAULT_REPO=compiler
 RUN cd gitnexus && bun install --frozen-lockfile \
   && bun add --optional @ladybugdb/core-linux-x64@0.16.1 \
   && ln -sf ../core-linux-x64/lbugjs.node node_modules/@ladybugdb/core/lbugjs.node \
@@ -25,68 +26,53 @@ RUN cd gitnexus && bun install --frozen-lockfile \
 RUN ln -sf /app/gitnexus/dist/cli/index.js /usr/local/bin/gitnexus
 
 # ── Pre-index compiler at build time ───────────────────────────────────────
-FROM cli-builder AS indexer
+FROM builder AS indexer
+
+ARG FETCH_COMPILER=0
+ARG COMPILER_GIT_URL=https://github.com/Cyber-Nomad-Collective/beskid_compiler.git
+ARG COMPILER_GIT_REF=main
+
 ENV GITNEXUS_HOME=/data/gitnexus
 RUN mkdir -p /data/gitnexus
 
-COPY compiler /workspace/compiler
-RUN test -f /workspace/compiler/Cargo.toml \
-  || (echo "compiler/ missing — run: git submodule update --init compiler" && exit 1)
+COPY scripts/docker-prepare-compiler.sh /tmp/docker-prepare-compiler.sh
+COPY . /buildctx/
+RUN chmod +x /tmp/docker-prepare-compiler.sh \
+  && FETCH_COMPILER="${FETCH_COMPILER}" \
+     COMPILER_GIT_URL="${COMPILER_GIT_URL}" \
+     COMPILER_GIT_REF="${COMPILER_GIT_REF}" \
+     /tmp/docker-prepare-compiler.sh /buildctx /workspace/compiler
+
+RUN test -f /workspace/compiler/Cargo.toml
 
 RUN gitnexus analyze /workspace/compiler \
   --skip-agents-md \
   --skip-git \
   --skip-skills
 
-# ── Web UI ─────────────────────────────────────────────────────────────────
-FROM oven/bun:1.3.14 AS web-builder
-
-WORKDIR /app
-
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
-  && rm -rf /var/lib/apt/lists/*
-
-COPY gitnexus-shared/package.json ./gitnexus-shared/package.json
-COPY gitnexus-shared/bun.lock ./gitnexus-shared/bun.lock
-COPY gitnexus-shared ./gitnexus-shared
-RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
-
-COPY gitnexus/package.json ./gitnexus/package.json
-COPY gitnexus-web/package.json ./gitnexus-web/package.json
-COPY gitnexus-web/bun.lock ./gitnexus-web/bun.lock
-COPY gitnexus-web ./gitnexus-web
-
-RUN cd gitnexus-web && bun install --frozen-lockfile
-ENV VITE_NEXUS_DEFAULT_REPO=compiler
-RUN cd gitnexus-web && bun run build
-
-# ── Runtime: nginx + gitnexus serve ────────────────────────────────────────
+# ── Runtime: gitnexus serve on PORT (API + web/) ───────────────────────────
 FROM node:22-bookworm-slim@sha256:9f6d5975c7dca860947d3915877f85607946403fc55349f39b4bc3688448bb6e AS runtime
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends nginx wget ca-certificates gettext-base \
-  && rm -f /etc/nginx/sites-enabled/default \
+  && apt-get install -y --no-install-recommends wget ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY --from=indexer /data/gitnexus /data/gitnexus
-COPY --from=cli-builder /app/gitnexus/dist ./gitnexus/dist
-COPY --from=cli-builder /app/gitnexus/node_modules ./gitnexus/node_modules
-COPY --from=cli-builder /app/gitnexus/package.json ./gitnexus/package.json
-COPY --from=cli-builder /app/gitnexus/scripts/install-duckdb-extension.mjs ./gitnexus/scripts/install-duckdb-extension.mjs
-COPY --from=cli-builder /app/gitnexus/vendor ./gitnexus/vendor
-RUN ln -sf /app/gitnexus/dist/cli/index.js /usr/local/bin/gitnexus
+COPY --from=builder /app/gitnexus/dist ./gitnexus/dist
+COPY --from=builder /app/gitnexus/node_modules ./gitnexus/node_modules
+COPY --from=builder /app/gitnexus/package.json ./gitnexus/package.json
+COPY --from=builder /app/gitnexus/scripts/install-duckdb-extension.mjs ./gitnexus/scripts/install-duckdb-extension.mjs
+COPY --from=builder /app/gitnexus/vendor ./gitnexus/vendor
+COPY --from=builder /app/gitnexus/web ./gitnexus/web
 
-COPY --from=web-builder /app/gitnexus-web/dist /usr/share/nginx/html
-COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENV GITNEXUS_HOME=/data/gitnexus \
     NODE_ENV=production \
-    GITNEXUS_SERVE_PORT=4747 \
+    GITNEXUS_SERVE_HOST=0.0.0.0 \
     PORT=80
 
 EXPOSE 80
