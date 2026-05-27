@@ -21,6 +21,7 @@ COPY gitnexus ./gitnexus
 COPY .npmrc ./gitnexus/.npmrc
 COPY gitnexus-web/package.json gitnexus-web/bun.lock ./gitnexus-web/
 COPY gitnexus-web ./gitnexus-web
+COPY .npmrc ./gitnexus-web/.npmrc
 
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
