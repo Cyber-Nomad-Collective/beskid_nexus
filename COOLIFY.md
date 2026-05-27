@@ -10,8 +10,8 @@ Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `ma
 
 ## Build
 
-- **Drone CI** pushes `ghcr.io/cyber-nomad-collective/beskid-nexus:${IMAGE_TAG}` (`.drone.yml`).
-- **`NODE_AUTH_TOKEN`** is a Drone build secret, not Coolify.
+- **GitHub Actions** pushes `ghcr.io/cyber-nomad-collective/beskid-nexus:${IMAGE_TAG}` (`.github/workflows/container-images.yml`).
+- **`NODE_AUTH_TOKEN`** is a GitHub Actions build secret, not Coolify.
 - Image runs **`gitnexus serve` on port 8452** (no build-time index; no nginx).
 - Indexes are created at **runtime** when admins add catalog entries or GitHub push webhooks fire. Graph data persists in the **`nexus-data`** volume (`GITNEXUS_HOME=/data/gitnexus`).
 

@@ -1,8 +1,7 @@
-# GitHub Actions (disabled)
+# GitHub Actions (disabled quality/smoke workflows)
 
-CI moved to **Drone** — see [`.drone.yml`](../.drone.yml) and [beskid_infra](https://github.com/Cyber-Nomad-Collective/beskid_infra).
+GitHub Actions remains active for build/publish and test workflows. This folder stores non-build lanes that are currently disabled.
 
-| Former workflow | Replaced by |
-|-----------------|-------------|
-| `ci.yml` | `.drone.yml` → `nexus-image` (GHCR push on `main`/`staging`) |
-| `docker-smoke.yml` | Local `docker compose` / post-deploy smoke |
+| Disabled workflow | Reason |
+|-------------------|--------|
+| `docker-smoke.yml` | optional smoke lane; currently disabled |
