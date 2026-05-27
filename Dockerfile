@@ -1,6 +1,6 @@
 # Beskid Nexus — gitnexus serve (REST API, MCP, static web UI; runtime indexing)
 
-FROM oven/bun:1.3.14 AS builder
+FROM oven/bun:latest AS builder
 
 WORKDIR /app
 

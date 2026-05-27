@@ -4,12 +4,15 @@ Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `ma
 
 ## Compose entry
 
-Use [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml). **Build context is this repository root**.
+**Coolify (GHCR):** [`docker-compose.coolify.yml`](docker-compose.coolify.yml)
+
+**Local build:** [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml)
 
 ## Build
 
-- Image: [`Dockerfile`](Dockerfile) — `gitnexus` + web UI, **`gitnexus serve` on port 8452** (no build-time index; no nginx).
-- **`NODE_AUTH_TOKEN`** (build secret, required): GitHub token with **`read:packages`** for `@beskid/*` and `@cyber-nomad-collective/*` during `bun install` (see [`.npmrc`](.npmrc)).
+- **Drone CI** pushes `ghcr.io/cyber-nomad-collective/beskid-nexus:${IMAGE_TAG}` (`.drone.yml`).
+- **`NODE_AUTH_TOKEN`** is a Drone build secret, not Coolify.
+- Image runs **`gitnexus serve` on port 8452** (no build-time index; no nginx).
 - Indexes are created at **runtime** when admins add catalog entries or GitHub push webhooks fire. Graph data persists in the **`nexus-data`** volume (`GITNEXUS_HOME=/data/gitnexus`).
 
 ## Runtime secrets
