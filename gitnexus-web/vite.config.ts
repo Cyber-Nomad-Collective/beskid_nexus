@@ -4,31 +4,55 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import { createRequire } from 'module';
 
-import { resolveDocsUi } from './vite.resolve-docs-ui';
+import {
+	assertBeskidPackagesInstalled,
+	resolveBeskidUi,
+	resolveBeskidUiSrc,
+	resolveUiReactSrc,
+} from './vite.resolve-beskid-ui';
 
 const _require = createRequire(import.meta.url);
 const gitnexusPkg = _require('../gitnexus/package.json');
-const docsUi = resolveDocsUi();
+
+assertBeskidPackagesInstalled();
+const beskidUi = resolveBeskidUi();
+const beskidUiSrc = resolveBeskidUiSrc()!;
+const uiReactSrc = resolveUiReactSrc()!;
 
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	define: {
-		__REQUIRED_NODE_VERSION__: JSON.stringify(gitnexusPkg.engines.node.replace(/[>=^~\s]/g, '')),
+		__REQUIRED_NODE_VERSION__: JSON.stringify(
+			gitnexusPkg.engines.node.replace(/[>=^~\s]/g, ''),
+		),
 		'import.meta.env.VITE_NEXUS_DEFAULT_REPO': JSON.stringify(
-			process.env.VITE_NEXUS_DEFAULT_REPO || 'compiler',
+			process.env.VITE_NEXUS_DEFAULT_REPO || '',
+		),
+		'import.meta.env.VITE_NEXUS_HOSTED': JSON.stringify(
+			process.env.VITE_NEXUS_HOSTED || '',
 		),
 	},
 	resolve: {
 		dedupe: ['react', 'react-dom'],
 		alias: {
 			'@': path.resolve(__dirname, './src'),
-			...docsUi.aliases,
+			'@beskid/beskid-ui': beskidUiSrc,
+			'@beskid/material-theme': path.join(beskidUiSrc, 'styles/theme.material.css'),
+			'@beskid/ui-react': uiReactSrc,
+			'@beskid/ui-react/styles/shadcn-entry.css': path.join(
+				uiReactSrc,
+				'styles/shadcn-entry.css',
+			),
+			...beskidUi.aliases,
 			'gitnexus-shared': path.resolve(__dirname, '../gitnexus-shared/src/index.ts'),
 			'@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
 				__dirname,
 				'node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs',
 			),
-			mermaid: path.resolve(__dirname, 'node_modules/mermaid/dist/mermaid.esm.min.mjs'),
+			mermaid: path.resolve(
+				__dirname,
+				'node_modules/mermaid/dist/mermaid.esm.min.mjs',
+			),
 		},
 	},
 	server: {

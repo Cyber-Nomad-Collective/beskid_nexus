@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@beskid/ui-react';
 import { Github, Loader2, Sparkles, Trash2 } from '@/lib/lucide-icons';
 import {
   analyzeCatalogEntry,
@@ -98,14 +99,11 @@ export function AdminCatalogPanel({ onBack }: AdminCatalogPanelProps) {
         <Github className="mx-auto mb-4 h-10 w-10 text-accent" />
         <h2 className="text-lg font-semibold text-text-primary">Admin sign-in required</h2>
         <p className="mt-2 text-sm text-text-secondary">
-          Sign in with a GitHub account that owns or administers the OAuth app.
+          Sign in with a GitHub account listed as a Nexus admin (via Beskid Auth hub).
         </p>
-        <a
-          href={githubLoginUrl()}
-          className="mt-6 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white"
-        >
+        <Button className="mt-6" type="button" onClick={() => { window.location.href = githubLoginUrl(); }}>
           Sign in with GitHub
-        </a>
+        </Button>
         <button
           type="button"
           onClick={onBack}

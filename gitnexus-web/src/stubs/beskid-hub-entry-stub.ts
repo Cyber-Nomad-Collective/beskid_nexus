@@ -1,1 +1,1 @@
-/** No-op when @beskid/docs-ui is not on the Vite path. */
+/** No-op when @beskid/beskid-ui is not on the Vite path. */

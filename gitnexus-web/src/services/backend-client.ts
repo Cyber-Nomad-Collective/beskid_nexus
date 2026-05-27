@@ -203,7 +203,24 @@ export function streamSSE<T = unknown>(url: string, handlers: SSEHandlers<T>): A
 
 // ── Configuration ──────────────────────────────────────────────────────────
 
-let _backendUrl = 'http://localhost:4747';
+function resolveDefaultBackendUrl(): string {
+	if (typeof window !== 'undefined' && window.location?.origin) {
+		return window.location.origin;
+	}
+	return import.meta.env.DEV ? 'http://127.0.0.1:5173' : 'http://127.0.0.1:8452';
+}
+
+let _backendUrl = resolveDefaultBackendUrl();
+
+/** Pin API calls to the page origin (hosted `gitnexus serve` or Vite `/api` proxy). */
+export const ensureBackendUrlFromPage = (): void => {
+	if (typeof window === 'undefined' || !window.location?.origin) return;
+	try {
+		setBackendUrl(window.location.origin);
+	} catch {
+	 // ignore invalid origins in exotic environments
+	}
+};
 
 /**
  * Validate that a backend URL is a safe http:// or https:// origin before
@@ -492,9 +509,10 @@ export const deleteRepo = async (repoName: string): Promise<void> => {
 
 /** Probe the backend. Returns true if reachable. */
 export const probeBackend = async (): Promise<boolean> => {
+  ensureBackendUrlFromPage();
   try {
-    const response = await fetchWithTimeout(`${_backendUrl}/api/repos`, {}, PROBE_TIMEOUT_MS);
-    return response.status === 200;
+    const response = await fetchWithTimeout(`${_backendUrl}/api/health`, {}, PROBE_TIMEOUT_MS);
+    return response.ok;
   } catch {
     return false;
   }

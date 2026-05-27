@@ -24,23 +24,13 @@ export const saveNexusConfigFile = async (config: NexusConfigFile): Promise<void
   });
 };
 
-export interface ResolvedOAuthConfig {
-  clientId: string;
-  clientSecret: string;
-  callbackUrl: string;
+export interface ResolvedNexusAdminConfig {
   adminLogins: string[];
   ownerLogin: string | null;
-  source: 'env' | 'file' | 'none';
 }
 
-export const resolveOAuthConfig = async (): Promise<ResolvedOAuthConfig> => {
+export const resolveNexusAdminConfig = async (): Promise<ResolvedNexusAdminConfig> => {
   const file = await loadNexusConfigFile();
-
-  const clientId = process.env.GITHUB_CLIENT_ID?.trim() || file?.githubClientId || '';
-  const clientSecret =
-    process.env.GITHUB_CLIENT_SECRET?.trim() || file?.githubClientSecret || '';
-  const callbackUrl =
-    process.env.GITHUB_OAUTH_CALLBACK_URL?.trim() || file?.githubOAuthCallbackUrl || '';
 
   const envAdmins = (process.env.NEXUS_ADMIN_GITHUB_LOGINS || '')
     .split(',')
@@ -52,21 +42,36 @@ export const resolveOAuthConfig = async (): Promise<ResolvedOAuthConfig> => {
 
   const ownerLogin = file?.ownerLogin?.trim().toLowerCase() || null;
 
-  let source: ResolvedOAuthConfig['source'] = 'none';
-  if (clientId && clientSecret && callbackUrl) {
-    source = process.env.GITHUB_CLIENT_ID?.trim() ? 'env' : 'file';
-  }
-
-  return { clientId, clientSecret, callbackUrl, adminLogins, ownerLogin, source };
+  return { adminLogins, ownerLogin };
 };
 
+/** @deprecated use resolveNexusAdminConfig */
+export const resolveOAuthConfig = resolveNexusAdminConfig;
+
+export const isAuthHubConfigured = async (): Promise<boolean> => {
+  const file = await loadNexusConfigFile();
+  const hubUrl =
+    process.env.AUTH_HUB_PUBLIC_URL?.trim() || file?.authHubUrl?.trim() || '';
+  const serviceToken =
+    file?.authHubServiceToken?.trim() ||
+    file?.authHubHandoffSecret?.trim() ||
+    process.env.AUTH_HUB_SECRET?.trim() ||
+    '';
+  return !!(hubUrl && serviceToken.length >= 32);
+};
+
+export const isAdminRosterConfigured = async (): Promise<boolean> => {
+  const cfg = await resolveNexusAdminConfig();
+  return cfg.adminLogins.length > 0 || !!cfg.ownerLogin;
+};
+
+/** Nexus is ready for sign-in when the auth hub is paired and at least one admin login is set. */
 export const isOAuthConfigured = async (): Promise<boolean> => {
-  const cfg = await resolveOAuthConfig();
-  return !!(cfg.clientId && cfg.clientSecret && cfg.callbackUrl);
+  return (await isAuthHubConfigured()) && (await isAdminRosterConfigured());
 };
 
 export const isNexusAdmin = async (login: string): Promise<boolean> => {
-  const cfg = await resolveOAuthConfig();
+  const cfg = await resolveNexusAdminConfig();
   const normalized = login.trim().toLowerCase();
   if (cfg.ownerLogin && cfg.ownerLogin === normalized) return true;
   return cfg.adminLogins.includes(normalized);

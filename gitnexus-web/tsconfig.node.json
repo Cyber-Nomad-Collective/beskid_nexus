@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "vite.resolve-docs-ui.ts"]
+  "include": ["vite.config.ts", "vite.resolve-beskid-ui.ts"]
 }

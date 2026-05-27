@@ -1,5 +1,6 @@
-import { createElement, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { BeskidHub } from '@beskid/beskid-ui/react/BeskidHub';
 import { Search, HelpCircle } from '@/lib/lucide-icons';
 import type { GraphNode } from 'gitnexus-shared';
 
@@ -147,7 +148,7 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 					<HelpCircle className="h-4 w-4" />
 				</button>
 
-				{createElement('beskid-hub')}
+				<BeskidHub />
 			</div>
 		</header>
 	);

@@ -12,12 +12,19 @@ COPY gitnexus-shared/package.json gitnexus-shared/bun.lock ./gitnexus-shared/
 COPY gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
+# Satisfy file: deps in gitnexus / gitnexus-web package.json (sibling checkout layout).
+ARG BESKID_WEB_COMMON_REF=main
+RUN git clone --depth 1 --branch "${BESKID_WEB_COMMON_REF}" \
+    https://github.com/Cyber-Nomad-Collective/beskid_web_common.git \
+    beskid_web_common
+
 COPY gitnexus/package.json gitnexus/bun.lock ./gitnexus/
 COPY gitnexus ./gitnexus
 COPY gitnexus-web/package.json gitnexus-web/bun.lock ./gitnexus-web/
 COPY gitnexus-web ./gitnexus-web
 
-ENV VITE_NEXUS_DEFAULT_REPO=
+ENV VITE_NEXUS_DEFAULT_REPO= \
+    VITE_NEXUS_HOSTED=1
 RUN cd gitnexus && bun install --frozen-lockfile \
   && bun add --optional @ladybugdb/core-linux-x64@0.16.1 \
   && ln -sf ../core-linux-x64/lbugjs.node node_modules/@ladybugdb/core/lbugjs.node \

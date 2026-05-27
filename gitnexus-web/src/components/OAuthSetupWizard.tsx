@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { Sparkles } from '@/lib/lucide-icons';
-import { submitOAuthSetup } from '../services/nexus-api';
+import { submitAuthHubSetup } from '../services/nexus-api';
 
 interface OAuthSetupWizardProps {
   onComplete: () => void;
 }
 
 export function OAuthSetupWizard({ onComplete }: OAuthSetupWizardProps) {
-  const [clientId, setClientId] = useState('');
-  const [clientSecret, setClientSecret] = useState('');
-  const [callbackUrl, setCallbackUrl] = useState(
-    () => `${window.location.origin}/api/auth/callback`,
-  );
+  const [authHubPublicUrl, setAuthHubPublicUrl] = useState('');
+  const [pairingCode, setPairingCode] = useState('');
+  const [nexusPublicUrl, setNexusPublicUrl] = useState(() => window.location.origin);
   const [ownerLogin, setOwnerLogin] = useState('');
   const [adminLogins, setAdminLogins] = useState('');
   const [setupToken, setSetupToken] = useState('');
@@ -23,10 +21,10 @@ export function OAuthSetupWizard({ onComplete }: OAuthSetupWizardProps) {
     setError(null);
     setSaving(true);
     try {
-      await submitOAuthSetup({
-        githubClientId: clientId,
-        githubClientSecret: clientSecret,
-        githubOAuthCallbackUrl: callbackUrl,
+      await submitAuthHubSetup({
+        authHubPublicUrl: authHubPublicUrl || undefined,
+        pairingCode,
+        nexusPublicUrl,
         ownerLogin,
         adminLogins: adminLogins || ownerLogin,
         setupToken: setupToken || undefined,
@@ -44,44 +42,53 @@ export function OAuthSetupWizard({ onComplete }: OAuthSetupWizardProps) {
       <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-accent/6 blur-3xl" />
       <div className="relative mb-6 text-center">
         <Sparkles className="mx-auto mb-3 h-8 w-8 text-accent" />
-        <h1 className="text-lg font-semibold text-text-primary">Configure GitHub OAuth</h1>
+        <h1 className="text-lg font-semibold text-text-primary">Connect Beskid Auth</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Create a GitHub OAuth App and enter its credentials so admins can sign in and manage
-          repository links. The server must also have <code className="text-accent">SESSION_SECRET</code>{' '}
-          set in the environment (32+ characters).
+          Nexus signs in through the shared{' '}
+          <a
+            className="text-accent underline"
+            href="https://github.com/Cyber-Nomad-Collective/beskid/tree/main/site/auth"
+            rel="noreferrer"
+            target="_blank"
+          >
+            auth hub
+          </a>
+          . On the hub, open <strong>Admin → Pairing</strong>, create a code for app{' '}
+          <code className="text-accent">nexus</code>, then enter it below. The server also needs{' '}
+          <code className="text-accent">SESSION_SECRET</code> (32+ characters) in the environment.
         </p>
       </div>
       <form onSubmit={handleSubmit} className="relative space-y-4">
         <label className="block text-sm">
-          <span className="text-text-muted">Client ID</span>
+          <span className="text-text-muted">Auth hub URL</span>
           <input
             required
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
+            value={authHubPublicUrl}
+            onChange={(e) => setAuthHubPublicUrl(e.target.value)}
+            placeholder="https://auth.beskid-lang.org"
             className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Client secret</span>
+          <span className="text-text-muted">Pairing code (from auth hub admin)</span>
           <input
             required
-            type="password"
-            value={clientSecret}
-            onChange={(e) => setClientSecret(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+            value={pairingCode}
+            onChange={(e) => setPairingCode(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 font-mono text-sm"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Callback URL</span>
+          <span className="text-text-muted">This Nexus public URL</span>
           <input
             required
-            value={callbackUrl}
-            onChange={(e) => setCallbackUrl(e.target.value)}
+            value={nexusPublicUrl}
+            onChange={(e) => setNexusPublicUrl(e.target.value)}
             className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 font-mono text-xs"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Your GitHub login (app owner)</span>
+          <span className="text-text-muted">Your GitHub login (first admin)</span>
           <input
             required
             value={ownerLogin}
@@ -113,7 +120,7 @@ export function OAuthSetupWizard({ onComplete }: OAuthSetupWizardProps) {
           disabled={saving}
           className="w-full cursor-pointer rounded-lg bg-accent py-2.5 text-sm font-medium text-white disabled:opacity-50"
         >
-          {saving ? 'Saving…' : 'Save configuration'}
+          {saving ? 'Saving…' : 'Save and pair with auth hub'}
         </button>
       </form>
     </div>

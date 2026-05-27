@@ -1,6 +1,6 @@
 #!/bin/sh
 # Resolve compiler sources for the image indexer stage.
-# - Superrepo / local checkout: compiler/ in build context
+# - Local checkout with compiler/ in build context
 # - Standalone repo: FETCH_COMPILER=1 clones beskid_compiler
 set -eu
 
@@ -24,6 +24,5 @@ if [ "${FETCH_COMPILER}" = "1" ]; then
 fi
 
 echo "compiler/ not found in build context and FETCH_COMPILER is not 1." >&2
-echo "  Superrepo: docker compose -f docker-compose.superrepo.yml build (context = repo root)" >&2
-echo "  Standalone: docker compose build --build-arg FETCH_COMPILER=1" >&2
+echo "  docker compose build --build-arg FETCH_COMPILER=1" >&2
 exit 1

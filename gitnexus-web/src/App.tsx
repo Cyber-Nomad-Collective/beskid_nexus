@@ -9,10 +9,12 @@ import { FileTreePanel } from './components/FileTreePanel';
 import { GraphCanvas, type GraphCanvasHandle } from './components/GraphCanvas';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { OAuthSetupWizard } from './components/OAuthSetupWizard';
+import { NexusServiceUnavailable } from './components/NexusServiceUnavailable';
 import { OnboardingGuide } from './components/OnboardingGuide';
 import { RightPanel } from './components/RightPanel';
 import { StatusBar } from './components/StatusBar';
 import { BESKID_NEXUS } from './config/beskid-nexus';
+import { showLocalDevOnboarding } from './config/nexus-mode';
 import { ERROR_RESET_DELAY_MS } from './config/ui-constants';
 import { createKnowledgeGraph } from './core/graph/graph';
 import { useAppState } from './hooks/useAppState';
@@ -24,7 +26,7 @@ import {
 	normalizeServerUrl,
 	type ConnectResult,
 } from './services/backend-client';
-import { probeBackend } from './services/backend-client';
+import { ensureBackendUrlFromPage, probeBackend } from './services/backend-client';
 import {
 	fetchAuthMe,
 	fetchPublicCatalog,
@@ -163,6 +165,7 @@ const AppContent = () => {
 	}, []);
 
 	const runBoot = useCallback(async () => {
+		ensureBackendUrlFromPage();
 		const params = new URLSearchParams(window.location.search);
 		const projectParam = params.get('project') || BESKID_NEXUS.defaultRepo || '';
 
@@ -174,7 +177,10 @@ const AppContent = () => {
 
 		const setup = await fetchSetupStatus().catch(() => ({
 			oauthConfigured: true,
-			oauthSource: 'none' as const,
+			authHubConfigured: true,
+			authHubUrl: null,
+			adminConfigured: true,
+			oauthSource: 'hub' as const,
 			hasSessionSecret: false,
 			hasSetupToken: false,
 		}));
@@ -258,7 +264,16 @@ const AppContent = () => {
 	if (shellPhase === 'server-down') {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-void p-4">
-				<OnboardingGuide />
+				{showLocalDevOnboarding() ? (
+					<OnboardingGuide />
+				) : (
+					<NexusServiceUnavailable
+						onRecovered={() => {
+							bootstrapped.current = false;
+							void runBoot();
+						}}
+					/>
+				)}
 			</div>
 		);
 	}

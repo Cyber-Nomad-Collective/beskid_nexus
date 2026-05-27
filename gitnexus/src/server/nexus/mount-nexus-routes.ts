@@ -1,12 +1,14 @@
-import { randomUUID, createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import express, { type Express, type Request, type Response, type NextFunction } from 'express';
 import type { LocalBackend } from '../../mcp/local/local-backend.js';
 import type { JobManager } from '../analyze-job.js';
 import { createRouteLimiter } from '../validation.js';
 import {
+  isAuthHubConfigured,
+  isAdminRosterConfigured,
   isOAuthConfigured,
   isNexusAdmin,
-  resolveOAuthConfig,
+  loadNexusConfigFile,
   saveNexusConfigFile,
 } from './nexus-config.js';
 import {
@@ -21,19 +23,12 @@ import {
 } from './catalog-store.js';
 import {
   appendSetCookie,
-  clearOAuthStateCookieHeader,
   clearSessionCookieHeader,
   getSessionFromRequest,
-  oauthStateCookieHeader,
-  readOAuthStateCookie,
   sealSession,
   sessionCookieHeader,
 } from './session.js';
-import {
-  buildGitHubAuthorizeUrl,
-  exchangeGitHubCode,
-  fetchGitHubUser,
-} from './github-oauth.js';
+import { authHubLoginUrl, verifyHubHandoff } from './hub-handoff.js';
 import { startAnalyzeJob, type AnalyzeRunnerDeps } from './analyze-runner.js';
 import { getRemoteHead } from './remote-git.js';
 import { logger } from '../../core/logger.js';
@@ -84,10 +79,16 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
 
   app.get('/api/admin/setup/status', async (_req, res) => {
     const configured = await isOAuthConfigured();
-    const oauth = await resolveOAuthConfig();
+    const hubConfigured = await isAuthHubConfigured();
+    const file = await loadNexusConfigFile();
+    const hubUrl =
+      process.env.AUTH_HUB_PUBLIC_URL?.trim() || file?.authHubUrl?.trim() || null;
     res.json({
       oauthConfigured: configured,
-      oauthSource: oauth.source,
+      authHubConfigured: hubConfigured,
+      authHubUrl: hubUrl,
+      adminConfigured: await isAdminRosterConfigured(),
+      oauthSource: hubConfigured ? 'hub' : 'none',
       hasSessionSecret: !!(process.env.SESSION_SECRET?.trim() && process.env.SESSION_SECRET.length >= 32),
       hasSetupToken: !!process.env.NEXUS_SETUP_TOKEN?.trim(),
     });
@@ -98,7 +99,7 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
       const already = await isOAuthConfigured();
       const setupTokenRequired = !!process.env.NEXUS_SETUP_TOKEN?.trim();
       if (already && !verifySetupToken(req)) {
-        res.status(403).json({ error: 'OAuth already configured' });
+        res.status(403).json({ error: 'Auth hub already configured' });
         return;
       }
       if (!already && setupTokenRequired && !verifySetupToken(req)) {
@@ -107,20 +108,29 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
       }
 
       const {
-        githubClientId,
-        githubClientSecret,
-        githubOAuthCallbackUrl,
+        authHubPublicUrl,
+        pairingCode,
+        nexusPublicUrl,
         ownerLogin,
         adminLogins,
       } = req.body ?? {};
 
-      if (
-        typeof githubClientId !== 'string' ||
-        typeof githubClientSecret !== 'string' ||
-        typeof githubOAuthCallbackUrl !== 'string' ||
-        typeof ownerLogin !== 'string'
-      ) {
-        res.status(400).json({ error: 'Missing OAuth app fields' });
+      if (typeof ownerLogin !== 'string' || !ownerLogin.trim()) {
+        res.status(400).json({ error: 'ownerLogin is required' });
+        return;
+      }
+
+      const hubBase = (
+        (typeof authHubPublicUrl === 'string' ? authHubPublicUrl.trim() : '') ||
+        process.env.AUTH_HUB_PUBLIC_URL?.trim() ||
+        (await loadNexusConfigFile())?.authHubUrl?.trim() ||
+        ''
+      ).replace(/\/$/, '');
+
+      if (!hubBase) {
+        res.status(400).json({
+          error: 'authHubPublicUrl or AUTH_HUB_PUBLIC_URL is required',
+        });
         return;
       }
 
@@ -134,12 +144,55 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
       const owner = ownerLogin.trim().toLowerCase();
       if (!admins.includes(owner)) admins.push(owner);
 
+      const existingConfig = await loadNexusConfigFile();
+      let serviceToken =
+        existingConfig?.authHubServiceToken?.trim() ||
+        existingConfig?.authHubHandoffSecret?.trim() ||
+        '';
+
+      if (
+        typeof pairingCode === 'string' &&
+        pairingCode.trim() &&
+        typeof nexusPublicUrl === 'string' &&
+        nexusPublicUrl.trim()
+      ) {
+        const approveRes = await fetch(
+          `${hubBase}/api/v1/pairing/approve`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: pairingCode.trim(),
+              appId: 'nexus',
+              publicUrl: nexusPublicUrl.trim(),
+              approverLogin: owner,
+            }),
+          },
+        );
+        if (!approveRes.ok) {
+          const errBody = await approveRes.text();
+          res.status(400).json({
+            error: errBody || 'Auth hub pairing failed',
+          });
+          return;
+        }
+        const approved = (await approveRes.json()) as { serviceToken?: string };
+        serviceToken = approved.serviceToken?.trim() || '';
+      }
+
+      if (!serviceToken || serviceToken.length < 32) {
+        res.status(400).json({
+          error:
+            'Provide a pairing code from the auth hub admin, or pair later while signed in as admin',
+        });
+        return;
+      }
+
       await saveNexusConfigFile({
-        githubClientId: githubClientId.trim(),
-        githubClientSecret: githubClientSecret.trim(),
-        githubOAuthCallbackUrl: githubOAuthCallbackUrl.trim(),
         ownerLogin: owner,
         adminLogins: admins,
+        authHubUrl: hubBase,
+        authHubServiceToken: serviceToken,
       });
 
       res.json({ ok: true });
@@ -150,42 +203,73 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
-  app.get('/api/auth/github', async (_req, res) => {
-    const cfg = await resolveOAuthConfig();
-    if (!cfg.clientId || !cfg.callbackUrl) {
-      res.status(503).json({ error: 'GitHub OAuth is not configured' });
-      return;
+  app.post('/api/admin/auth/pair', requireAdmin, createRouteLimiter({ limit: 10 }), async (req, res) => {
+    try {
+      const { code, publicUrl } = req.body ?? {};
+      if (typeof code !== 'string' || typeof publicUrl !== 'string') {
+        res.status(400).json({ error: 'code and publicUrl are required' });
+        return;
+      }
+      const session = (req as any).nexusSession as { login: string };
+      const hubBase =
+        process.env.AUTH_HUB_PUBLIC_URL?.trim() ||
+        (await loadNexusConfigFile())?.authHubUrl?.trim();
+      if (!hubBase) {
+        res.status(503).json({ error: 'AUTH_HUB_PUBLIC_URL is not configured' });
+        return;
+      }
+      const { BeskidAuthClient } = await import('@beskid/auth-client');
+      const client = new BeskidAuthClient({ baseUrl: hubBase });
+      const result = await client.approvePairing({
+        code: code.trim(),
+        appId: 'nexus',
+        publicUrl: publicUrl.trim(),
+        approverLogin: session.login,
+      });
+      const existing = (await loadNexusConfigFile()) ?? {
+        ownerLogin: session.login,
+        adminLogins: [session.login],
+      };
+      await saveNexusConfigFile({
+        ...existing,
+        authHubUrl: hubBase.replace(/\/$/, ''),
+        authHubServiceToken: result.serviceToken,
+      });
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Pairing failed' });
     }
-    const state = randomUUID();
-    appendSetCookie(res, oauthStateCookieHeader(state));
-    res.redirect(buildGitHubAuthorizeUrl(cfg, state));
   });
 
-  app.get('/api/auth/callback', async (req, res) => {
-    const code = typeof req.query.code === 'string' ? req.query.code : '';
-    const state = typeof req.query.state === 'string' ? req.query.state : '';
-    const stored = readOAuthStateCookie(req);
-    appendSetCookie(res, clearOAuthStateCookieHeader());
-
-    if (!code || !state || !stored || state !== stored) {
-      res.redirect('/?error=oauth_state');
+  app.get('/api/auth/github', async (_req, res) => {
+    const hubUrl = await authHubLoginUrl();
+    if (hubUrl) {
+      res.redirect(hubUrl);
       return;
     }
+    res.status(503).json({
+      error:
+        'Beskid Auth hub is not configured. Set AUTH_HUB_PUBLIC_URL and complete setup pairing.',
+    });
+  });
 
+  app.get('/api/auth/hub-finish', async (req, res) => {
+    const handoff = typeof req.query.handoff === 'string' ? req.query.handoff : '';
+    if (!handoff) {
+      res.redirect('/?error=oauth_failed');
+      return;
+    }
+    const payload = await verifyHubHandoff(handoff);
+    if (!payload) {
+      res.redirect('/?error=oauth_failed');
+      return;
+    }
     try {
-      const cfg = await resolveOAuthConfig();
-      const accessToken = await exchangeGitHubCode(cfg, code);
-      const user = await fetchGitHubUser(accessToken);
-      const token = await sealSession({
-        accessToken,
-        login: user.login,
-        avatarUrl: user.avatar_url,
-        name: user.name,
-      });
+      const token = await sealSession(payload);
       appendSetCookie(res, sessionCookieHeader(token));
       res.redirect('/?auth=ok');
     } catch (err) {
-      logger.error({ err }, 'OAuth callback failed');
+      logger.error({ err }, 'Auth hub handoff failed');
       appendSetCookie(res, clearSessionCookieHeader());
       res.redirect('/?error=oauth_failed');
     }

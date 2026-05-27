@@ -16,17 +16,18 @@ git clone https://github.com/Cyber-Nomad-Collective/beskid_nexus.git
 
 ## Local development
 
-Copy [`.env.example`](.env.example) to `.env` and set at least `SESSION_SECRET` (32+ chars) for OAuth.
+Copy [`.env.example`](.env.example) to `.env` and set `SESSION_SECRET` (32+ chars) and `AUTH_HUB_PUBLIC_URL`.
 
 **Terminal A — API server (port 8452):**
 
 ```bash
-cd gitnexus-shared && bun install && bun run build
-cd ../gitnexus && bun install && bun run build
+cd gitnexus-shared && bun install --frozen-lockfile && bun run build
+cd ../gitnexus && bun install --frozen-lockfile && bun run build
 
 export GITNEXUS_HOME="$PWD/.data/gitnexus"
 export PORT=8452
 export SESSION_SECRET="dev-secret-at-least-32-characters-long"
+export AUTH_HUB_PUBLIC_URL="http://localhost:8090"
 node dist/cli/index.js serve --host 0.0.0.0 --port "$PORT"
 ```
 
@@ -36,12 +37,12 @@ node dist/cli/index.js serve --host 0.0.0.0 --port "$PORT"
 cd gitnexus-web && bun install && bun run dev
 ```
 
-Open the Vite URL (typically `http://localhost:5173`). On first visit, complete the GitHub OAuth setup wizard, sign in as an admin, and add repository links under **Manage catalog**. Each entry is cloned and indexed at runtime; data persists under `GITNEXUS_HOME`.
+Open the Vite URL (typically `http://localhost:5173`). On first visit, complete **Connect Beskid Auth** (pair with the hub using a code from hub **Admin → Pairing**), sign in as an admin, and add repository links under **Manage catalog**.
 
 ## Container (Podman or Docker)
 
 ```bash
-cp .env.example .env   # set SESSION_SECRET, OAuth, NEXUS_MCP_AUTH_TOKEN, etc.
+cp .env.example .env   # SESSION_SECRET, AUTH_HUB_PUBLIC_URL, NEXUS_MCP_AUTH_TOKEN, etc.
 podman compose up --build
 ```
 
@@ -49,25 +50,8 @@ Data persists in the `nexus-data` volume (`GITNEXUS_HOME=/data/gitnexus`). First
 
 ## MCP client
 
-```json
-{
-  "mcpServers": {
-    "beskid-nexus": {
-      "url": "https://<nexus-host>:8452/api/mcp",
-      "headers": {
-        "Authorization": "Bearer <NEXUS_MCP_AUTH_TOKEN>"
-      }
-    }
-  }
-}
-```
+See [COOLIFY.md](COOLIFY.md) for `NEXUS_MCP_AUTH_TOKEN` and endpoint URL.
 
-## Layout
+## Auth
 
-| Path | Role |
-|------|------|
-| `gitnexus/` | CLI — `analyze`, `serve`, MCP; ships built UI under `web/` |
-| `gitnexus-shared/` | Shared types |
-| `gitnexus-web/` | Beskid Nexus UI (catalog, admin, graph) |
-| `gitnexus/src/server/nexus/` | Catalog, OAuth, webhooks |
-| `Dockerfile` | Runtime-only image (`gitnexus serve` on 8452) |
+GitHub OAuth runs only on the shared [auth hub](../site/auth/README.md). Nexus stores a paired **service token** and signs users in via `/api/auth/hub-finish`.

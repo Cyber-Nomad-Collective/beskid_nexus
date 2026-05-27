@@ -4,7 +4,10 @@
 
 export interface SetupStatus {
   oauthConfigured: boolean;
-  oauthSource: 'env' | 'file' | 'none';
+  authHubConfigured: boolean;
+  authHubUrl: string | null;
+  adminConfigured: boolean;
+  oauthSource: 'hub' | 'env' | 'file' | 'none';
   hasSessionSecret: boolean;
   hasSetupToken: boolean;
 }
@@ -61,10 +64,10 @@ async function nexusFetch<T>(path: string, init?: RequestInit): Promise<T> {
 export const fetchSetupStatus = (): Promise<SetupStatus> =>
   nexusFetch<SetupStatus>('/api/admin/setup/status');
 
-export const submitOAuthSetup = (body: {
-  githubClientId: string;
-  githubClientSecret: string;
-  githubOAuthCallbackUrl: string;
+export const submitAuthHubSetup = (body: {
+  authHubPublicUrl?: string;
+  pairingCode: string;
+  nexusPublicUrl: string;
   ownerLogin: string;
   adminLogins: string;
   setupToken?: string;

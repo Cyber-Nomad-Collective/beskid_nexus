@@ -49,10 +49,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "postinstall": "node scripts/build-tree-sitter-dart.cjs && node scripts/build-tree-sitter-proto.cjs",
-    "prepare": "node scripts/build.js",
     "prepack": "node scripts/build.js"
   },
   "dependencies": {
+    "@beskid/auth-client": "file:../../beskid_web_common/packages/beskid-auth-client",
     "@huggingface/transformers": "^4.1.0",
     "@ladybugdb/core": "^0.16.1",
     "@modelcontextprotocol/sdk": "^1.0.0",

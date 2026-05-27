@@ -18,18 +18,20 @@ export interface NexusCatalogFile {
 }
 
 export interface NexusConfigFile {
-  githubClientId: string;
-  githubClientSecret: string;
-  githubOAuthCallbackUrl: string;
   ownerLogin: string;
   adminLogins: string[];
+  authHubUrl?: string;
+  /** @deprecated use authHubServiceToken */
+  authHubHandoffSecret?: string;
+  authHubServiceToken?: string;
 }
 
 export interface NexusSessionPayload {
-  accessToken: string;
   login: string;
   avatarUrl: string;
   name: string | null;
+  hubUserToken: string;
+  hubSessionId: string;
 }
 
 export interface PublicCatalogEntry {

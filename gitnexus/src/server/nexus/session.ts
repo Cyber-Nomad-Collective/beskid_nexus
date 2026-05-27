@@ -3,7 +3,6 @@ import type { Request, Response } from 'express';
 import type { NexusSessionPayload } from './types.js';
 
 export const SESSION_COOKIE_NAME = 'beskid_nexus_session';
-export const OAUTH_STATE_COOKIE = 'beskid_nexus_oauth_state';
 
 function sessionSecret(): Uint8Array {
   const secret = process.env.SESSION_SECRET?.trim();
@@ -24,14 +23,21 @@ export const sealSession = async (payload: NexusSessionPayload): Promise<string>
 export const unsealSession = async (token: string): Promise<NexusSessionPayload | null> => {
   try {
     const { payload } = await jwtVerify(token, sessionSecret());
-    if (typeof payload.accessToken !== 'string' || typeof payload.login !== 'string') {
+    if (typeof payload.login !== 'string') {
+      return null;
+    }
+    if (
+      typeof payload.hubUserToken !== 'string' ||
+      typeof payload.hubSessionId !== 'string'
+    ) {
       return null;
     }
     return {
-      accessToken: payload.accessToken,
       login: payload.login,
       avatarUrl: typeof payload.avatarUrl === 'string' ? payload.avatarUrl : '',
       name: typeof payload.name === 'string' ? payload.name : null,
+      hubUserToken: payload.hubUserToken,
+      hubSessionId: payload.hubSessionId,
     };
   } catch {
     return null;
@@ -50,9 +56,7 @@ export const readSessionCookie = (req: Request): string | null => {
   return null;
 };
 
-export const getSessionFromRequest = async (
-  req: Request,
-): Promise<NexusSessionPayload | null> => {
+export const getSessionFromRequest = async (req: Request): Promise<NexusSessionPayload | null> => {
   const token = readSessionCookie(req);
   if (!token) return null;
   return unsealSession(token);
@@ -67,33 +71,12 @@ export const clearSessionCookieHeader = (): string => {
   return `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
 };
 
-export const oauthStateCookieHeader = (state: string): string => {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  return `${OAUTH_STATE_COOKIE}=${encodeURIComponent(state)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600${secure}`;
-};
-
-export const readOAuthStateCookie = (req: Request): string | null => {
-  const header = req.headers.cookie;
-  if (!header) return null;
-  for (const part of header.split(';')) {
-    const [name, ...rest] = part.trim().split('=');
-    if (name === OAUTH_STATE_COOKIE) {
-      return decodeURIComponent(rest.join('='));
-    }
-  }
-  return null;
-};
-
-export const clearOAuthStateCookieHeader = (): string => {
-  return `${OAUTH_STATE_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
-};
-
-export const appendSetCookie = (res: Response, value: string): void => {
+export const appendSetCookie = (res: Response, cookie: string): void => {
   const existing = res.getHeader('Set-Cookie');
   if (!existing) {
-    res.setHeader('Set-Cookie', value);
+    res.setHeader('Set-Cookie', cookie);
     return;
   }
   const list = Array.isArray(existing) ? existing : [String(existing)];
-  res.setHeader('Set-Cookie', [...list, value]);
+  res.setHeader('Set-Cookie', [...list, cookie]);
 };

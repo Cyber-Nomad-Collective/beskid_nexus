@@ -3,14 +3,17 @@
  * Build script that compiles gitnexus and inlines gitnexus-shared into the dist.
  *
  * Steps:
- *  1. Build gitnexus-shared (tsc)
- *  2. Build gitnexus (tsc)
+ *  0. Ensure @beskid/auth-client dist exists (node_modules)
+ *  1. Build gitnexus-shared (tsc via bun)
+ *  2. Build gitnexus (tsc via bun)
  *  3. Copy gitnexus-shared/dist → dist/_shared
  *  4. Rewrite bare 'gitnexus-shared' specifiers → relative paths
+ *  5. Build gitnexus-web (bun) and copy → web/
  */
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,18 +21,49 @@ const ROOT = path.resolve(__dirname, '..');
 const SHARED_ROOT = path.resolve(ROOT, '..', 'gitnexus-shared');
 const DIST = path.join(ROOT, 'dist');
 const SHARED_DEST = path.join(DIST, '_shared');
+const require = createRequire(path.join(ROOT, 'package.json'));
+
+const run = (cmd, cwd) => {
+  execSync(cmd, { cwd, stdio: 'inherit', timeout: 120_000, shell: true });
+};
+
+function resolveAuthClientRoot() {
+  const candidate = path.join(ROOT, 'node_modules', '@beskid', 'auth-client');
+  if (fs.existsSync(path.join(candidate, 'package.json'))) {
+    return candidate;
+  }
+  try {
+    const entry = require.resolve('@beskid/auth-client');
+    let dir = path.dirname(entry);
+    while (dir !== path.dirname(dir)) {
+      if (fs.existsSync(path.join(dir, 'package.json'))) {
+        return dir;
+      }
+      dir = path.dirname(dir);
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+// ── 0. Build @beskid/auth-client when installed from source without dist ──
+const authClientRoot = resolveAuthClientRoot();
+if (
+  authClientRoot &&
+  !fs.existsSync(path.join(authClientRoot, 'dist/index.js'))
+) {
+  console.log('[build] compiling @beskid/auth-client…');
+  run('bun run build', authClientRoot);
+}
 
 // ── 1. Build gitnexus-shared ───────────────────────────────────────
 console.log('[build] compiling gitnexus-shared…');
-const tscCmd =
-  process.platform === 'win32'
-    ? path.join('node_modules', '.bin', 'tsc.cmd')
-    : path.join('node_modules', '.bin', 'tsc');
-execSync(tscCmd, { cwd: SHARED_ROOT, stdio: 'inherit', timeout: 120_000 });
+run('bun run build', SHARED_ROOT);
 
 // ── 2. Build gitnexus ──────────────────────────────────────────────
 console.log('[build] compiling gitnexus…');
-execSync(tscCmd, { cwd: ROOT, stdio: 'inherit', timeout: 120_000 });
+run('bunx tsc', ROOT);
 
 // ── 3. Copy shared dist ────────────────────────────────────────────
 console.log('[build] copying shared module into dist/_shared…');
@@ -44,7 +78,6 @@ function rewriteFile(filePath) {
   if (!content.includes('gitnexus-shared')) return;
 
   const relDir = path.relative(path.dirname(filePath), SHARED_DEST);
-  // Always use posix separators and point to the package index
   const relImport = relDir.split(path.sep).join('/') + '/index.js';
 
   const updated = content
@@ -80,19 +113,9 @@ const WEB_DEST = path.join(DIST, '..', 'web');
 
 if (fs.existsSync(path.join(WEB_ROOT, 'package.json'))) {
   console.log('[build] building gitnexus-web…');
-  const webUsesBun = fs.existsSync(path.join(WEB_ROOT, 'bun.lock'));
-  if (!fs.existsSync(path.join(WEB_ROOT, 'node_modules'))) {
-    console.log('[build] installing gitnexus-web dependencies…');
-    if (webUsesBun) {
-      execSync('bun install --frozen-lockfile', { cwd: WEB_ROOT, stdio: 'inherit', timeout: 120_000 });
-    } else {
-      execSync('npm ci', { cwd: WEB_ROOT, stdio: 'inherit', timeout: 120_000 });
-    }
-  }
-  const webBuildCmd = webUsesBun ? 'bun run build' : 'npm run build';
-  execSync(webBuildCmd, { cwd: WEB_ROOT, stdio: 'inherit', timeout: 120_000 });
+  run('bun install --frozen-lockfile', WEB_ROOT);
+  run('bun run build', WEB_ROOT);
 
-  // Copy dist → gitnexus/web/ (shipped in the npm package)
   fs.rmSync(WEB_DEST, { recursive: true, force: true });
   fs.cpSync(path.join(WEB_ROOT, 'dist'), WEB_DEST, { recursive: true });
   console.log('[build] copied web UI → gitnexus/web/');
