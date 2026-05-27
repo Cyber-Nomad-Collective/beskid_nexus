@@ -18,8 +18,8 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
-    "@beskid/beskid-ui": "file:../../beskid_web_common/packages/beskid-ui",
-    "@beskid/ui-react": "file:../../beskid_web_common/packages/beskid-ui-react",
+    "@beskid/beskid-ui": "npm:@cyber-nomad-collective/beskid-ui@^0.1.3",
+    "@beskid/ui-react": "npm:@cyber-nomad-collective/beskid-ui-react@^0.1.3",
     "gitnexus-shared": "file:../gitnexus-shared",
     "@langchain/anthropic": "^1.3.29",
     "@langchain/core": "^1.1.44",

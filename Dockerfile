@@ -8,15 +8,13 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
 
+COPY .npmrc ./
+ARG NODE_AUTH_TOKEN
+ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
+
 COPY gitnexus-shared/package.json gitnexus-shared/bun.lock ./gitnexus-shared/
 COPY gitnexus-shared ./gitnexus-shared
 RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
-
-# Satisfy file: deps in gitnexus / gitnexus-web package.json (sibling checkout layout).
-ARG BESKID_WEB_COMMON_REF=main
-RUN git clone --depth 1 --branch "${BESKID_WEB_COMMON_REF}" \
-    https://github.com/Cyber-Nomad-Collective/beskid_web_common.git \
-    beskid_web_common
 
 COPY gitnexus/package.json gitnexus/bun.lock ./gitnexus/
 COPY gitnexus ./gitnexus

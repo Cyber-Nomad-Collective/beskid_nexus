@@ -9,7 +9,7 @@ Use [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](i
 ## Build
 
 - Image: [`Dockerfile`](Dockerfile) — `gitnexus` + web UI, **`gitnexus serve` on port 8452** (no build-time index; no nginx).
-- **`NODE_AUTH_TOKEN`**: optional for local `bun install` when switching `file:` deps to GitHub Packages (see [`.npmrc`](.npmrc)). Docker clones `beskid_web_common` at build time for `file:` layout.
+- **`NODE_AUTH_TOKEN`** (build secret, required): GitHub token with **`read:packages`** for `@beskid/*` and `@cyber-nomad-collective/*` during `bun install` (see [`.npmrc`](.npmrc)).
 - Indexes are created at **runtime** when admins add catalog entries or GitHub push webhooks fire. Graph data persists in the **`nexus-data`** volume (`GITNEXUS_HOME=/data/gitnexus`).
 
 ## Runtime secrets

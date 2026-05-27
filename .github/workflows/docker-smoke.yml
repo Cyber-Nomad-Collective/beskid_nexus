@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read
+
 concurrency:
   group: container-smoke-${{ github.ref }}
   cancel-in-progress: true
@@ -12,6 +16,8 @@ concurrency:
 jobs:
   build-image:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN || secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,7 +27,7 @@ jobs:
           sudo apt-get install -y podman
 
       - name: Build Nexus image
-        run: podman build -t beskid-nexus:ci .
+        run: podman build --build-arg NODE_AUTH_TOKEN="${NODE_AUTH_TOKEN}" -t beskid-nexus:ci .
 
       - name: Run container with empty volume
         run: |

@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN:-}
     restart: unless-stopped
     ports:
       - "8452:8452"

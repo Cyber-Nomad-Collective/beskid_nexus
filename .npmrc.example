@@ -1,0 +1,4 @@
+# GitHub Packages — copy to .npmrc (never commit tokens).
+@cyber-nomad-collective:registry=https://npm.pkg.github.com
+@beskid:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
