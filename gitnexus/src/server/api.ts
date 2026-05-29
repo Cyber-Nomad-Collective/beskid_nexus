@@ -36,6 +36,7 @@ import { JobManager } from './analyze-job.js';
 import { assertString, escapeRegExp, BadRequestError, createRouteLimiter } from './validation.js';
 import { extractRepoName, getCloneDir, cloneOrPull } from './git-clone.js';
 import { logger, flushLoggerSync } from '../core/logger.js';
+import { mountMetricsRoute, observabilityMiddleware } from './observability.js';
 
 const _require = createRequire(import.meta.url);
 const pkg = _require('../../package.json');
@@ -625,6 +626,8 @@ export const handleFileRequest = async (
 export const createServer = async (port: number, host: string = '127.0.0.1') => {
   const app = express();
   app.disable('x-powered-by');
+  app.use(observabilityMiddleware);
+  mountMetricsRoute(app);
 
   // Trust X-Forwarded-* headers only when the connection comes from the
   // local loopback or RFC1918 private/link-local addresses — exactly the

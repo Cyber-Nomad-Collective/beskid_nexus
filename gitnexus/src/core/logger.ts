@@ -200,7 +200,7 @@ function resolveBaseLevel(): string {
 function buildBaseOptions(): LoggerOptions {
   const opts: LoggerOptions = {
     level: resolveBaseLevel(),
-    base: undefined,
+    base: { service: 'gitnexus' },
   };
   if (shouldUsePretty()) {
     const transport = _tryBuildPrettyTransport();
@@ -219,7 +219,7 @@ export function createLogger(name: string, opts?: CreateLoggerOptions): Logger {
 
   if (opts?.destination) {
     return pino(
-      { level: debugRequested ? 'debug' : 'info', base: undefined, name },
+      { level: debugRequested ? 'debug' : 'info', base: { service: 'gitnexus' }, name },
       opts.destination,
     );
   }
