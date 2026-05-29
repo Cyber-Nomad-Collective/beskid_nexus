@@ -5,8 +5,8 @@
     "": {
       "name": "gitnexus",
       "dependencies": {
-        "@beskid/beskid-ui": "npm:@cyber-nomad-collective/beskid-ui@^0.1.3",
-        "@beskid/ui-react": "npm:@cyber-nomad-collective/beskid-ui-react@^0.1.3",
+        "@beskid/beskid-ui": "npm:@cyber-nomad-collective/beskid-ui@^0.2.0",
+        "@beskid/ui-react": "npm:@cyber-nomad-collective/beskid-ui-react@^0.2.0",
         "@langchain/anthropic": "^1.3.29",
         "@langchain/core": "^1.1.44",
         "@langchain/google-genai": "^2.1.30",
@@ -142,9 +142,9 @@
 
     "@bcoe/v8-coverage": ["@bcoe/v8-coverage@1.0.2", "", {}, "sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA=="],
 
-    "@beskid/beskid-ui": ["@cyber-nomad-collective/beskid-ui@0.1.3", "https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-ui/0.1.3/4b7efd1323dc2267a832947015cbd194d2cc99f1", { "dependencies": { "@cyber-nomad-collective/trudoc": "file:../trudoc", "@dagrejs/dagre": "^1.1.5", "@material/material-color-utilities": "^0.4.0", "astro-navbar": "^2.4.0", "d3": "^7.9.0", "intro.js": "^8.3.2", "rehype-stringify": "^10.0.1", "remark-gfm": "^4.0.1", "remark-parse": "^11.0.0", "remark-rehype": "^11.1.2", "unified": "^11.0.5" }, "peerDependencies": { "@astrojs/starlight": ">=0.30.0", "astro": ">=5.0.0", "react": ">=18.0.0" } }, "sha512-9wNuoQMRt1PjlQqFnQ0Evk95+iDUhxoE1jYRKDpfSHrl6mDuKHerUJgZBFa32SJGZROLTTvj1cBwcSId4K7wKA=="],
+    "@beskid/beskid-ui": ["@cyber-nomad-collective/beskid-ui@0.2.0", "https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-ui/0.2.0/6afcd14bb0f366cef75f924342bbd6cb81c01f63", { "dependencies": { "@cyber-nomad-collective/trudoc": "file:../trudoc", "@dagrejs/dagre": "^1.1.5", "@material/material-color-utilities": "^0.4.0", "astro-navbar": "^2.4.0", "d3": "^7.9.0", "intro.js": "^8.3.2", "rehype-stringify": "^10.0.1", "remark-gfm": "^4.0.1", "remark-parse": "^11.0.0", "remark-rehype": "^11.1.2", "unified": "^11.0.5" }, "peerDependencies": { "@astrojs/starlight": ">=0.30.0", "astro": ">=5.0.0", "react": ">=18.0.0" } }, "sha512-AaaICaOEjjn+TtaTIIFsLwptPK1Jx49wEERtHDaT/o2F9m2ssiWuXPafkNh1S5Y0k4G7fti2IBACfti0HPyviA=="],
 
-    "@beskid/ui-react": ["@cyber-nomad-collective/beskid-ui-react@0.1.3", "https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-ui-react/0.1.3/1c07ddcf4c6777671f00937450588388b99dfbeb", { "dependencies": { "@base-ui/react": "^1.5.0", "class-variance-authority": "^0.7.1", "clsx": "^2.1.1", "cmdk": "^1.1.1", "embla-carousel-react": "^8.6.0", "input-otp": "^1.4.2", "lucide-react": "^0.577.0", "next-themes": "^0.4.6", "radix-ui": "^1.4.3", "react-day-picker": "^10.0.1", "react-resizable-panels": "^4.11.2", "recharts": "3.8.0", "sonner": "^2.0.7", "tailwind-merge": "^3.0.2", "vaul": "^1.1.2" }, "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-XGx4NEi3PyFtVaT5b1E481YdcSBVEO427NGMI2dXVk/Pkgi3XyjpfQsCGS2L1qtUGLSLUzNqIBrcBQ8JcROQWw=="],
+    "@beskid/ui-react": ["@cyber-nomad-collective/beskid-ui-react@0.2.0", "https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-ui-react/0.2.0/8567fcd8e92e680a542e2ca8c63d85f664f2d4c5", { "dependencies": { "@base-ui/react": "^1.5.0", "class-variance-authority": "^0.7.1", "clsx": "^2.1.1", "cmdk": "^1.1.1", "embla-carousel-react": "^8.6.0", "input-otp": "^1.4.2", "lucide-react": "^0.577.0", "next-themes": "^0.4.6", "radix-ui": "^1.4.3", "react-day-picker": "^10.0.1", "react-resizable-panels": "^4.11.2", "recharts": "3.8.0", "sonner": "^2.0.7", "tailwind-merge": "^3.0.2", "vaul": "^1.1.2" }, "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-1M+ZTuhPR7E+fe3TMMCFqMEYo4yrdD8sEzZv4I0qrT061cHTCx6JjoMWCudTm3BsICuQCPfGCTfhsasyKX5ktA=="],
 
     "@braintree/sanitize-url": ["@braintree/sanitize-url@7.1.2", "", {}, "sha512-jigsZK+sMF/cuiB7sERuo9V7N9jx+dhmHHnQyDSVdpZwVutaBu7WvNYqMDLSgFgfB30n452TP3vjDAvFC973mA=="],
 

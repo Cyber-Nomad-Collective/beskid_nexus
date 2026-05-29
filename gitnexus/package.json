@@ -52,7 +52,7 @@
     "prepack": "node scripts/build.js"
   },
   "dependencies": {
-    "@beskid/auth-client": "npm:@cyber-nomad-collective/beskid-auth-client@latest",
+    "@beskid/auth-client": "npm:@cyber-nomad-collective/beskid-auth-client@^0.2.0",
     "@huggingface/transformers": "^4.1.0",
     "@ladybugdb/core": "^0.16.1",
     "@modelcontextprotocol/sdk": "^1.0.0",
