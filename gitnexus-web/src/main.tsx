@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import App from './App';
+import { ThemeProvider } from './components/theme-provider';
 import { isHostedNexus } from './config/nexus-mode';
 import { ensureBackendUrlFromPage } from './services/backend-client';
 import './index.css';
@@ -20,6 +21,8 @@ ensureBackendUrlFromPage();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 	<React.StrictMode>
-		<App />
+		<ThemeProvider>
+			<App />
+		</ThemeProvider>
 	</React.StrictMode>,
 );

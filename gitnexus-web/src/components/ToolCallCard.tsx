@@ -78,9 +78,9 @@ const getStatusDisplay = (status: ToolCallInfo['status']) => {
     default:
       return {
         icon: <Sparkles className="h-3.5 w-3.5" />,
-        color: 'text-text-muted',
-        bgColor: 'bg-surface',
-        borderColor: 'border-border-subtle',
+        color: 'text-muted-foreground',
+        bgColor: 'bg-card',
+        borderColor: 'border-border',
       };
   }
 };
@@ -125,12 +125,12 @@ export const ToolCallCard = ({ toolCall, defaultExpanded = false }: ToolCallCard
         className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left transition-colors select-none hover:bg-white/5"
       >
         {/* Expand/collapse icon */}
-        <span className="text-text-muted">
+        <span className="text-muted-foreground">
           {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </span>
 
         {/* Tool name */}
-        <span className="flex-1 text-sm font-medium text-text-primary">
+        <span className="flex-1 text-sm font-medium text-foreground">
           {getToolDisplayName(toolCall.name)}
         </span>
 
@@ -143,14 +143,14 @@ export const ToolCallCard = ({ toolCall, defaultExpanded = false }: ToolCallCard
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="border-t border-border-subtle/50">
+        <div className="border-t border-border/50">
           {/* Arguments/Query */}
           {formattedArgs && (
-            <div className="border-b border-border-subtle/50 px-3 py-2">
-              <div className="mb-1.5 text-[10px] tracking-wider text-text-muted uppercase">
+            <div className="border-b border-border/50 px-3 py-2">
+              <div className="mb-1.5 text-[10px] tracking-wider text-muted-foreground uppercase">
                 {toolCall.name === 'cypher' ? 'Query' : 'Input'}
               </div>
-              <pre className="overflow-x-auto rounded bg-surface/50 p-2 font-mono text-xs whitespace-pre-wrap text-text-secondary">
+              <pre className="overflow-x-auto rounded bg-card/50 p-2 font-mono text-xs whitespace-pre-wrap text-muted-foreground">
                 {formattedArgs}
               </pre>
             </div>
@@ -159,11 +159,11 @@ export const ToolCallCard = ({ toolCall, defaultExpanded = false }: ToolCallCard
           {/* Result */}
           {toolCall.result && (
             <div className="px-3 py-2">
-              <div className="mb-1.5 text-[10px] tracking-wider text-text-muted uppercase">
+              <div className="mb-1.5 text-[10px] tracking-wider text-muted-foreground uppercase">
                 Result
               </div>
-              <div className="max-h-[400px] overflow-y-auto rounded bg-surface/50">
-                <pre className="p-2 font-mono text-xs whitespace-pre-wrap text-text-secondary">
+              <div className="max-h-[400px] overflow-y-auto rounded bg-card/50">
+                <pre className="p-2 font-mono text-xs whitespace-pre-wrap text-muted-foreground">
                   {toolCall.result.length > 3000
                     ? toolCall.result.slice(0, 3000) + '\n\n... (truncated)'
                     : toolCall.result}
@@ -174,7 +174,7 @@ export const ToolCallCard = ({ toolCall, defaultExpanded = false }: ToolCallCard
 
           {/* Loading state for in-progress */}
           {toolCall.status === 'running' && !toolCall.result && (
-            <div className="flex items-center gap-2 px-3 py-3 text-xs text-text-muted">
+            <div className="flex items-center gap-2 px-3 py-3 text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" />
               <span>Executing...</span>
             </div>

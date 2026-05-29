@@ -62,12 +62,12 @@ export const EmbeddingStatus = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleStartEmbeddings()}
-            className="group flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-3 py-1.5 text-sm text-text-secondary transition-all hover:border-accent/50 hover:bg-hover hover:text-text-primary"
+            className="group flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-primary/50 hover:bg-muted hover:text-foreground"
             title="Generate embeddings for semantic search"
           >
-            <Brain className="h-4 w-4 text-node-interface transition-colors group-hover:text-accent" />
+            <Brain className="h-4 w-4 text-node-interface transition-colors group-hover:text-primary" />
             <span className="hidden sm:inline">Enable Semantic Search</span>
-            <Zap className="h-3 w-3 text-text-muted" />
+            <Zap className="h-3 w-3 text-muted-foreground" />
           </button>
         </div>
         {fallbackDialog}
@@ -80,13 +80,13 @@ export const EmbeddingStatus = () => {
     const downloadPercent = embeddingProgress?.percent ?? 0;
     return (
       <>
-        <div className="flex items-center gap-2.5 rounded-lg border border-accent/30 bg-surface px-3 py-1.5 text-sm">
-          <Loader2 className="h-4 w-4 animate-spin text-accent" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-primary/30 bg-card px-3 py-1.5 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-text-secondary">Loading AI model...</span>
-            <div className="h-1 w-24 overflow-hidden rounded-full bg-elevated">
+            <span className="text-xs text-muted-foreground">Loading AI model...</span>
+            <div className="h-1 w-24 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-accent to-node-interface transition-all duration-300"
+                className="h-full rounded-full bg-gradient-to-r from-primary to-node-interface transition-all duration-300"
                 style={{ width: `${downloadPercent}%` }}
               />
             </div>
@@ -104,15 +104,15 @@ export const EmbeddingStatus = () => {
     const percent = embeddingProgress?.percent ?? 0;
 
     return (
-      <div className="flex items-center gap-2.5 rounded-lg border border-node-function/30 bg-surface px-3 py-1.5 text-sm">
+      <div className="flex items-center gap-2.5 rounded-lg border border-node-function/30 bg-card px-3 py-1.5 text-sm">
         <Loader2 className="h-4 w-4 animate-spin text-node-function" />
         <div className="flex flex-col gap-0.5">
-          <span className="text-xs text-text-secondary">
+          <span className="text-xs text-muted-foreground">
             Embedding {processed}/{total} nodes
           </span>
-          <div className="h-1 w-24 overflow-hidden rounded-full bg-elevated">
+          <div className="h-1 w-24 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-node-function to-accent transition-all duration-300"
+              className="h-full rounded-full bg-gradient-to-r from-node-function to-primary transition-all duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -124,7 +124,7 @@ export const EmbeddingStatus = () => {
   // Indexing
   if (embeddingStatus === 'indexing') {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-node-interface/30 bg-surface px-3 py-1.5 text-sm text-text-secondary">
+      <div className="flex items-center gap-2 rounded-lg border border-node-interface/30 bg-card px-3 py-1.5 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin text-node-interface" />
         <span className="text-xs">Creating vector index...</span>
       </div>

@@ -25,9 +25,9 @@ interface AnalyzeOnboardingProps {
 
 export const AnalyzeOnboarding = ({ onComplete }: AnalyzeOnboardingProps) => {
   return (
-    <div className="relative animate-fade-in overflow-hidden rounded-3xl border border-border-default bg-surface p-7">
+    <div className="relative animate-fade-in overflow-hidden rounded-3xl border border-border bg-card p-7">
       {/* Ambient glows — mirrors OnboardingGuide aesthetic */}
-      <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-accent/6 blur-3xl" />
+      <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-primary/6 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-node-function/6 blur-3xl" />
 
       {/* Header */}
@@ -35,23 +35,21 @@ export const AnalyzeOnboarding = ({ onComplete }: AnalyzeOnboardingProps) => {
         <div className="text-center">
           {/* Eyebrow */}
           <div className="mb-2 inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-accent/70" />
-            <span className="text-[11px] font-medium tracking-widest text-accent/80 uppercase">
-              GitNexus
-            </span>
+            <Sparkles className="h-3.5 w-3.5 text-primary/70" />
+            <span className="nexus-kicker">Beskid Nexus</span>
           </div>
 
           {/* Icon */}
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/20 to-accent-dim/10 shadow-glow-soft">
-            <Github className="h-7 w-7 text-accent" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/20 to-primary/80/10 shadow-glow-soft">
+            <Github className="h-7 w-7 text-primary" />
           </div>
 
-          <h2 className="text-lg leading-snug font-semibold text-text-primary">
+          <h2 className="text-lg leading-snug font-semibold text-foreground">
             Analyze your first repository
           </h2>
-          <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-text-secondary">
-            Paste a GitHub URL and GitNexus will clone it, parse the code, and build a live
-            knowledge graph — right in your browser.
+          <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted-foreground">
+            Paste a GitHub URL and Beskid Nexus will clone it, parse the code, and build a live
+            knowledge graph.
           </p>
         </div>
       </div>
@@ -62,7 +60,7 @@ export const AnalyzeOnboarding = ({ onComplete }: AnalyzeOnboardingProps) => {
       </div>
 
       {/* Footer hint */}
-      <p className="mt-5 text-center text-[11px] leading-relaxed text-text-muted">
+      <p className="mt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
         Public repos only &middot; Cloned locally by the server &middot; No data leaves your machine
       </p>
     </div>

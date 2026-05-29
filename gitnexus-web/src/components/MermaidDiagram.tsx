@@ -116,10 +116,10 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
         </div>
         <pre className="font-mono text-xs whitespace-pre-wrap text-rose-200/70">{error}</pre>
         <details className="mt-2">
-          <summary className="cursor-pointer text-xs text-text-muted hover:text-text-secondary">
+          <summary className="cursor-pointer text-xs text-muted-foreground hover:text-muted-foreground">
             Show source
           </summary>
-          <pre className="mt-2 overflow-x-auto rounded bg-surface p-2 text-xs text-text-muted">
+          <pre className="mt-2 overflow-x-auto rounded bg-card p-2 text-xs text-muted-foreground">
             {code}
           </pre>
         </details>
@@ -130,15 +130,15 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
   return (
     <>
       <div className="group relative my-3">
-        <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-gradient-to-b from-surface to-elevated">
+        <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-b from-surface to-elevated">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border-subtle bg-surface/60 px-3 py-2">
-            <span className="text-[10px] font-medium tracking-wider text-text-muted uppercase">
+          <div className="flex items-center justify-between border-b border-border bg-card/60 px-3 py-2">
+            <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
               Diagram
             </span>
             <button
               onClick={() => setShowModal(true)}
-              className="rounded p-1 text-text-muted transition-colors hover:bg-hover hover:text-text-primary"
+              className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               title="Expand"
             >
               <Maximize2 className="h-3.5 w-3.5" />
@@ -161,7 +161,7 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
 
       {/* Use ProcessFlowModal for expansion */}
       {showModal && processData && (
-        <Suspense fallback={<div className="p-4 text-sm text-text-muted">Loading diagram…</div>}>
+        <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading diagram…</div>}>
           <ProcessFlowModal process={processData} onClose={() => setShowModal(false)} />
         </Suspense>
       )}

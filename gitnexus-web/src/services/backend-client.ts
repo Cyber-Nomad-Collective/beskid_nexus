@@ -15,6 +15,7 @@ export interface BackendRepo {
   name: string;
   path: string;
   repoPath?: string; // git HEAD returns "repoPath"; older versions return "path"
+  remoteUrl?: string;
   indexedAt: string;
   lastCommit?: string;
   stats?: {

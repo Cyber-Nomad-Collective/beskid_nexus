@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getGlobalDir } from '../../storage/repo-manager.js';
-import { listRegisteredRepos } from '../../storage/repo-manager.js';
+import { parseRepoNameFromUrl } from '../../storage/git.js';
+import { getGlobalDir, listRegisteredRepos, type RegistryEntry } from '../../storage/repo-manager.js';
 import type {
   NexusCatalogEntry,
   NexusCatalogFile,
@@ -156,18 +156,45 @@ export const markCatalogIndexed = async (
   await updateCatalogEntry(id, { registryName, lastIndexedCommit });
 };
 
+/** Resolve a catalog row to a registered repo (name, remote URL, or git URL basename). */
+export const resolveCatalogRegistryEntry = (
+  entry: NexusCatalogEntry,
+  repos: RegistryEntry[],
+): RegistryEntry | undefined => {
+  const repoByName = new Map(repos.map((r) => [r.name.toLowerCase(), r]));
+  const repoByUrl = new Map<string, RegistryEntry>();
+  for (const repo of repos) {
+    if (repo.remoteUrl) {
+      repoByUrl.set(normalizeGitRepoUrl(repo.remoteUrl), repo);
+    }
+  }
+
+  const regName = (entry.registryName ?? entry.id).toLowerCase();
+  const byName = repoByName.get(regName);
+  if (byName) return byName;
+
+  const byRemote = repoByUrl.get(normalizeGitRepoUrl(entry.gitUrl));
+  if (byRemote) return byRemote;
+
+  const urlRepoName = parseRepoNameFromUrl(entry.gitUrl);
+  if (urlRepoName) {
+    const byUrlBasename = repoByName.get(urlRepoName.toLowerCase());
+    if (byUrlBasename) return byUrlBasename;
+  }
+
+  return undefined;
+};
+
 export const listPublicCatalog = async (): Promise<PublicCatalogEntry[]> => {
   const [entries, repos] = await Promise.all([
     listCatalogEntries(),
     listRegisteredRepos({ validate: true }),
   ]);
-  const repoByName = new Map(repos.map((r) => [r.name, r]));
 
   return entries
     .filter((e) => e.enabled)
     .map((e) => {
-      const regName = e.registryName ?? e.id;
-      const reg = repoByName.get(regName);
+      const reg = resolveCatalogRegistryEntry(e, repos);
       return {
         id: e.id,
         displayName: e.displayName,

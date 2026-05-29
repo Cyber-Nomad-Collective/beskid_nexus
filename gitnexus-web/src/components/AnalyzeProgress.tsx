@@ -49,21 +49,21 @@ export const AnalyzeProgress = ({ progress, onCancel }: AnalyzeProgressProps) =>
     <div className="space-y-4">
       {/* Phase label + elapsed */}
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-text-secondary">{label}</span>
-        <span className="font-mono text-xs text-text-muted">{formatElapsed(elapsed)}</span>
+        <span className="font-medium text-muted-foreground">{label}</span>
+        <span className="font-mono text-xs text-muted-foreground">{formatElapsed(elapsed)}</span>
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 overflow-hidden rounded-full bg-elevated">
+      <div className="h-2 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-accent transition-all duration-300 ease-out"
+          className="h-full rounded-full bg-primary/10 transition-all duration-300 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>
 
       {/* Percent + cancel */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-text-muted">{pct}%</span>
+        <span className="font-mono text-xs text-muted-foreground">{pct}%</span>
         <button
           onClick={onCancel}
           className="flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs text-red-400 transition-all duration-200 hover:bg-red-500/20"

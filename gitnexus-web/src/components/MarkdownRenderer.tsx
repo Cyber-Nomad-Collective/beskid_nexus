@@ -137,7 +137,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         return (
           <a
             href={hrefStr}
-            className="text-accent underline underline-offset-2 hover:text-purple-300"
+            className="text-primary underline underline-offset-2 hover:text-purple-300"
             target="_blank"
             rel="noopener noreferrer"
             {...props}
@@ -186,7 +186,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   );
 
   return (
-    <div className="text-sm text-text-primary">
+    <div className="text-sm text-foreground">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         urlTransform={(url) => {
@@ -204,7 +204,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         <div className="mt-2 flex justify-end">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded border border-transparent px-2 py-1 text-xs text-text-muted transition-all hover:border-border-subtle hover:bg-surface hover:text-text-primary"
+            className="flex items-center gap-1.5 rounded border border-transparent px-2 py-1 text-xs text-muted-foreground transition-all hover:border-border hover:bg-card hover:text-foreground"
             title="Copy to clipboard"
           >
             {copied ? (

@@ -41,39 +41,39 @@ function RepoCard({ repo, onClick }: { repo: BackendRepo; onClick: () => void })
     <button
       onClick={onClick}
       data-testid="landing-repo-card"
-      className="group w-full cursor-pointer rounded-xl border border-border-default bg-elevated p-4 text-left transition-all duration-200 hover:border-accent/40 hover:bg-hover hover:shadow-glow-soft"
+      className="group w-full cursor-pointer rounded-xl border border-border bg-muted p-4 text-left transition-all duration-200 hover:border-primary/40 hover:bg-muted hover:shadow-glow-soft"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <GitBranch className="h-4 w-4 shrink-0 text-accent" />
-            <h3 className="truncate text-sm font-semibold text-text-primary transition-colors group-hover:text-accent">
+            <GitBranch className="h-4 w-4 shrink-0 text-primary" />
+            <h3 className="truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
               {repo.name}
             </h3>
           </div>
           {repo.indexedAt && (
-            <p className="mt-1 pl-6 text-xs text-text-muted">
+            <p className="mt-1 pl-6 text-xs text-muted-foreground">
               Indexed {formatRelativeTime(repo.indexedAt)}
             </p>
           )}
         </div>
-        <ArrowRight className="h-4 w-4 shrink-0 text-text-muted opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent group-hover:opacity-100" />
+        <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary group-hover:opacity-100" />
       </div>
 
       {stats && (stats.files || stats.nodes) && (
         <div className="mt-3 flex flex-wrap gap-2 pl-6">
           {stats.files != null && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-void px-2 py-0.5 text-[11px] text-text-muted">
+            <span className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
               <FileCode className="h-3 w-3" /> {stats.files.toLocaleString()} files
             </span>
           )}
           {stats.nodes != null && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-void px-2 py-0.5 text-[11px] text-text-muted">
+            <span className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
               <Layers className="h-3 w-3" /> {stats.nodes.toLocaleString()} symbols
             </span>
           )}
           {stats.processes != null && stats.processes > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-void px-2 py-0.5 text-[11px] text-text-muted">
+            <span className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
               <Sparkles className="h-3 w-3" /> {stats.processes} flows
             </span>
           )}
@@ -93,25 +93,25 @@ interface RepoLandingProps {
 
 export const RepoLanding = ({ repos, onSelectRepo, onAnalyzeComplete }: RepoLandingProps) => {
   return (
-    <div className="relative animate-fade-in overflow-hidden rounded-3xl border border-border-default bg-surface p-7">
+    <div className="relative animate-fade-in overflow-hidden rounded-3xl border border-border bg-card p-7">
       {/* Ambient glows — mirrors OnboardingGuide aesthetic */}
-      <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-accent/6 blur-3xl" />
+      <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-primary/6 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-node-function/6 blur-3xl" />
 
       {/* Header */}
       <div className="relative mb-6">
         <div className="text-center">
           <div className="mb-2 inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-accent/70" />
-            <span className="text-[11px] font-medium tracking-widest text-accent/80 uppercase">
-              GitNexus
+            <Sparkles className="h-3.5 w-3.5 text-primary/70" />
+            <span className="text-[11px] font-medium tracking-widest text-primary/80 uppercase">
+              Beskid Nexus
             </span>
           </div>
 
-          <h2 className="text-lg leading-snug font-semibold text-text-primary">
+          <h2 className="text-lg leading-snug font-semibold text-foreground">
             Choose a repository
           </h2>
-          <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-text-secondary">
+          <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted-foreground">
             Select an indexed repository to explore, or analyze a new one.
           </p>
         </div>
@@ -126,11 +126,11 @@ export const RepoLanding = ({ repos, onSelectRepo, onAnalyzeComplete }: RepoLand
 
       {/* Divider */}
       <div className="mb-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-border-subtle" />
-        <span className="text-[11px] tracking-widest text-text-muted uppercase">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[11px] tracking-widest text-muted-foreground uppercase">
           or analyze new
         </span>
-        <div className="h-px flex-1 bg-border-subtle" />
+        <div className="h-px flex-1 bg-border" />
       </div>
 
       {/* Analyzer form */}
@@ -139,7 +139,7 @@ export const RepoLanding = ({ repos, onSelectRepo, onAnalyzeComplete }: RepoLand
       </div>
 
       {/* Footer hint */}
-      <p className="mt-5 text-center text-[11px] leading-relaxed text-text-muted">
+      <p className="mt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
         Public &amp; private repos &middot; Cloned locally by the server &middot; No data leaves
         your machine
       </p>

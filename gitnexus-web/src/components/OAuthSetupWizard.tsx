@@ -38,15 +38,15 @@ export function OAuthSetupWizard({ onComplete }: OAuthSetupWizardProps) {
   };
 
   return (
-    <div className="relative mx-auto max-w-lg animate-fade-in overflow-hidden rounded-3xl border border-border-default bg-surface p-7">
-      <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-accent/6 blur-3xl" />
+    <div className="relative mx-auto max-w-lg animate-fade-in overflow-hidden rounded-3xl border border-border bg-card p-7">
+      <div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-primary/6 blur-3xl" />
       <div className="relative mb-6 text-center">
-        <Sparkles className="mx-auto mb-3 h-8 w-8 text-accent" />
-        <h1 className="text-lg font-semibold text-text-primary">Connect Beskid Auth</h1>
-        <p className="mt-2 text-sm text-text-secondary">
+        <Sparkles className="mx-auto mb-3 h-8 w-8 text-primary" />
+        <h1 className="text-lg font-semibold text-foreground">Connect Beskid Auth</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           Nexus signs in through the shared{' '}
           <a
-            className="text-accent underline"
+            className="text-primary underline"
             href="https://github.com/Cyber-Nomad-Collective/beskid/tree/main/site/auth"
             rel="noreferrer"
             target="_blank"
@@ -54,71 +54,71 @@ export function OAuthSetupWizard({ onComplete }: OAuthSetupWizardProps) {
             auth hub
           </a>
           . On the hub, open <strong>Admin → Pairing</strong>, create a code for app{' '}
-          <code className="text-accent">nexus</code>, then enter it below. The server also needs{' '}
-          <code className="text-accent">SESSION_SECRET</code> (32+ characters) in the environment.
+          <code className="text-primary">nexus</code>, then enter it below. The server also needs{' '}
+          <code className="text-primary">SESSION_SECRET</code> (32+ characters) in the environment.
         </p>
       </div>
       <form onSubmit={handleSubmit} className="relative space-y-4">
         <label className="block text-sm">
-          <span className="text-text-muted">Auth hub URL</span>
+          <span className="text-muted-foreground">Auth hub URL</span>
           <input
             required
             value={authHubPublicUrl}
             onChange={(e) => setAuthHubPublicUrl(e.target.value)}
             placeholder="https://auth.beskid-lang.org"
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Pairing code (from auth hub admin)</span>
+          <span className="text-muted-foreground">Pairing code (from auth hub admin)</span>
           <input
             required
             value={pairingCode}
             onChange={(e) => setPairingCode(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 font-mono text-sm"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">This Nexus public URL</span>
+          <span className="text-muted-foreground">This Nexus public URL</span>
           <input
             required
             value={nexusPublicUrl}
             onChange={(e) => setNexusPublicUrl(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 font-mono text-xs"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Your GitHub login (first admin)</span>
+          <span className="text-muted-foreground">Your GitHub login (first admin)</span>
           <input
             required
             value={ownerLogin}
             onChange={(e) => setOwnerLogin(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Additional admin logins (comma-separated)</span>
+          <span className="text-muted-foreground">Additional admin logins (comma-separated)</span>
           <input
             value={adminLogins}
             onChange={(e) => setAdminLogins(e.target.value)}
             placeholder="optional"
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           />
         </label>
         <label className="block text-sm">
-          <span className="text-text-muted">Setup token (if NEXUS_SETUP_TOKEN is set on server)</span>
+          <span className="text-muted-foreground">Setup token (if NEXUS_SETUP_TOKEN is set on server)</span>
           <input
             value={setupToken}
             onChange={(e) => setSetupToken(e.target.value)}
             type="password"
-            className="mt-1 w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           />
         </label>
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button
           type="submit"
           disabled={saving}
-          className="w-full cursor-pointer rounded-lg bg-accent py-2.5 text-sm font-medium text-white disabled:opacity-50"
+          className="w-full cursor-pointer rounded-lg bg-primary/10 py-2.5 text-sm font-medium text-white disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save and pair with auth hub'}
         </button>

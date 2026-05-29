@@ -13,6 +13,7 @@ import { NexusServiceUnavailable } from './components/NexusServiceUnavailable';
 import { OnboardingGuide } from './components/OnboardingGuide';
 import { RightPanel } from './components/RightPanel';
 import { StatusBar } from './components/StatusBar';
+import { enrichCatalogEntry } from './lib/catalog-match';
 import { BESKID_NEXUS } from './config/beskid-nexus';
 import { showLocalDevOnboarding } from './config/nexus-mode';
 import { ERROR_RESET_DELAY_MS } from './config/ui-constants';
@@ -25,6 +26,7 @@ import {
 	fetchRepos,
 	normalizeServerUrl,
 	type ConnectResult,
+	type BackendRepo,
 } from './services/backend-client';
 import { ensureBackendUrlFromPage, probeBackend } from './services/backend-client';
 import {
@@ -40,6 +42,8 @@ type ShellPhase = 'boot' | 'setup' | 'server-down' | 'home' | 'admin' | 'advance
 const AppContent = () => {
 	const [shellPhase, setShellPhase] = useState<ShellPhase>('boot');
 	const [catalog, setCatalog] = useState<PublicCatalogEntry[]>([]);
+	const [indexedRepos, setIndexedRepos] = useState<BackendRepo[]>([]);
+	const [homeRefreshing, setHomeRefreshing] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
 	const bootstrapped = useRef(false);
 
@@ -156,12 +160,19 @@ const AppContent = () => {
 	);
 
 	const refreshHome = useCallback(async () => {
-		const [entries, me] = await Promise.all([
-			fetchPublicCatalog().catch(() => [] as PublicCatalogEntry[]),
-			fetchAuthMe().catch(() => null),
-		]);
-		setCatalog(entries);
-		setIsAdmin(!!me?.isAdmin);
+		setHomeRefreshing(true);
+		try {
+			const [entries, me, repos] = await Promise.all([
+				fetchPublicCatalog().catch(() => [] as PublicCatalogEntry[]),
+				fetchAuthMe().catch(() => null),
+				fetchRepos().catch(() => [] as BackendRepo[]),
+			]);
+			setCatalog(entries);
+			setIndexedRepos(repos);
+			setIsAdmin(!!me?.isAdmin);
+		} finally {
+			setHomeRefreshing(false);
+		}
 	}, []);
 
 	const runBoot = useCallback(async () => {
@@ -190,16 +201,27 @@ const AppContent = () => {
 			return;
 		}
 
-		const entries = await fetchPublicCatalog().catch(() => [] as PublicCatalogEntry[]);
-		const me = await fetchAuthMe().catch(() => null);
+		const [entries, repos, me] = await Promise.all([
+			fetchPublicCatalog().catch(() => [] as PublicCatalogEntry[]),
+			fetchRepos().catch(() => [] as BackendRepo[]),
+			fetchAuthMe().catch(() => null),
+		]);
 		setCatalog(entries);
+		setIndexedRepos(repos);
 		setIsAdmin(!!me?.isAdmin);
 
 		if (projectParam) {
-			const match = entries.find(
+			const enriched = entries.map((e) => enrichCatalogEntry(e, repos));
+			const catalogMatch = enriched.find(
 				(e) => e.id === projectParam || e.registryName === projectParam,
 			);
-			const project = match?.registryName ?? match?.id ?? projectParam;
+			const repoMatch = repos.find((r) => r.name === projectParam);
+			const project =
+				(catalogMatch?.indexed ? catalogMatch.registryName : undefined) ??
+				repoMatch?.name ??
+				catalogMatch?.registryName ??
+				catalogMatch?.id ??
+				projectParam;
 			connectProject(project);
 			return;
 		}
@@ -234,7 +256,7 @@ const AppContent = () => {
 
 	if (shellPhase === 'boot') {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-void">
+			<div className="flex min-h-screen items-center justify-center bg-background">
 				<LoadingOverlay
 					progress={
 						{
@@ -250,7 +272,7 @@ const AppContent = () => {
 
 	if (shellPhase === 'setup') {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-void p-4">
+			<div className="flex min-h-screen items-center justify-center bg-background p-4">
 				<OAuthSetupWizard
 					onComplete={() => {
 						bootstrapped.current = false;
@@ -263,7 +285,7 @@ const AppContent = () => {
 
 	if (shellPhase === 'server-down') {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-void p-4">
+			<div className="flex min-h-screen items-center justify-center bg-background p-4">
 				{showLocalDevOnboarding() ? (
 					<OnboardingGuide />
 				) : (
@@ -280,7 +302,7 @@ const AppContent = () => {
 
 	if (shellPhase === 'admin') {
 		return (
-			<div className="min-h-screen bg-void">
+			<div className="min-h-screen bg-background">
 				<AdminCatalogPanel
 					onBack={() => {
 						void refreshHome().then(() => setShellPhase('home'));
@@ -292,11 +314,11 @@ const AppContent = () => {
 
 	if (shellPhase === 'advanced') {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-void p-4">
+			<div className="flex min-h-screen items-center justify-center bg-background p-4">
 				<DropZone onServerConnect={handleDropZoneConnect} />
 				<button
 					type="button"
-					className="fixed top-4 right-4 text-sm text-text-muted"
+					className="fixed top-4 right-4 text-sm text-muted-foreground"
 					onClick={() => setShellPhase('home')}
 				>
 				 Back to catalog
@@ -307,15 +329,18 @@ const AppContent = () => {
 
 	if (shellPhase === 'home') {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-void p-4">
+			<div className="flex min-h-screen items-center justify-center bg-background p-4">
 				<CatalogHome
 					entries={catalog}
+					indexedRepos={indexedRepos}
+					isRefreshing={homeRefreshing}
+					onRefresh={refreshHome}
 					isAdmin={isAdmin}
 					onSelect={(entry) => {
 						if (!entry.indexed) return;
-						const project = entry.registryName ?? entry.id;
-						connectProject(project);
+						connectProject(entry.registryName ?? entry.id);
 					}}
+					onSelectRepo={(repoName) => connectProject(repoName)}
 					onAdmin={() => setShellPhase('admin')}
 					onAdvanced={() => setShellPhase('advanced')}
 				/>
@@ -332,7 +357,7 @@ const AppContent = () => {
 	}
 
 	return (
-		<div className="flex h-screen flex-col overflow-hidden bg-void">
+		<div className="flex h-screen flex-col overflow-hidden bg-background">
 			<BeskidShellHeader onFocusNode={handleFocusNode} />
 
 			<main className="flex min-h-0 flex-1">

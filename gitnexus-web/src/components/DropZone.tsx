@@ -62,7 +62,7 @@ function Crossfade({ activeKey, children }: { activeKey: string; children: React
 function SuccessCard() {
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-surface p-7"
+      className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-card p-7"
       role="status"
       aria-live="polite"
     >
@@ -78,7 +78,7 @@ function SuccessCard() {
         <h2 className="mb-2 text-center text-lg font-semibold text-emerald-400">
           Server Connected
         </h2>
-        <p className="text-center text-sm leading-relaxed text-text-secondary">
+        <p className="text-center text-sm leading-relaxed text-muted-foreground">
           Preparing your code knowledge graph...
         </p>
 
@@ -102,29 +102,29 @@ function SuccessCard() {
 function LoadingCard({ message }: { message: string }) {
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border border-accent/20 bg-surface p-7"
+      className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card p-7"
       role="status"
       aria-live="polite"
     >
       {/* Loading glow */}
-      <div className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-accent/8 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/8 blur-3xl" />
 
       <div className="relative">
         {/* Spinner */}
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/20 to-accent-dim/10 shadow-glow-soft">
-          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/20 to-primary/80/10 shadow-glow-soft">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
 
-        <h2 className="mb-2 text-center text-lg font-semibold text-text-primary">
+        <h2 className="mb-2 text-center text-lg font-semibold text-foreground">
           {message || 'Connecting...'}
         </h2>
-        <p className="text-center text-sm leading-relaxed text-text-secondary">
+        <p className="text-center text-sm leading-relaxed text-muted-foreground">
           This may take a moment for large repositories
         </p>
 
         {/* Decorative sparkle */}
         <div className="mt-5 flex items-center justify-center">
-          <Sparkles className="h-4 w-4 text-accent/30" />
+          <Sparkles className="h-4 w-4 text-primary/30" />
         </div>
       </div>
     </div>
@@ -281,10 +281,10 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
   const displayPhase = !initialProbeComplete ? null : phase;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-void p-8">
+    <div className="flex min-h-screen items-center justify-center bg-background p-8">
       {/* Background gradient effects */}
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-node-interface/10 blur-3xl" />
       </div>
 

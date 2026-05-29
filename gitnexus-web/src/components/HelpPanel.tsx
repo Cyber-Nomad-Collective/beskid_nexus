@@ -143,7 +143,7 @@ function TabContent({
           }}
         >
           <p style={{ fontSize: 13, fontWeight: 500, color: '#e2e2e8', margin: '0 0 4px' }}>
-            What is GitNexus?
+            What is Beskid Nexus?
           </p>
           <p style={{ fontSize: 12, color: '#9ca3af', margin: 0, lineHeight: 1.6 }}>
             An interactive graph explorer for your codebase. Every file, function, and import
@@ -594,7 +594,7 @@ export const HelpPanel = ({ isOpen, onClose, nodeCount, edgeCount }: HelpPanelPr
               <h2 style={{ fontSize: 16, fontWeight: 600, color: '#e2e2e8', margin: 0 }}>
                 Help & Reference
               </h2>
-              <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>GitNexus — graph explorer</p>
+              <p style={{ fontSize: 12, color: 'var(--muted-foreground)', margin: 0 }}>Beskid Nexus — graph explorer</p>
             </div>
           </div>
           <button
@@ -700,10 +700,10 @@ export const HelpPanel = ({ isOpen, onClose, nodeCount, edgeCount }: HelpPanelPr
           }}
         >
           <span style={{ fontSize: 11, color: '#4b5563' }}>
-            GitNexus — open source codebase graph explorer
+            Beskid Nexus — repository knowledge graph explorer
           </span>
           <a
-            href="https://github.com/abhigyanpatwari/GitNexus"
+            href="https://beskid-lang.org"
             target="_blank"
             rel="noopener noreferrer"
             style={{ fontSize: 11, color: '#a78bfa', textDecoration: 'none' }}

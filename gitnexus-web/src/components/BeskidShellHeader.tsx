@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { BeskidHub } from '@beskid/beskid-ui/react/BeskidHub';
 import { Search, HelpCircle } from '@/lib/lucide-icons';
+import { ThemeToggle } from './theme-toggle';
 import type { GraphNode } from 'gitnexus-shared';
 
 import { useAppState } from '../hooks/useAppState';
@@ -118,8 +119,8 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 								<li key={node.id}>
 									<button
 										type="button"
-										className={`flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent ${
-											idx === selectedIndex ? 'bg-accent' : ''
+										className={`flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted ${
+											idx === selectedIndex ? 'bg-primary/10' : ''
 										}`}
 										onClick={() => selectNode(node)}
 									>
@@ -141,13 +142,14 @@ export const BeskidShellHeader = ({ onFocusNode }: BeskidShellHeaderProps) => {
 
 				<button
 					type="button"
-					className="rounded-md p-2 hover:bg-accent"
+					className="rounded-md p-2 hover:bg-muted"
 					title="Help"
 					onClick={() => setHelpDialogBoxOpen(true)}
 				>
 					<HelpCircle className="h-4 w-4" />
 				</button>
 
+				<ThemeToggle />
 				<BeskidHub />
 			</div>
 		</header>

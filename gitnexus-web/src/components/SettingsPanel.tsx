@@ -133,7 +133,7 @@ const OpenRouterModelCombobox = ({
       {/* Main input/button */}
       <div
         onClick={handleOpen}
-        className={`flex w-full cursor-pointer items-center gap-2 rounded-xl border bg-elevated px-4 py-3 transition-all ${isOpen ? 'border-accent ring-2 ring-accent/20' : 'border-border-subtle hover:border-accent/50'}`}
+        className={`flex w-full cursor-pointer items-center gap-2 rounded-xl border bg-muted px-4 py-3 transition-all ${isOpen ? 'border-primary ring-2 ring-accent/20' : 'border-border hover:border-primary/50'}`}
       >
         {isOpen ? (
           <input
@@ -143,42 +143,42 @@ const OpenRouterModelCombobox = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Search or type model ID..."
-            className="flex-1 bg-transparent font-mono text-sm text-text-primary outline-none placeholder:text-text-muted"
+            className="flex-1 bg-transparent font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground"
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
           <span
-            className={`flex-1 truncate font-mono text-sm ${value ? 'text-text-primary' : 'text-text-muted'}`}
+            className={`flex-1 truncate font-mono text-sm ${value ? 'text-foreground' : 'text-muted-foreground'}`}
           >
             {displayValue || 'Select or type a model...'}
           </span>
         )}
         <div className="flex items-center gap-1">
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-text-muted" />}
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           <ChevronDown
-            className={`h-4 w-4 text-text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`}
           />
         </div>
       </div>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-border-subtle bg-elevated shadow-xl">
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-border bg-muted shadow-xl">
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 px-4 py-6 text-center text-sm text-text-muted">
+            <div className="flex items-center justify-center gap-2 px-4 py-6 text-center text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading models...
             </div>
           ) : filteredModels.length === 0 ? (
             <div className="px-4 py-4 text-center">
               {models.length === 0 ? (
-                <div className="text-sm text-text-muted">
+                <div className="text-sm text-muted-foreground">
                   <Search className="mx-auto mb-2 h-5 w-5 opacity-50" />
                   <p>Type a model ID or press Enter</p>
                   <p className="mt-1 text-xs">e.g. openai/gpt-4o</p>
                 </div>
               ) : (
-                <div className="text-sm text-text-muted">
+                <div className="text-sm text-muted-foreground">
                   <p>No models match "{searchTerm}"</p>
                   <p className="mt-1 text-xs">Press Enter to use as custom ID</p>
                 </div>
@@ -190,14 +190,14 @@ const OpenRouterModelCombobox = ({
                 <button
                   key={model.id}
                   onClick={() => handleSelect(model.id)}
-                  className={`flex w-full flex-col px-4 py-2.5 text-left transition-colors hover:bg-hover ${model.id === value ? 'bg-accent/10' : ''}`}
+                  className={`flex w-full flex-col px-4 py-2.5 text-left transition-colors hover:bg-muted ${model.id === value ? 'bg-primary/10' : ''}`}
                 >
-                  <span className="truncate text-sm text-text-primary">{model.name}</span>
-                  <span className="truncate font-mono text-xs text-text-muted">{model.id}</span>
+                  <span className="truncate text-sm text-foreground">{model.name}</span>
+                  <span className="truncate font-mono text-xs text-muted-foreground">{model.id}</span>
                 </button>
               ))}
               {filteredModels.length > 50 && (
-                <div className="border-t border-border-subtle px-4 py-2 text-center text-xs text-text-muted">
+                <div className="border-t border-border px-4 py-2 text-center text-xs text-muted-foreground">
                   +{filteredModels.length - 50} more • Refine your search
                 </div>
               )}
@@ -346,21 +346,21 @@ export const SettingsPanel = ({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative mx-4 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-2xl">
+      <div className="relative mx-4 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle bg-elevated/50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border bg-muted/50 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20">
-              <Brain className="h-5 w-5 text-accent" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20">
+              <Brain className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-text-primary">AI Settings</h2>
-              <p className="text-xs text-text-muted">Configure your LLM provider</p>
+              <h2 className="text-lg font-semibold text-foreground">AI Settings</h2>
+              <p className="text-xs text-muted-foreground">Configure your LLM provider</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-text-muted transition-colors hover:bg-hover hover:text-text-primary"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -371,15 +371,15 @@ export const SettingsPanel = ({
           {/* Local Server */}
           {backendUrl !== undefined && onBackendUrlChange && (
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-text-secondary">Local Server</label>
+              <label className="block text-sm font-medium text-muted-foreground">Local Server</label>
               <div className="space-y-2">
                 <div className="mb-2 flex items-center gap-2">
-                  <Server className="h-4 w-4 text-text-muted" />
-                  <span className="text-sm text-text-secondary">Backend URL</span>
+                  <Server className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Backend URL</span>
                   <span
                     className={`h-2 w-2 rounded-full ${isBackendConnected ? 'bg-green-400' : 'bg-red-400'}`}
                   />
-                  <span className="text-xs text-text-muted">
+                  <span className="text-xs text-muted-foreground">
                     {isBackendConnected ? 'Connected' : 'Not connected'}
                   </span>
                 </div>
@@ -388,10 +388,10 @@ export const SettingsPanel = ({
                   value={backendUrl}
                   onChange={(e) => onBackendUrlChange(e.target.value)}
                   placeholder="http://localhost:4747"
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 font-mono text-sm text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 font-mono text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                 />
-                <p className="text-xs text-text-muted">
-                  Run <code className="rounded bg-elevated px-1 py-0.5">gitnexus serve</code> to
+                <p className="text-xs text-muted-foreground">
+                  Run <code className="rounded bg-muted px-1 py-0.5">gitnexus serve</code> to
                   start the local server
                 </p>
               </div>
@@ -400,7 +400,7 @@ export const SettingsPanel = ({
 
           {/* Provider Selection */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-text-secondary">Provider</label>
+            <label className="block text-sm font-medium text-muted-foreground">Provider</label>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {providers.map((provider) => (
                 <button
@@ -408,12 +408,12 @@ export const SettingsPanel = ({
                   onClick={() => handleProviderChange(provider)}
                   className={`flex items-center gap-3 rounded-xl border-2 p-4 transition-all ${
                     settings.activeProvider === provider
-                      ? 'border-accent bg-accent/10 text-text-primary'
-                      : 'border-border-subtle bg-elevated text-text-secondary hover:border-accent/50'
+                      ? 'border-primary bg-primary/10 text-foreground'
+                      : 'border-border bg-muted text-muted-foreground hover:border-primary/50'
                   } `}
                 >
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg ${settings.activeProvider === provider ? 'bg-accent/20' : 'bg-surface'} `}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg ${settings.activeProvider === provider ? 'bg-primary/20' : 'bg-card'} `}
                   >
                     {provider === 'openai'
                       ? '🤖'
@@ -470,9 +470,9 @@ export const SettingsPanel = ({
               }}
             >
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Server className="h-4 w-4" />
-                  Base URL <span className="font-normal text-text-muted">(optional)</span>
+                  Base URL <span className="font-normal text-muted-foreground">(optional)</span>
                 </label>
                 <input
                   type="url"
@@ -484,9 +484,9 @@ export const SettingsPanel = ({
                     }))
                   }
                   placeholder="https://api.openai.com/v1 (default)"
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                 />
-                <p className="text-xs text-text-muted">
+                <p className="text-xs text-muted-foreground">
                   Leave empty to use the default OpenAI API. Set a custom URL for proxies or
                   compatible APIs.
                 </p>
@@ -558,7 +558,7 @@ export const SettingsPanel = ({
           {settings.activeProvider === 'azure-openai' && (
             <div className="animate-fade-in space-y-4">
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Key className="h-4 w-4" />
                   API Key
                 </label>
@@ -573,12 +573,12 @@ export const SettingsPanel = ({
                       }))
                     }
                     placeholder="Enter your Azure OpenAI API key"
-                    className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 pr-12 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    className="w-full rounded-xl border border-border bg-muted px-4 py-3 pr-12 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                   />
                   <button
                     type="button"
                     onClick={() => toggleApiKeyVisibility('azure')}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-text-muted transition-colors hover:text-text-primary"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {showApiKey['azure'] ? (
                       <EyeOff className="h-4 w-4" />
@@ -590,7 +590,7 @@ export const SettingsPanel = ({
               </div>
 
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Server className="h-4 w-4" />
                   Endpoint
                 </label>
@@ -604,12 +604,12 @@ export const SettingsPanel = ({
                     }))
                   }
                   placeholder="https://your-resource.openai.azure.com"
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-secondary">Deployment Name</label>
+                <label className="text-sm font-medium text-muted-foreground">Deployment Name</label>
                 <input
                   type="text"
                   value={settings.azureOpenAI?.deploymentName ?? ''}
@@ -620,13 +620,13 @@ export const SettingsPanel = ({
                     }))
                   }
                   placeholder="e.g., gpt-4o-deployment"
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-text-secondary">Model</label>
+                  <label className="text-sm font-medium text-muted-foreground">Model</label>
                   <input
                     type="text"
                     value={settings.azureOpenAI?.model ?? 'gpt-4o'}
@@ -637,12 +637,12 @@ export const SettingsPanel = ({
                       }))
                     }
                     placeholder="gpt-4o"
-                    className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-text-secondary">API Version</label>
+                  <label className="text-sm font-medium text-muted-foreground">API Version</label>
                   <input
                     type="text"
                     value={settings.azureOpenAI?.apiVersion ?? '2024-08-01-preview'}
@@ -653,18 +653,18 @@ export const SettingsPanel = ({
                       }))
                     }
                     placeholder="2024-08-01-preview"
-                    className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                   />
                 </div>
               </div>
 
-              <p className="text-xs text-text-muted">
+              <p className="text-xs text-muted-foreground">
                 Configure your Azure OpenAI service in the{' '}
                 <a
                   href="https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub/~/OpenAI"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline"
+                  className="text-primary hover:underline"
                 >
                   Azure Portal
                 </a>
@@ -683,7 +683,7 @@ export const SettingsPanel = ({
                     href="https://ollama.ai"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-accent hover:underline"
+                    className="text-primary hover:underline"
                   >
                     ollama.ai
                   </a>
@@ -695,7 +695,7 @@ export const SettingsPanel = ({
               </div>
 
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Server className="h-4 w-4" />
                   Base URL
                 </label>
@@ -710,7 +710,7 @@ export const SettingsPanel = ({
                       }))
                     }
                     placeholder={DEFAULT_OLLAMA_BASE_URL}
-                    className="flex-1 rounded-xl border border-border-subtle bg-elevated px-4 py-3 font-mono text-sm text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    className="flex-1 rounded-xl border border-border bg-muted px-4 py-3 font-mono text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                   />
                   <button
                     type="button"
@@ -718,19 +718,19 @@ export const SettingsPanel = ({
                       checkOllamaConnection(settings.ollama?.baseUrl ?? DEFAULT_OLLAMA_BASE_URL)
                     }
                     disabled={isCheckingOllama}
-                    className="rounded-xl border border-border-subtle bg-elevated px-3 py-3 text-text-secondary transition-colors hover:border-accent/50 hover:text-text-primary disabled:opacity-50"
+                    className="rounded-xl border border-border bg-muted px-3 py-3 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
                     title="Check connection"
                   >
                     <RefreshCw className={`h-4 w-4 ${isCheckingOllama ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
-                <p className="text-xs text-text-muted">
-                  Default port is <code className="rounded bg-elevated px-1 py-0.5">11434</code>.
+                <p className="text-xs text-muted-foreground">
+                  Default port is <code className="rounded bg-muted px-1 py-0.5">11434</code>.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-secondary">Model</label>
+                <label className="text-sm font-medium text-muted-foreground">Model</label>
 
                 {ollamaError && !isCheckingOllama && (
                   <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-2">
@@ -751,11 +751,11 @@ export const SettingsPanel = ({
                     }))
                   }
                   placeholder="e.g., llama3.2, mistral, codellama"
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 font-mono text-sm text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 font-mono text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                 />
-                <p className="text-xs text-text-muted">
+                <p className="text-xs text-muted-foreground">
                   Pull a model with{' '}
-                  <code className="rounded bg-elevated px-1 py-0.5">ollama pull llama3.2</code>
+                  <code className="rounded bg-muted px-1 py-0.5">ollama pull llama3.2</code>
                 </p>
               </div>
             </div>
@@ -781,7 +781,7 @@ export const SettingsPanel = ({
               }}
             >
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-secondary">Model</label>
+                <label className="text-sm font-medium text-muted-foreground">Model</label>
                 <OpenRouterModelCombobox
                   value={settings.openrouter?.model ?? ''}
                   onChange={(model) =>
@@ -794,13 +794,13 @@ export const SettingsPanel = ({
                   isLoading={isLoadingModels}
                   onLoadModels={loadOpenRouterModels}
                 />
-                <p className="text-xs text-text-muted">
+                <p className="text-xs text-muted-foreground">
                   Browse all models at{' '}
                   <a
                     href="https://openrouter.ai/models"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-accent hover:underline"
+                    className="text-primary hover:underline"
                   >
                     OpenRouter Models
                   </a>
@@ -844,7 +844,7 @@ export const SettingsPanel = ({
           {settings.activeProvider === 'glm' && (
             <div className="animate-fade-in space-y-4">
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Key className="h-4 w-4" />
                   API Key
                 </label>
@@ -859,12 +859,12 @@ export const SettingsPanel = ({
                       }))
                     }
                     placeholder="Enter your Z.AI API key"
-                    className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 pr-12 text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    className="w-full rounded-xl border border-border bg-muted px-4 py-3 pr-12 text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                   />
                   <button
                     type="button"
                     onClick={() => toggleApiKeyVisibility('glm')}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-text-muted transition-colors hover:text-text-primary"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {showApiKey['glm'] ? (
                       <EyeOff className="h-4 w-4" />
@@ -873,13 +873,13 @@ export const SettingsPanel = ({
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-text-muted">
+                <p className="text-xs text-muted-foreground">
                   Get your API key from{' '}
                   <a
                     href="https://docs.z.ai"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-accent hover:underline"
+                    className="text-primary hover:underline"
                   >
                     Z.AI Platform
                   </a>
@@ -887,7 +887,7 @@ export const SettingsPanel = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-secondary">Model</label>
+                <label className="text-sm font-medium text-muted-foreground">Model</label>
                 <select
                   value={settings.glm?.model ?? 'GLM-5'}
                   onChange={(e) =>
@@ -896,7 +896,7 @@ export const SettingsPanel = ({
                       glm: { ...prev.glm!, model: e.target.value },
                     }))
                   }
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 font-mono text-sm text-text-primary transition-all outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 font-mono text-sm text-foreground transition-all outline-none focus:border-primary focus:ring-2 focus:ring-accent/20"
                 >
                   {getAvailableModels('glm').map((model) => (
                     <option key={model} value={model}>
@@ -907,7 +907,7 @@ export const SettingsPanel = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-secondary">Base URL</label>
+                <label className="text-sm font-medium text-muted-foreground">Base URL</label>
                 <input
                   type="text"
                   value={settings.glm?.baseUrl ?? 'https://api.z.ai/api/coding/paas/v4'}
@@ -918,9 +918,9 @@ export const SettingsPanel = ({
                     }))
                   }
                   placeholder="https://api.z.ai/api/coding/paas/v4"
-                  className="w-full rounded-xl border border-border-subtle bg-elevated px-4 py-3 font-mono text-sm text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-xl border border-border bg-muted px-4 py-3 font-mono text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-accent/20"
                 />
-                <p className="text-xs text-text-muted">
+                <p className="text-xs text-muted-foreground">
                   Coding API (default). Use https://api.z.ai/api/paas/v4 for the general API.
                 </p>
               </div>
@@ -928,13 +928,13 @@ export const SettingsPanel = ({
           )}
 
           {/* Privacy Note */}
-          <div className="rounded-xl border border-border-subtle bg-elevated/50 p-4">
+          <div className="rounded-xl border border-border bg-muted/50 p-4">
             <div className="flex gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-green-500/20 text-green-400">
                 🔒
               </div>
-              <div className="text-xs leading-relaxed text-text-muted">
-                <span className="font-medium text-text-secondary">Privacy:</span> Your API keys are
+              <div className="text-xs leading-relaxed text-muted-foreground">
+                <span className="font-medium text-muted-foreground">Privacy:</span> Your API keys are
                 stored only in your browser's session storage and are cleared when the tab closes.
                 They're sent directly to the LLM provider when you chat. Your code never leaves your
                 machine.
@@ -944,7 +944,7 @@ export const SettingsPanel = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-border-subtle bg-elevated/30 px-6 py-4">
+        <div className="flex items-center justify-between border-t border-border bg-muted/30 px-6 py-4">
           <div className="flex items-center gap-2 text-sm">
             {saveStatus === 'saved' && (
               <span className="flex animate-fade-in items-center gap-1.5 text-green-400">
@@ -962,13 +962,13 @@ export const SettingsPanel = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-text-secondary transition-colors hover:text-text-primary"
+              className="px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="rounded-lg bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dim"
+              className="rounded-lg bg-primary/10 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary"
             >
               Save Settings
             </button>

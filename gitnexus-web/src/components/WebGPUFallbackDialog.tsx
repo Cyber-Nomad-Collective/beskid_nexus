@@ -48,13 +48,13 @@ export const WebGPUFallbackDialog = ({
 
       {/* Dialog */}
       <div
-        className={`relative mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-2xl transition-all duration-200 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+        className={`relative mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl transition-all duration-200 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
       >
         {/* Header with scratching emoji */}
-        <div className="relative border-b border-border-subtle bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-6 py-5">
+        <div className="relative border-b border-border bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-6 py-5">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1 text-text-muted transition-colors hover:text-text-primary"
+            className="absolute top-4 right-4 p-1 text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -69,8 +69,8 @@ export const WebGPUFallbackDialog = ({
               🤔
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-text-primary">WebGPU said "nope"</h2>
-              <p className="mt-0.5 text-sm text-text-muted">
+              <h2 className="text-lg font-semibold text-foreground">WebGPU said "nope"</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 Your browser doesn't support GPU acceleration
               </p>
             </div>
@@ -79,23 +79,23 @@ export const WebGPUFallbackDialog = ({
 
         {/* Content */}
         <div className="space-y-4 px-6 py-5">
-          <p className="text-sm leading-relaxed text-text-secondary">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Couldn't create embeddings with WebGPU, so semantic search (Graph RAG) won't be as
             smart. The graph still works fine though!
           </p>
 
-          <div className="rounded-lg border border-border-subtle bg-elevated/50 p-4">
-            <p className="text-sm text-text-secondary">
-              <span className="font-medium text-text-primary">Your options:</span>
+          <div className="rounded-lg border border-border bg-muted/50 p-4">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Your options:</span>
             </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-text-muted">
+            <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <Snail className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
                 <span>
-                  <strong className="text-text-secondary">Use CPU</strong> — Works but{' '}
+                  <strong className="text-muted-foreground">Use CPU</strong> — Works but{' '}
                   {isSmallCodebase ? 'a bit' : 'way'} slower
                   {nodeCount > 0 && (
-                    <span className="text-text-muted">
+                    <span className="text-muted-foreground">
                       {' '}
                       (~{estimatedMinutes} min for {nodeCount} nodes)
                     </span>
@@ -105,7 +105,7 @@ export const WebGPUFallbackDialog = ({
               <li className="flex items-start gap-2">
                 <SkipForward className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-400" />
                 <span>
-                  <strong className="text-text-secondary">Skip it</strong> — Graph works, just no AI
+                  <strong className="text-muted-foreground">Skip it</strong> — Graph works, just no AI
                   semantic search
                 </span>
               </li>
@@ -119,14 +119,14 @@ export const WebGPUFallbackDialog = ({
             </p>
           )}
 
-          <p className="text-xs text-text-muted">💡 Tip: Try Chrome or Edge for WebGPU support</p>
+          <p className="text-xs text-muted-foreground">💡 Tip: Try Chrome or Edge for WebGPU support</p>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 border-t border-border-subtle bg-elevated/30 px-6 py-4">
+        <div className="flex gap-3 border-t border-border bg-muted/30 px-6 py-4">
           <button
             onClick={onSkip}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface px-4 py-2.5 text-sm font-medium text-text-secondary transition-all hover:bg-hover hover:text-text-primary"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
           >
             <SkipForward className="h-4 w-4" />
             Skip Embeddings

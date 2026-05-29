@@ -324,11 +324,11 @@ export const ProcessesPanel = () => {
   if (totalCount === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-surface">
-          <GitBranch className="h-7 w-7 text-text-muted" />
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-card">
+          <GitBranch className="h-7 w-7 text-muted-foreground" />
         </div>
-        <h3 className="mb-2 text-base font-medium text-text-primary">No Processes Detected</h3>
-        <p className="max-w-xs text-sm text-text-secondary">
+        <h3 className="mb-2 text-base font-medium text-foreground">No Processes Detected</h3>
+        <p className="max-w-xs text-sm text-muted-foreground">
           Processes are execution flows traced from entry points. Load a codebase to see detected
           processes.
         </p>
@@ -339,21 +339,21 @@ export const ProcessesPanel = () => {
   return (
     <div className="flex h-full flex-col">
       {/* Header with search */}
-      <div className="border-b border-border-subtle p-3">
+      <div className="border-b border-border p-3">
         <div className="mb-2 flex items-center gap-2">
-          <div className="flex flex-1 items-center gap-2 rounded-lg border border-border-subtle bg-elevated px-3 py-2 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
-            <Search className="h-4 w-4 text-text-muted" />
+          <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-accent/20">
+            <Search className="h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter processes..."
-              className="flex-1 border-none bg-transparent text-sm text-text-primary outline-none placeholder:text-text-muted"
+              className="flex-1 border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
           </div>
         </div>
         <div
-          className="flex items-center gap-2 text-xs text-text-muted"
+          className="flex items-center gap-2 text-xs text-muted-foreground"
           data-testid="process-list-loaded"
         >
           <span>{totalCount} processes detected</span>
@@ -367,42 +367,42 @@ export const ProcessesPanel = () => {
           <button
             onClick={handleViewAllProcesses}
             disabled={loadingProcess !== null}
-            className="group flex w-full items-center gap-3 rounded-xl border border-border-subtle bg-elevated/40 p-3 text-left shadow-sm transition-all hover:border-cyan-500/30 hover:bg-elevated/80 hover:shadow-cyan-900/10"
+            className="group flex w-full items-center gap-3 rounded-xl border border-border bg-muted/40 p-3 text-left shadow-sm transition-all hover:border-cyan-500/30 hover:bg-muted/80 hover:shadow-cyan-900/10"
           >
             <div className="rounded-lg bg-cyan-500/10 p-2 transition-colors group-hover:bg-cyan-500/20">
               <Layers className="h-5 w-5 text-cyan-400" />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-medium text-text-primary group-hover:text-cyan-200">
+              <h4 className="text-sm font-medium text-foreground group-hover:text-cyan-200">
                 Full Process Map
               </h4>
-              <p className="text-xs text-text-muted">View combined map of {totalCount} processes</p>
+              <p className="text-xs text-muted-foreground">View combined map of {totalCount} processes</p>
             </div>
             {loadingProcess === 'all' ? (
               <span className="mr-1 animate-spin">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
               </span>
             ) : (
-              <Eye className="h-4 w-4 text-text-muted group-hover:text-cyan-400" />
+              <Eye className="h-4 w-4 text-muted-foreground group-hover:text-cyan-400" />
             )}
           </button>
         </div>
 
         {/* Cross-Community Section */}
         {filteredProcesses.cross.length > 0 && (
-          <div className="border-b border-border-subtle">
+          <div className="border-b border-border">
             <button
               onClick={() => toggleSection('cross')}
-              className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-hover"
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-muted"
             >
               {expandedSections.has('cross') ? (
-                <ChevronDown className="h-4 w-4 text-text-muted" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-text-muted" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
               <Zap className="h-4 w-4 text-amber-400" />
-              <span className="text-sm font-medium text-text-primary">Cross-Community</span>
-              <span className="ml-auto rounded-full bg-surface px-2 py-0.5 text-xs text-text-muted">
+              <span className="text-sm font-medium text-foreground">Cross-Community</span>
+              <span className="ml-auto rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">
                 {filteredProcesses.cross.length}
               </span>
             </button>
@@ -430,16 +430,16 @@ export const ProcessesPanel = () => {
           <div>
             <button
               onClick={() => toggleSection('intra')}
-              className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-hover"
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-muted"
             >
               {expandedSections.has('intra') ? (
-                <ChevronDown className="h-4 w-4 text-text-muted" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-text-muted" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
               <Home className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm font-medium text-text-primary">Intra-Community</span>
-              <span className="ml-auto rounded-full bg-surface px-2 py-0.5 text-xs text-text-muted">
+              <span className="text-sm font-medium text-foreground">Intra-Community</span>
+              <span className="ml-auto rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">
                 {filteredProcesses.intra.length}
               </span>
             </button>
@@ -502,12 +502,12 @@ const ProcessItem = ({
   return (
     <div
       data-testid="process-row"
-      className={`group mx-2 flex items-center gap-2 rounded-lg px-4 py-2 transition-all hover:bg-hover ${rowClass}`}
+      className={`group mx-2 flex items-center gap-2 rounded-lg px-4 py-2 transition-all hover:bg-muted ${rowClass}`}
     >
-      <GitBranch className="h-4 w-4 flex-shrink-0 text-text-muted" />
+      <GitBranch className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm text-text-primary">{process.label}</div>
-        <div className="flex items-center gap-2 text-xs text-text-muted">
+        <div className="truncate text-sm text-foreground">{process.label}</div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{process.stepCount} steps</span>
           {process.clusters.length > 0 && (
             <>
@@ -523,7 +523,7 @@ const ProcessItem = ({
         className={`rounded-md p-1.5 transition-all ${
           isFocused
             ? 'animate-pulse border border-amber-400/40 bg-amber-500/20 text-amber-400 opacity-100 hover:bg-amber-500/30 hover:text-amber-300'
-            : 'border border-white/10 bg-white/5 text-text-muted opacity-0 group-hover:opacity-100 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-400'
+            : 'border border-white/10 bg-white/5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-400'
         }`}
         title={isFocused ? 'Click to remove highlight from graph' : 'Click to highlight in graph'}
         data-testid="process-highlight-button"

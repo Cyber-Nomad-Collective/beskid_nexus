@@ -17,8 +17,7 @@ interface ProcessFlowModalProps {
   isFullScreen?: boolean;
 }
 
-// Initialize mermaid with cyan/purple theme matching GitNexus
-// Initialize mermaid with cyan/purple theme matching GitNexus
+// Initialize mermaid with Beskid teal theme
 mermaid.initialize({
   startOnLoad: false,
   suppressErrorRendering: true, // Try to suppress if supported
@@ -27,12 +26,12 @@ mermaid.initialize({
   themeVariables: {
     primaryColor: '#1e293b', // node bg
     primaryTextColor: '#f1f5f9',
-    primaryBorderColor: '#22d3ee',
+    primaryBorderColor: '#7cf3ef',
     lineColor: '#94a3b8',
     secondaryColor: '#1e293b',
-    tertiaryColor: '#0f172a',
-    mainBkg: '#1e293b', // background
-    nodeBorder: '#22d3ee',
+    tertiaryColor: '#0f1414',
+    mainBkg: '#1e293b',
+    nodeBorder: '#7cf3ef',
     clusterBkg: '#1e293b',
     clusterBorder: '#475569',
     titleColor: '#f1f5f9',

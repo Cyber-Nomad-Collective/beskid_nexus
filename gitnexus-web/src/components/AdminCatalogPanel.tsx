@@ -88,17 +88,17 @@ export function AdminCatalogPanel({ onBack }: AdminCatalogPanelProps) {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!user?.isAdmin) {
     return (
-      <div className="mx-auto max-w-md rounded-3xl border border-border-default bg-surface p-7 text-center">
-        <Github className="mx-auto mb-4 h-10 w-10 text-accent" />
-        <h2 className="text-lg font-semibold text-text-primary">Admin sign-in required</h2>
-        <p className="mt-2 text-sm text-text-secondary">
+      <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-7 text-center">
+        <Github className="mx-auto mb-4 h-10 w-10 text-primary" />
+        <h2 className="text-lg font-semibold text-foreground">Admin sign-in required</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           Sign in with a GitHub account listed as a Nexus admin (via Beskid Auth hub).
         </p>
         <Button className="mt-6" type="button" onClick={() => { window.location.href = githubLoginUrl(); }}>
@@ -107,7 +107,7 @@ export function AdminCatalogPanel({ onBack }: AdminCatalogPanelProps) {
         <button
           type="button"
           onClick={onBack}
-          className="mt-4 block w-full text-xs text-text-muted"
+          className="mt-4 block w-full text-xs text-muted-foreground"
         >
           Back to catalog
         </button>
@@ -118,39 +118,39 @@ export function AdminCatalogPanel({ onBack }: AdminCatalogPanelProps) {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-text-primary">Catalog admin</h1>
-        <button type="button" onClick={onBack} className="text-sm text-text-muted">
+        <h1 className="text-lg font-semibold text-foreground">Catalog admin</h1>
+        <button type="button" onClick={onBack} className="text-sm text-muted-foreground">
           Back
         </button>
       </div>
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-border-default bg-surface p-4">
-        <h2 className="text-sm font-medium text-text-primary">Add repository</h2>
+      <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <h2 className="text-sm font-medium text-foreground">Add repository</h2>
         <input
           required
           placeholder="Display name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
         />
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          className="w-full rounded-lg border border-border-default bg-void px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
         />
         <input
           required
           placeholder="https://github.com/org/repo"
           value={gitUrl}
           onChange={(e) => setGitUrl(e.target.value)}
-          className="w-full rounded-lg border border-border-default bg-void px-3 py-2 font-mono text-xs"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs"
         />
         <button
           type="submit"
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent py-2 text-sm text-white"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary/10 py-2 text-sm text-white"
         >
           <Sparkles className="h-4 w-4" /> Add and index
         </button>
@@ -160,18 +160,18 @@ export function AdminCatalogPanel({ onBack }: AdminCatalogPanelProps) {
         {entries.map((entry) => (
           <li
             key={entry.id}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border-default bg-elevated p-3"
+            className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted p-3"
           >
             <div className="min-w-0">
-              <p className="font-medium text-text-primary">{entry.displayName}</p>
-              <p className="truncate font-mono text-[10px] text-text-muted">{entry.gitUrl}</p>
+              <p className="font-medium text-foreground">{entry.displayName}</p>
+              <p className="truncate font-mono text-[10px] text-muted-foreground">{entry.gitUrl}</p>
             </div>
             <div className="flex shrink-0 gap-2">
               <button
                 type="button"
                 disabled={analyzingId === entry.id}
                 onClick={() => void handleAnalyze(entry.id)}
-                className="cursor-pointer rounded-md border border-border-default px-2 py-1 text-xs"
+                className="cursor-pointer rounded-md border border-border px-2 py-1 text-xs"
               >
                 {analyzingId === entry.id ? '…' : 'Re-index'}
               </button>

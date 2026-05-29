@@ -202,9 +202,9 @@ export const QueryFAB = () => {
   return (
     <div
       ref={panelRef}
-      className="absolute bottom-4 left-4 z-20 w-[480px] max-w-[calc(100%-2rem)] animate-fade-in rounded-xl border border-cyan-500/30 bg-deep/95 shadow-[0_0_40px_rgba(6,182,212,0.2)] backdrop-blur-md"
+      className="absolute bottom-4 left-4 z-20 w-[480px] max-w-[calc(100%-2rem)] animate-fade-in rounded-xl border border-cyan-500/30 bg-muted/95 shadow-[0_0_40px_rgba(6,182,212,0.2)] backdrop-blur-md"
     >
-      <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500">
             <Terminal className="h-4 w-4 text-white" />
@@ -213,7 +213,7 @@ export const QueryFAB = () => {
         </div>
         <button
           onClick={handleClose}
-          className="rounded-md p-1.5 text-text-muted transition-colors hover:bg-hover hover:text-text-primary"
+          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <X className="h-4 w-4" />
         </button>
@@ -228,7 +228,7 @@ export const QueryFAB = () => {
             onKeyDown={handleKeyDown}
             placeholder="MATCH (n:Function) RETURN n.name, n.filePath LIMIT 10"
             rows={3}
-            className="w-full resize-none rounded-lg border border-border-subtle bg-surface px-3 py-2.5 font-mono text-sm text-text-primary transition-all outline-none placeholder:text-text-muted focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
+            className="w-full resize-none rounded-lg border border-border bg-card px-3 py-2.5 font-mono text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
           />
         </div>
 
@@ -236,7 +236,7 @@ export const QueryFAB = () => {
           <div className="relative">
             <button
               onClick={() => setShowExamples(!showExamples)}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span>Examples</span>
@@ -246,12 +246,12 @@ export const QueryFAB = () => {
             </button>
 
             {showExamples && (
-              <div className="absolute bottom-full left-0 mb-2 w-64 animate-fade-in rounded-lg border border-border-subtle bg-surface py-1 shadow-xl">
+              <div className="absolute bottom-full left-0 mb-2 w-64 animate-fade-in rounded-lg border border-border bg-card py-1 shadow-xl">
                 {EXAMPLE_QUERIES.map((example) => (
                   <button
                     key={example.label}
                     onClick={() => handleSelectExample(example.query)}
-                    className="w-full px-3 py-2 text-left text-sm text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                    className="w-full px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {example.label}
                   </button>
@@ -264,7 +264,7 @@ export const QueryFAB = () => {
             {query && (
               <button
                 onClick={handleClear}
-                className="rounded-md px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                className="rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 Clear
               </button>
@@ -296,29 +296,29 @@ export const QueryFAB = () => {
         <div className="border-t border-cyan-500/20">
           <div className="flex items-center justify-between bg-cyan-500/5 px-4 py-2.5">
             <div className="flex items-center gap-3 text-xs">
-              <span className="text-text-secondary">
+              <span className="text-muted-foreground">
                 <span className="font-semibold text-cyan-400">{queryResult.rows.length}</span> rows
               </span>
               {queryResult.nodeIds.length > 0 && (
-                <span className="text-text-secondary">
+                <span className="text-muted-foreground">
                   <span className="font-semibold text-cyan-400">{queryResult.nodeIds.length}</span>{' '}
                   highlighted
                 </span>
               )}
-              <span className="text-text-muted">{queryResult.executionTime.toFixed(1)}ms</span>
+              <span className="text-muted-foreground">{queryResult.executionTime.toFixed(1)}ms</span>
             </div>
             <div className="flex items-center gap-2">
               {queryResult.nodeIds.length > 0 && (
                 <button
                   onClick={clearQueryHighlights}
-                  className="text-xs text-text-muted transition-colors hover:text-text-primary"
+                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Clear
                 </button>
               )}
               <button
                 onClick={() => setShowResults(!showResults)}
-                className="flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text-primary"
+                className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 <Table className="h-3 w-3" />
                 {showResults ? (
@@ -331,14 +331,14 @@ export const QueryFAB = () => {
           </div>
 
           {showResults && queryResult.rows.length > 0 && (
-            <div className="scrollbar-thin max-h-48 overflow-auto border-t border-border-subtle">
+            <div className="scrollbar-thin max-h-48 overflow-auto border-t border-border">
               <table className="w-full text-xs">
-                <thead className="sticky top-0 bg-surface">
+                <thead className="sticky top-0 bg-card">
                   <tr>
                     {Object.keys(queryResult.rows[0]).map((key) => (
                       <th
                         key={key}
-                        className="border-b border-border-subtle px-3 py-2 text-left font-medium text-text-muted"
+                        className="border-b border-border px-3 py-2 text-left font-medium text-muted-foreground"
                       >
                         {key}
                       </th>
@@ -347,11 +347,11 @@ export const QueryFAB = () => {
                 </thead>
                 <tbody>
                   {queryResult.rows.slice(0, 50).map((row, i) => (
-                    <tr key={i} className="transition-colors hover:bg-hover/50">
+                    <tr key={i} className="transition-colors hover:bg-muted/50">
                       {Object.values(row).map((val, j) => (
                         <td
                           key={j}
-                          className="max-w-[200px] truncate border-b border-border-subtle/50 px-3 py-1.5 font-mono text-text-secondary"
+                          className="max-w-[200px] truncate border-b border-border/50 px-3 py-1.5 font-mono text-muted-foreground"
                         >
                           {typeof val === 'object' ? JSON.stringify(val) : String(val ?? '')}
                         </td>
@@ -361,7 +361,7 @@ export const QueryFAB = () => {
                 </tbody>
               </table>
               {queryResult.rows.length > 50 && (
-                <div className="border-t border-border-subtle bg-surface px-3 py-2 text-xs text-text-muted">
+                <div className="border-t border-border bg-card px-3 py-2 text-xs text-muted-foreground">
                   Showing 50 of {queryResult.rows.length} rows
                 </div>
               )}

@@ -39,15 +39,15 @@ function isValidGithubUrl(value: string): boolean {
 
 function ModeTabs({ mode, onChange }: { mode: InputMode; onChange: (m: InputMode) => void }) {
   return (
-    <div className="flex gap-1 rounded-lg bg-elevated p-1" role="tablist" aria-label="Input type">
+    <div className="flex gap-1 rounded-lg bg-muted p-1" role="tablist" aria-label="Input type">
       <button
         role="tab"
         aria-selected={mode === 'github'}
         onClick={() => onChange('github')}
         className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
           mode === 'github'
-            ? 'bg-accent text-white shadow-sm'
-            : 'text-text-muted hover:text-text-secondary'
+            ? 'bg-primary text-primary-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-muted-foreground'
         } `}
       >
         <Github className="h-3 w-3" />
@@ -59,8 +59,8 @@ function ModeTabs({ mode, onChange }: { mode: InputMode; onChange: (m: InputMode
         onClick={() => onChange('local')}
         className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
           mode === 'local'
-            ? 'bg-accent text-white shadow-sm'
-            : 'text-text-muted hover:text-text-secondary'
+            ? 'bg-primary text-primary-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-muted-foreground'
         } `}
       >
         <FolderOpen className="h-3 w-3" />
@@ -91,8 +91,8 @@ function AnalyzeButton({
       disabled={!canSubmit || isLoading}
       className={` ${sizeClass} flex items-center justify-center gap-2.5 rounded-xl font-medium transition-all duration-200 ${
         canSubmit && !isLoading
-          ? 'cursor-pointer bg-accent text-white shadow-glow-soft hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-glow'
-          : 'cursor-not-allowed border border-border-subtle bg-elevated text-text-muted'
+          ? 'cursor-pointer bg-primary/10 text-white shadow-glow-soft hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-glow'
+          : 'cursor-not-allowed border border-border bg-muted text-muted-foreground'
       } `}
     >
       {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -116,9 +116,9 @@ function DoneState({ repoName }: { repoName: string }) {
       </div>
       <div className="text-center">
         <p className="text-sm font-medium text-emerald-400">Analysis complete</p>
-        <p className="mt-0.5 font-mono text-xs text-text-muted">{repoName}</p>
+        <p className="mt-0.5 font-mono text-xs text-muted-foreground">{repoName}</p>
       </div>
-      <p className="text-xs text-text-secondary">Loading graph...</p>
+      <p className="text-xs text-muted-foreground">Loading graph...</p>
     </div>
   );
 }
@@ -250,20 +250,20 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
         <div className="space-y-2">
           <label
             htmlFor={inputId}
-            className="block text-xs font-medium tracking-wider text-text-secondary uppercase"
+            className="block text-xs font-medium tracking-wider text-muted-foreground uppercase"
           >
             GitHub Repository URL
           </label>
           <div
-            className={`flex items-center gap-3 rounded-xl border bg-void px-4 py-3.5 transition-all duration-200 ${
+            className={`flex items-center gap-3 rounded-xl border bg-background px-4 py-3.5 transition-all duration-200 ${
               validationError && phase === 'error'
                 ? 'border-red-500/50'
                 : isValidGithubUrl(githubUrl)
-                  ? 'border-accent/50 shadow-[0_0_0_3px_rgba(124,58,237,0.08)]'
-                  : 'border-border-default focus-within:border-accent/40'
+                  ? 'border-primary/50 shadow-[0_0_0_3px_rgba(124,58,237,0.08)]'
+                  : 'border-border focus-within:border-primary/40'
             } `}
           >
-            <Github className="h-4 w-4 shrink-0 text-text-muted" />
+            <Github className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               id={inputId}
               type="url"
@@ -282,14 +282,14 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
               placeholder="https://github.com/owner/repo"
               autoComplete="url"
               spellCheck={false}
-              className="flex-1 border-none bg-transparent font-mono text-sm text-text-primary outline-none placeholder:text-text-muted disabled:opacity-50"
+              className="flex-1 border-none bg-transparent font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
             />
             {githubUrl.length > 10 && (
               <div className="shrink-0">
                 {isValidGithubUrl(githubUrl) ? (
                   <Check className="h-3.5 w-3.5 text-emerald-400" />
                 ) : (
-                  <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
+                  <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
               </div>
             )}
@@ -302,20 +302,20 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
         <div className="space-y-2">
           <label
             htmlFor={`${inputId}-local`}
-            className="block text-xs font-medium tracking-wider text-text-secondary uppercase"
+            className="block text-xs font-medium tracking-wider text-muted-foreground uppercase"
           >
             Local Folder Path
           </label>
           <div
-            className={`flex items-center gap-3 rounded-xl border bg-void px-4 py-3.5 transition-all duration-200 ${
+            className={`flex items-center gap-3 rounded-xl border bg-background px-4 py-3.5 transition-all duration-200 ${
               validationError && phase === 'error'
                 ? 'border-red-500/50'
                 : localPath.trim().length > 1
-                  ? 'border-accent/50 shadow-[0_0_0_3px_rgba(124,58,237,0.08)]'
-                  : 'border-border-default focus-within:border-accent/40'
+                  ? 'border-primary/50 shadow-[0_0_0_3px_rgba(124,58,237,0.08)]'
+                  : 'border-border focus-within:border-primary/40'
             } `}
           >
-            <FolderOpen className="h-4 w-4 shrink-0 text-text-muted" />
+            <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               id={`${inputId}-local`}
               type="text"
@@ -334,7 +334,7 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
               placeholder={isWindows ? 'C:\\Users\\you\\project' : '/home/you/project'}
               autoComplete="off"
               spellCheck={false}
-              className="flex-1 border-none bg-transparent font-mono text-sm text-text-primary outline-none placeholder:text-text-muted disabled:opacity-50"
+              className="flex-1 border-none bg-transparent font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
             />
             {localPath.trim().length > 1 && (
               <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
@@ -364,7 +364,7 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
             type="button"
             onClick={() => folderInputRef.current?.click()}
             disabled={isLoading}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-elevated px-3 py-2 text-xs font-medium text-text-secondary transition-all duration-150 hover:bg-hover hover:text-text-primary disabled:opacity-50"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-muted-foreground transition-all duration-150 hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <FolderOpen className="h-3.5 w-3.5" />
             Browse for folder
@@ -408,14 +408,14 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
               setValidationError(null);
               setPhase('input');
             }}
-            className="flex-1 cursor-pointer rounded-xl border border-border-subtle bg-elevated px-4 py-2.5 text-sm text-text-secondary transition-all duration-200 hover:bg-hover hover:text-text-primary"
+            className="flex-1 cursor-pointer rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"
           >
             Try again
           </button>
           {onCancel && (
             <button
               onClick={onCancel}
-              className="cursor-pointer px-4 py-2.5 text-sm text-text-muted transition-colors hover:text-text-secondary"
+              className="cursor-pointer px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:text-muted-foreground"
             >
               Dismiss
             </button>
@@ -427,7 +427,7 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
       {phase === 'analyzing' && variant === 'sheet' && onCancel && (
         <button
           onClick={onCancel}
-          className="w-full cursor-pointer py-1 text-xs text-text-muted transition-colors hover:text-text-secondary"
+          className="w-full cursor-pointer py-1 text-xs text-muted-foreground transition-colors hover:text-muted-foreground"
         >
           Hide (analysis continues in background)
         </button>
