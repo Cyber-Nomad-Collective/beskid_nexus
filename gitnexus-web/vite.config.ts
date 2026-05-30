@@ -8,6 +8,7 @@ import {
 	assertBeskidPackagesInstalled,
 	resolveBeskidUi,
 	resolveBeskidUiSrc,
+	resolveUiReactAliases,
 	resolveUiReactSrc,
 } from './vite.resolve-beskid-ui';
 
@@ -44,6 +45,7 @@ export default defineConfig({
 				'styles/shadcn-entry.css',
 			),
 			...beskidUi.aliases,
+			...resolveUiReactAliases(),
 			'gitnexus-shared': path.resolve(__dirname, '../gitnexus-shared/src/index.ts'),
 			'@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
 				__dirname,

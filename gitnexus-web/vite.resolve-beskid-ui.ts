@@ -55,6 +55,18 @@ export function resolveUiReactSrc(): string | null {
 	return root ? path.join(root, 'src') : null;
 }
 
+/** Tracker-style shadcn aliases into installed @beskid/ui-react/src. */
+export function resolveUiReactAliases(): Record<string, string> {
+	const src = resolveUiReactSrc();
+	if (!src) return {};
+	return {
+		'#/components/ui': path.join(src, 'components/ui'),
+		'#/lib/utils.ts': path.join(src, 'lib/utils.ts'),
+		'#/lib/utils': path.join(src, 'lib/utils.ts'),
+		'#/hooks/use-mobile.ts': path.join(src, 'hooks/use-mobile.ts'),
+	};
+}
+
 export function resolveBeskidUiSrc(): string | null {
 	const root = tryResolvePackageRoot('@beskid/beskid-ui');
 	return root ? path.join(root, 'src') : null;

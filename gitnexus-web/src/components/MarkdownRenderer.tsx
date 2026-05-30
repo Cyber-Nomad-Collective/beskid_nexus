@@ -4,7 +4,6 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { MermaidDiagram } from './MermaidDiagram';
-import { ToolCallCard } from './ToolCallCard';
 import { Copy, Check } from '@/lib/lucide-icons';
 
 // Custom syntax theme
@@ -28,14 +27,12 @@ const customTheme = {
 interface MarkdownRendererProps {
   content: string;
   onLinkClick?: (href: string) => void;
-  toolCalls?: any[]; // Keep flexible for now
   showCopyButton?: boolean;
 }
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
   onLinkClick,
-  toolCalls,
   showCopyButton = false,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -214,15 +211,6 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
-        </div>
-      )}
-
-      {/* Tool Call Cards appended at the bottom if provided */}
-      {toolCalls && toolCalls.length > 0 && (
-        <div className="mt-3 space-y-2">
-          {toolCalls.map((tc) => (
-            <ToolCallCard key={tc.id} toolCall={tc} defaultExpanded={false} />
-          ))}
         </div>
       )}
     </div>

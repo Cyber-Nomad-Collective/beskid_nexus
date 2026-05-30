@@ -30,6 +30,8 @@ import { hybridSearch } from '../core/search/hybrid-search.js';
 import { LocalBackend } from '../mcp/local/local-backend.js';
 import { mountMCPEndpoints } from './mcp-http.js';
 import { mountGithubWebhook, mountNexusRoutes } from './nexus/mount-nexus-routes.js';
+import { codeDocsByEntityId } from './nexus/code-doc-store.js';
+import { ensureSpecLinkIndex } from './nexus/spec-link-index.js';
 import { fork } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { JobManager } from './analyze-job.js';
@@ -315,13 +317,14 @@ export const writeNdjsonRecord = async (
 
 const buildGraph = async (
   includeContent = false,
+  codeDocs: Map<string, import('./nexus/types.js').CodeDocRecord> = new Map(),
 ): Promise<{ nodes: GraphNode[]; relationships: GraphRelationship[] }> => {
   const nodes: GraphNode[] = [];
   for (const table of NODE_TABLES) {
     try {
       const rows = await executeQuery(getNodeQuery(table, includeContent));
       for (const row of rows) {
-        nodes.push(mapGraphNodeRow(table, row, includeContent));
+        nodes.push(mergeCodeDocIntoNode(mapGraphNodeRow(table, row, includeContent), codeDocs));
       }
     } catch (err) {
       if (!isIgnorableGraphQueryError(err)) {
@@ -397,6 +400,22 @@ const mapGraphNodeRow = (table: string, row: any, includeContent: boolean): Grap
   } as GraphNode['properties'],
 });
 
+const mergeCodeDocIntoNode = (
+  node: GraphNode,
+  codeDocs: Map<string, import('./nexus/types.js').CodeDocRecord>,
+): GraphNode => {
+  const record = codeDocs.get(node.id);
+  if (!record) return node;
+  return {
+    ...node,
+    properties: {
+      ...node.properties,
+      codeDoc: record.codeDoc,
+      specLinks: record.specLinks,
+    } as GraphNode['properties'],
+  };
+};
+
 const mapGraphRelationshipRow = (row: any): GraphRelationship => ({
   id: `${row.sourceId}_${row.type}_${row.targetId}`,
   type: row.type,
@@ -411,6 +430,7 @@ export const streamGraphNdjson = async (
   res: express.Response,
   includeContent = false,
   signal?: AbortSignal,
+  codeDocs: Map<string, import('./nexus/types.js').CodeDocRecord> = new Map(),
 ): Promise<void> => {
   for (const table of NODE_TABLES) {
     try {
@@ -419,7 +439,7 @@ export const streamGraphNdjson = async (
           res,
           {
             type: 'node',
-            data: mapGraphNodeRow(table, row, includeContent),
+            data: mergeCodeDocIntoNode(mapGraphNodeRow(table, row, includeContent), codeDocs),
           },
           signal,
         );
@@ -666,6 +686,9 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
   // Initialize MCP backend early (needed for Nexus routes and analyze jobs).
   const backend = new LocalBackend();
   await backend.init();
+  void ensureSpecLinkIndex().catch((err) => {
+    logger.warn({ err }, 'Failed to build spec link index at boot');
+  });
   const cleanupMcp = mountMCPEndpoints(app, backend);
   const jobManager = new JobManager();
 
@@ -996,6 +1019,7 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
       const lbugPath = path.join(entry.storagePath, 'lbug');
       const includeContent = req.query.includeContent === 'true';
       const stream = req.query.stream === 'true';
+      const codeDocs = await codeDocsByEntityId(entry.name);
 
       if (stream) {
         const abortController = new AbortController();
@@ -1019,7 +1043,7 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
 
         try {
           await withLbugDb(lbugPath, async () =>
-            streamGraphNdjson(res, includeContent, abortController.signal),
+            streamGraphNdjson(res, includeContent, abortController.signal, codeDocs),
           );
           if (!abortController.signal.aborted && !res.writableEnded) {
             res.end();
@@ -1032,7 +1056,7 @@ export const createServer = async (port: number, host: string = '127.0.0.1') => 
         return;
       }
 
-      const graph = await withLbugDb(lbugPath, async () => buildGraph(includeContent));
+      const graph = await withLbugDb(lbugPath, async () => buildGraph(includeContent, codeDocs));
       res.json(graph);
     } catch (err: any) {
       if (err instanceof ClientDisconnectedError) {

@@ -19,7 +19,6 @@ import {
   SigmaEdgeAttributes,
 } from '../lib/graph-adapter';
 import type { GraphNode } from 'gitnexus-shared';
-import { QueryFAB } from './QueryFAB';
 import Graph from 'graphology';
 
 export interface GraphCanvasHandle {
@@ -246,6 +245,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       {/* Sigma container */}
       <div
         ref={containerRef}
+        data-testid="graph-canvas"
         className="sigma-container h-full w-full cursor-grab active:cursor-grabbing"
       />
 
@@ -346,9 +346,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
           <span className="text-xs font-medium text-emerald-400">Layout optimizing...</span>
         </div>
       )}
-
-      {/* Query FAB */}
-      <QueryFAB />
 
       {/* AI Highlights toggle - Top Right */}
       <div className="absolute top-4 right-4 z-20">

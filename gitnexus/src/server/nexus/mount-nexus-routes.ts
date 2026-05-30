@@ -30,7 +30,11 @@ import {
 } from './session.js';
 import { authHubLoginUrl, verifyHubHandoff } from './hub-handoff.js';
 import { startAnalyzeJob, type AnalyzeRunnerDeps } from './analyze-runner.js';
+import { startCodeDocJob } from './code-doc-runner.js';
 import { getRemoteHead } from './remote-git.js';
+import { isUserRepoOwner } from './github-ownership.js';
+import { extractRepoName, getCloneDir } from '../git-clone.js';
+import type { NexusSessionPayload } from './types.js';
 import { logger } from '../../core/logger.js';
 
 export interface MountNexusRoutesDeps extends AnalyzeRunnerDeps {
@@ -49,6 +53,75 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
     }
     if (!(await isNexusAdmin(session.login))) {
       res.status(403).json({ error: 'Admin access required' });
+      return;
+    }
+    (req as any).nexusSession = session;
+    next();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Auth check failed' });
+  }
+};
+
+const listOwnedRepoIds = async (session: NexusSessionPayload): Promise<string[]> => {
+  const entries = await listCatalogEntries();
+  const owned: string[] = [];
+  await Promise.all(
+    entries.map(async (entry) => {
+      if (
+        await isUserRepoOwner(session.login, entry.gitUrl, {
+          hubUserToken: session.hubUserToken,
+        })
+      ) {
+        owned.push(entry.id);
+      }
+    }),
+  );
+  return owned.sort();
+};
+
+const requireRepoOwnerForGitUrl = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const session = await getSessionFromRequest(req);
+    if (!session) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+    const gitUrl = typeof req.body?.gitUrl === 'string' ? req.body.gitUrl : '';
+    if (!gitUrl.trim()) {
+      res.status(400).json({ error: 'gitUrl is required' });
+      return;
+    }
+    const owned = await isUserRepoOwner(session.login, gitUrl, {
+      hubUserToken: session.hubUserToken,
+    });
+    if (!owned) {
+      res.status(403).json({ error: 'GitHub repo owner access required' });
+      return;
+    }
+    (req as any).nexusSession = session;
+    next();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Auth check failed' });
+  }
+};
+
+const requireRepoOwnerForEntry = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const session = await getSessionFromRequest(req);
+    if (!session) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+    const entry = await getCatalogEntry(req.params.id);
+    if (!entry) {
+      res.status(404).json({ error: 'Catalog entry not found' });
+      return;
+    }
+    const owned = await isUserRepoOwner(session.login, entry.gitUrl, {
+      hubUserToken: session.hubUserToken,
+    });
+    if (!owned) {
+      res.status(403).json({ error: 'GitHub repo owner access required' });
       return;
     }
     (req as any).nexusSession = session;
@@ -286,6 +359,7 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
       name: session.name,
       avatarUrl: session.avatarUrl,
       isAdmin: await isNexusAdmin(session.login),
+      ownedRepoIds: await listOwnedRepoIds(session),
     });
   });
 
@@ -329,30 +403,35 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
     }
   });
 
-  app.post('/api/admin/catalog', requireAdmin, createRouteLimiter({ limit: 30 }), async (req, res) => {
-    try {
-      const { displayName, description, gitUrl, defaultBranch, id, enabled, sortOrder } =
-        req.body ?? {};
-      if (typeof displayName !== 'string' || typeof gitUrl !== 'string') {
-        res.status(400).json({ error: 'displayName and gitUrl are required' });
-        return;
+  app.post(
+    '/api/admin/catalog',
+    requireRepoOwnerForGitUrl,
+    createRouteLimiter({ limit: 30 }),
+    async (req, res) => {
+      try {
+        const { displayName, description, gitUrl, defaultBranch, id, enabled, sortOrder } =
+          req.body ?? {};
+        if (typeof displayName !== 'string' || typeof gitUrl !== 'string') {
+          res.status(400).json({ error: 'displayName and gitUrl are required' });
+          return;
+        }
+        const entry = await createCatalogEntry({
+          id: typeof id === 'string' ? slugifyCatalogId(id) : undefined,
+          displayName,
+          description: typeof description === 'string' ? description : '',
+          gitUrl,
+          defaultBranch: typeof defaultBranch === 'string' ? defaultBranch : undefined,
+          enabled: typeof enabled === 'boolean' ? enabled : true,
+          sortOrder: typeof sortOrder === 'number' ? sortOrder : undefined,
+        });
+        res.status(201).json(entry);
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Failed to create catalog entry' });
       }
-      const entry = await createCatalogEntry({
-        id: typeof id === 'string' ? slugifyCatalogId(id) : undefined,
-        displayName,
-        description: typeof description === 'string' ? description : '',
-        gitUrl,
-        defaultBranch: typeof defaultBranch === 'string' ? defaultBranch : undefined,
-        enabled: typeof enabled === 'boolean' ? enabled : true,
-        sortOrder: typeof sortOrder === 'number' ? sortOrder : undefined,
-      });
-      res.status(201).json(entry);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Failed to create catalog entry' });
-    }
-  });
+    },
+  );
 
-  app.patch('/api/admin/catalog/:id', requireAdmin, async (req, res) => {
+  app.patch('/api/admin/catalog/:id', requireRepoOwnerForEntry, async (req, res) => {
     try {
       const entry = await updateCatalogEntry(req.params.id, req.body ?? {});
       res.json(entry);
@@ -361,7 +440,7 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
     }
   });
 
-  app.delete('/api/admin/catalog/:id', requireAdmin, async (req, res) => {
+  app.delete('/api/admin/catalog/:id', requireRepoOwnerForEntry, async (req, res) => {
     try {
       await deleteCatalogEntry(req.params.id);
       res.json({ ok: true });
@@ -372,7 +451,7 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
 
   app.post(
     '/api/admin/catalog/:id/analyze',
-    requireAdmin,
+    requireRepoOwnerForEntry,
     createRouteLimiter({ limit: 10 }),
     async (req, res) => {
       try {
@@ -405,6 +484,39 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
           return;
         }
         res.status(500).json({ error: err.message || 'Failed to start analysis' });
+      }
+    },
+  );
+
+  app.post(
+    '/api/admin/catalog/:id/refresh-docs',
+    requireRepoOwnerForEntry,
+    createRouteLimiter({ limit: 10 }),
+    async (req, res) => {
+      try {
+        const entry = await getCatalogEntry(req.params.id);
+        if (!entry) {
+          res.status(404).json({ error: 'Catalog entry not found' });
+          return;
+        }
+
+        const registryName = entry.registryName ?? entry.id;
+        const repoPath = getCloneDir(extractRepoName(entry.gitUrl));
+        const result = await startCodeDocJob({
+          registryName,
+          repoPath,
+          catalogEntryId: entry.id,
+          maxEntities: typeof req.body?.maxEntities === 'number' ? req.body.maxEntities : undefined,
+        });
+
+        if (result.status === 'skipped') {
+          res.json({ skipped: true, reason: result.reason, jobId: result.jobId });
+          return;
+        }
+
+        res.status(202).json({ jobId: result.jobId, status: result.status });
+      } catch (err: any) {
+        res.status(500).json({ error: err.message || 'Failed to start doc refresh' });
       }
     },
   );

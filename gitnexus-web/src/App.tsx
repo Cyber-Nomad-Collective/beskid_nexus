@@ -1,50 +1,42 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AdminCatalogPanel } from './components/AdminCatalogPanel';
-import { BeskidShellHeader } from './components/BeskidShellHeader';
-import { CatalogHome } from './components/CatalogHome';
-import { CodeReferencesPanel } from './components/CodeReferencesPanel';
-import { DropZone } from './components/DropZone';
-import { FileTreePanel } from './components/FileTreePanel';
-import { GraphCanvas, type GraphCanvasHandle } from './components/GraphCanvas';
+import { GraphExplorerLayout, SymbolSearch } from './components/graph-explorer-layout';
 import { LoadingOverlay } from './components/LoadingOverlay';
-import { OAuthSetupWizard } from './components/OAuthSetupWizard';
+import { NexusAppShell } from './components/nexus-app-shell';
 import { NexusServiceUnavailable } from './components/NexusServiceUnavailable';
-import { OnboardingGuide } from './components/OnboardingGuide';
-import { RightPanel } from './components/RightPanel';
-import { StatusBar } from './components/StatusBar';
-import { enrichCatalogEntry } from './lib/catalog-match';
-import { BESKID_NEXUS } from './config/beskid-nexus';
-import { showLocalDevOnboarding } from './config/nexus-mode';
+import { OAuthSetupWizard } from './components/OAuthSetupWizard';
+import { RepoAdminSheet } from './components/RepoAdminSheet';
+import { RepoSelector } from './components/repo-selector';
 import { ERROR_RESET_DELAY_MS } from './config/ui-constants';
 import { createKnowledgeGraph } from './core/graph/graph';
 import { useAppState } from './hooks/useAppState';
 import { AppStateProvider } from './hooks/useAppState';
+import { useCatalogBootstrap } from './hooks/useCatalogBootstrap';
 import {
-	connectToServer,
 	connectHeartbeat,
+	connectToServer,
 	fetchRepos,
 	normalizeServerUrl,
 	type ConnectResult,
-	type BackendRepo,
 } from './services/backend-client';
 import { ensureBackendUrlFromPage, probeBackend } from './services/backend-client';
 import {
 	fetchAuthMe,
 	fetchPublicCatalog,
 	fetchSetupStatus,
-	type PublicCatalogEntry,
+	githubLoginUrl,
+	type AuthUser,
 } from './services/nexus-api';
+import type { GraphCanvasHandle } from './components/GraphCanvas';
 import type { PipelineProgress } from 'gitnexus-shared';
 
-type ShellPhase = 'boot' | 'setup' | 'server-down' | 'home' | 'admin' | 'advanced' | 'loading-graph';
+type ShellPhase = 'boot' | 'setup' | 'server-down' | 'explorer';
 
 const AppContent = () => {
 	const [shellPhase, setShellPhase] = useState<ShellPhase>('boot');
-	const [catalog, setCatalog] = useState<PublicCatalogEntry[]>([]);
-	const [indexedRepos, setIndexedRepos] = useState<BackendRepo[]>([]);
-	const [homeRefreshing, setHomeRefreshing] = useState(false);
-	const [isAdmin, setIsAdmin] = useState(false);
+	const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+	const [adminOpen, setAdminOpen] = useState(false);
+	const [serverDisconnected, setServerDisconnected] = useState(false);
 	const bootstrapped = useRef(false);
 
 	const {
@@ -57,14 +49,9 @@ const AppContent = () => {
 		setCurrentRepo,
 		setServerBaseUrl,
 		setAvailableRepos,
-		isRightPanelOpen,
-		codeReferences,
-		selectedNode,
-		isCodePanelOpen,
 	} = useAppState();
 
 	const graphCanvasRef = useRef<GraphCanvasHandle>(null);
-	const [serverDisconnected, setServerDisconnected] = useState(false);
 
 	const applyConnectResult = useCallback(
 		async (result: ConnectResult, serverUrl: string) => {
@@ -73,7 +60,7 @@ const AppContent = () => {
 			const projectName =
 				repoName ||
 				(repoPath || '').replace(/\\/g, '/').split('/').filter(Boolean).pop() ||
-				BESKID_NEXUS.defaultRepo;
+				'';
 
 			setProjectName(projectName);
 			setCurrentRepo(projectName);
@@ -83,12 +70,8 @@ const AppContent = () => {
 			for (const rel of result.relationships) graph.addRelationship(rel);
 			setGraph(graph);
 
-			const url = new URL(window.location.href);
-			url.searchParams.set('project', projectName);
-			window.history.replaceState(null, '', url.toString());
 			setServerBaseUrl(normalizeServerUrl(serverUrl));
 			setViewMode('exploring');
-			setShellPhase('loading-graph');
 			setProgress(null);
 			fetchRepos()
 				.then(setAvailableRepos)
@@ -107,7 +90,6 @@ const AppContent = () => {
 
 	const connectProject = useCallback(
 		(project: string, serverUrl = window.location.origin) => {
-			setShellPhase('loading-graph');
 			setViewMode('loading');
 			setProgress({
 				phase: 'extracting',
@@ -150,35 +132,16 @@ const AppContent = () => {
 						detail: err instanceof Error ? err.message : 'Unknown error',
 					});
 					setTimeout(() => {
-						setViewMode('loading');
+						setViewMode('exploring');
 						setProgress(null);
-						setShellPhase('home');
 					}, ERROR_RESET_DELAY_MS);
 				});
 		},
 		[applyConnectResult, setProgress, setViewMode],
 	);
 
-	const refreshHome = useCallback(async () => {
-		setHomeRefreshing(true);
-		try {
-			const [entries, me, repos] = await Promise.all([
-				fetchPublicCatalog().catch(() => [] as PublicCatalogEntry[]),
-				fetchAuthMe().catch(() => null),
-				fetchRepos().catch(() => [] as BackendRepo[]),
-			]);
-			setCatalog(entries);
-			setIndexedRepos(repos);
-			setIsAdmin(!!me?.isAdmin);
-		} finally {
-			setHomeRefreshing(false);
-		}
-	}, []);
-
 	const runBoot = useCallback(async () => {
 		ensureBackendUrlFromPage();
-		const params = new URLSearchParams(window.location.search);
-		const projectParam = params.get('project') || BESKID_NEXUS.defaultRepo || '';
 
 		const serverUp = await probeBackend().catch(() => false);
 		if (!serverUp) {
@@ -201,39 +164,50 @@ const AppContent = () => {
 			return;
 		}
 
-		const [entries, repos, me] = await Promise.all([
-			fetchPublicCatalog().catch(() => [] as PublicCatalogEntry[]),
-			fetchRepos().catch(() => [] as BackendRepo[]),
-			fetchAuthMe().catch(() => null),
-		]);
-		setCatalog(entries);
-		setIndexedRepos(repos);
-		setIsAdmin(!!me?.isAdmin);
-
-		if (projectParam) {
-			const enriched = entries.map((e) => enrichCatalogEntry(e, repos));
-			const catalogMatch = enriched.find(
-				(e) => e.id === projectParam || e.registryName === projectParam,
-			);
-			const repoMatch = repos.find((r) => r.name === projectParam);
-			const project =
-				(catalogMatch?.indexed ? catalogMatch.registryName : undefined) ??
-				repoMatch?.name ??
-				catalogMatch?.registryName ??
-				catalogMatch?.id ??
-				projectParam;
-			connectProject(project);
-			return;
-		}
-
-		setShellPhase('home');
-	}, [connectProject]);
+		const me = await fetchAuthMe().catch(() => null);
+		setAuthUser(me);
+		setShellPhase('explorer');
+	}, []);
 
 	useEffect(() => {
 		if (bootstrapped.current) return;
 		bootstrapped.current = true;
 		void runBoot();
 	}, [runBoot]);
+
+	const handleSelectRepo = useCallback(
+		(registryName: string) => {
+			connectProject(registryName);
+		},
+		[connectProject],
+	);
+
+	const { catalog, activeEntry, loading: catalogLoading, error: catalogError, selectRepo } =
+		useCatalogBootstrap({
+			enabled: shellPhase === 'explorer',
+			onSelectRepo: (registryName) => handleSelectRepo(registryName),
+		});
+
+	const refreshCatalog = useCallback(async () => {
+		const me = await fetchAuthMe().catch(() => null);
+		setAuthUser(me);
+		try {
+			const entries = await fetchPublicCatalog();
+			const params = new URLSearchParams(window.location.search);
+			const repoParam = params.get('repo') ?? params.get('project');
+			const match = entries.find(
+				(entry) =>
+					entry.id === repoParam ||
+					entry.registryName === repoParam ||
+					entry.id === activeEntry?.id,
+			);
+			if (match?.indexed) {
+				selectRepo(match);
+			}
+		} catch (err) {
+			console.warn('Failed to refresh catalog:', err);
+		}
+	}, [activeEntry?.id, selectRepo]);
 
 	useEffect(() => {
 		if (viewMode !== 'exploring') return;
@@ -247,12 +221,20 @@ const AppContent = () => {
 		graphCanvasRef.current?.focusNode(nodeId);
 	}, []);
 
-	const handleDropZoneConnect = useCallback(
-		async (result: ConnectResult, serverUrl?: string) => {
-			await applyConnectResult(result, serverUrl ?? window.location.origin);
-		},
-		[applyConnectResult],
-	);
+	const indexedEntries = catalog.filter((entry) => entry.indexed);
+	const showEmptyCatalog = shellPhase === 'explorer' && !catalogLoading && indexedEntries.length === 0;
+	const canManageRepos = Boolean(authUser);
+	const manageRepoLabel =
+		authUser && (authUser.ownedRepoIds?.length ?? 0) > 0 ? 'Manage repo' : 'Add repository';
+	const manageRepoAction = canManageRepos ? (
+		<button
+			type="button"
+			className="inline-flex h-8 items-center rounded-4xl border border-input bg-background px-3 text-sm font-medium hover:bg-muted"
+			onClick={() => setAdminOpen(true)}
+		>
+			{manageRepoLabel}
+		</button>
+	) : null;
 
 	if (shellPhase === 'boot') {
 		return (
@@ -286,104 +268,109 @@ const AppContent = () => {
 	if (shellPhase === 'server-down') {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-background p-4">
-				{showLocalDevOnboarding() ? (
-					<OnboardingGuide />
-				) : (
-					<NexusServiceUnavailable
-						onRecovered={() => {
-							bootstrapped.current = false;
-							void runBoot();
-						}}
-					/>
-				)}
-			</div>
-		);
-	}
-
-	if (shellPhase === 'admin') {
-		return (
-			<div className="min-h-screen bg-background">
-				<AdminCatalogPanel
-					onBack={() => {
-						void refreshHome().then(() => setShellPhase('home'));
+				<NexusServiceUnavailable
+					onRecovered={() => {
+						bootstrapped.current = false;
+						void runBoot();
 					}}
-				/>
-			</div>
-		);
-	}
-
-	if (shellPhase === 'advanced') {
-		return (
-			<div className="flex min-h-screen items-center justify-center bg-background p-4">
-				<DropZone onServerConnect={handleDropZoneConnect} />
-				<button
-					type="button"
-					className="fixed top-4 right-4 text-sm text-muted-foreground"
-					onClick={() => setShellPhase('home')}
-				>
-				 Back to catalog
-				</button>
-			</div>
-		);
-	}
-
-	if (shellPhase === 'home') {
-		return (
-			<div className="flex min-h-screen items-center justify-center bg-background p-4">
-				<CatalogHome
-					entries={catalog}
-					indexedRepos={indexedRepos}
-					isRefreshing={homeRefreshing}
-					onRefresh={refreshHome}
-					isAdmin={isAdmin}
-					onSelect={(entry) => {
-						if (!entry.indexed) return;
-						connectProject(entry.registryName ?? entry.id);
-					}}
-					onSelectRepo={(repoName) => connectProject(repoName)}
-					onAdmin={() => setShellPhase('admin')}
-					onAdvanced={() => setShellPhase('advanced')}
 				/>
 			</div>
 		);
 	}
 
 	if (viewMode === 'loading' && progress) {
-		return <LoadingOverlay progress={progress} />;
-	}
-
-	if (viewMode !== 'exploring') {
-		return null;
+		return (
+			<>
+				<NexusAppShell
+					authUser={authUser}
+					repoName={activeEntry?.displayName}
+					repoSelector={
+						<RepoSelector
+							entries={catalog}
+							activeEntryId={activeEntry?.id}
+							onSelect={selectRepo}
+							disabled
+						/>
+					}
+					search={<SymbolSearch onFocusNode={handleFocusNode} />}
+					actions={manageRepoAction}
+				>
+					<LoadingOverlay progress={progress} />
+				</NexusAppShell>
+				<RepoAdminSheet
+					open={adminOpen}
+					onOpenChange={setAdminOpen}
+					authUser={authUser}
+					catalog={catalog}
+					onCatalogChanged={() => void refreshCatalog()}
+				/>
+			</>
+		);
 	}
 
 	return (
-		<div className="flex h-screen flex-col overflow-hidden bg-background">
-			<BeskidShellHeader onFocusNode={handleFocusNode} />
-
-			<main className="flex min-h-0 flex-1">
-				<FileTreePanel onFocusNode={handleFocusNode} />
-
-				<div className="relative min-w-0 flex-1">
-					<GraphCanvas ref={graphCanvasRef} />
-
-					{isCodePanelOpen && (codeReferences.length > 0 || !!selectedNode) && (
-						<div className="pointer-events-auto absolute inset-y-0 left-0 z-30">
-							<CodeReferencesPanel onFocusNode={handleFocusNode} />
-						</div>
-					)}
-				</div>
-
-				{isRightPanelOpen && <RightPanel />}
-			</main>
-
-			<StatusBar />
-
-			{serverDisconnected && (
-				<div className="fixed bottom-12 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-yellow-500/30 bg-yellow-900/80 px-4 py-2 text-sm text-yellow-200 shadow-lg backdrop-blur">
-					Server connection lost — reconnecting…
-				</div>
-			)}
-		</div>
+		<>
+			<NexusAppShell
+				authUser={authUser}
+				repoName={activeEntry?.displayName}
+				repoSelector={
+					<RepoSelector
+						entries={catalog}
+						activeEntryId={activeEntry?.id}
+						onSelect={selectRepo}
+						disabled={catalogLoading}
+					/>
+				}
+				search={<SymbolSearch onFocusNode={handleFocusNode} />}
+				actions={manageRepoAction}
+			>
+				{catalogLoading ? (
+					<div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
+						Loading catalog…
+					</div>
+				) : showEmptyCatalog ? (
+					<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+						<h1 className="text-2xl font-semibold">No indexed repositories yet</h1>
+						<p className="max-w-md text-muted-foreground">
+							Beskid Nexus publishes knowledge graphs for registered repositories. When indexing
+							completes, the first repo opens here automatically.
+						</p>
+						{catalogError ? (
+							<p className="text-sm text-destructive">{catalogError}</p>
+						) : null}
+						{!authUser ? (
+							<a
+								href={githubLoginUrl()}
+								className="inline-flex h-9 items-center rounded-4xl border border-input bg-primary px-4 text-sm font-medium text-primary-foreground"
+							>
+								Sign in with GitHub to add a repository
+							</a>
+						) : (
+							<button
+								type="button"
+								className="inline-flex h-9 items-center rounded-4xl border border-input bg-primary px-4 text-sm font-medium text-primary-foreground"
+								onClick={() => setAdminOpen(true)}
+							>
+								Add repository
+							</button>
+						)}
+					</div>
+				) : (
+					<GraphExplorerLayout
+						graphCanvasRef={graphCanvasRef}
+						onFocusNode={handleFocusNode}
+						serverDisconnected={serverDisconnected}
+					/>
+				)}
+			</NexusAppShell>
+			<RepoAdminSheet
+				open={adminOpen}
+				onOpenChange={setAdminOpen}
+				authUser={authUser}
+				catalog={catalog}
+				onCatalogChanged={() => void refreshCatalog()}
+			/>
+		</>
 	);
 };
 

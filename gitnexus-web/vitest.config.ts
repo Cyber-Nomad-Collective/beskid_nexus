@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { createRequire } from 'module';
 
+import {
+	resolveUiReactAliases,
+} from './vite.resolve-beskid-ui';
+
 const _require = createRequire(import.meta.url);
 const gitnexusPkg = _require('../gitnexus/package.json');
 
@@ -14,6 +18,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      ...resolveUiReactAliases(),
       '@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
         __dirname,
         'node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs',

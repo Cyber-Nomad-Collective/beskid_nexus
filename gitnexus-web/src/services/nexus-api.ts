@@ -17,6 +17,7 @@ export interface AuthUser {
   name: string | null;
   avatarUrl: string;
   isAdmin: boolean;
+  ownedRepoIds: string[];
 }
 
 export interface PublicCatalogEntry {

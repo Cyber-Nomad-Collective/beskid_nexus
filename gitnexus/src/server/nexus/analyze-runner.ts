@@ -8,6 +8,7 @@ import { getStoragePath, loadMeta } from '../../storage/repo-manager.js';
 import { extractRepoName, getCloneDir, cloneOrPull } from '../git-clone.js';
 import type { JobManager } from '../analyze-job.js';
 import { markCatalogIndexed } from './catalog-store.js';
+import { startCodeDocJob } from './code-doc-runner.js';
 import { getRemoteHead } from './remote-git.js';
 
 const _require = createRequire(import.meta.url);
@@ -138,6 +139,13 @@ export const startAnalyzeJob = async (
                       msg.result.repoName,
                       meta?.lastCommit,
                     );
+                    void startCodeDocJob({
+                      registryName: msg.result.repoName,
+                      repoPath: targetPath,
+                      catalogEntryId,
+                    }).catch((docErr) => {
+                      logger.warn({ err: docErr, catalogEntryId }, 'Failed to start code-doc job');
+                    });
                   } catch (err) {
                     logger.warn({ err, catalogEntryId }, 'Failed to update catalog after analyze');
                   }

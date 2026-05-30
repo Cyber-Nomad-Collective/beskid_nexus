@@ -3,6 +3,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { parseRepoNameFromUrl } from '../../storage/git.js';
 import { getGlobalDir, listRegisteredRepos, type RegistryEntry } from '../../storage/repo-manager.js';
+import { readCodeDocStatus } from './code-doc-store.js';
 import type {
   NexusCatalogEntry,
   NexusCatalogFile,
@@ -191,10 +192,11 @@ export const listPublicCatalog = async (): Promise<PublicCatalogEntry[]> => {
     listRegisteredRepos({ validate: true }),
   ]);
 
-  return entries
+  const publicEntries = entries
     .filter((e) => e.enabled)
     .map((e) => {
       const reg = resolveCatalogRegistryEntry(e, repos);
+      const registryName = reg?.name ?? e.registryName;
       return {
         id: e.id,
         displayName: e.displayName,
@@ -203,12 +205,19 @@ export const listPublicCatalog = async (): Promise<PublicCatalogEntry[]> => {
         defaultBranch: e.defaultBranch,
         sortOrder: e.sortOrder,
         indexed: !!reg,
-        registryName: reg?.name ?? e.registryName,
+        registryName,
         lastIndexedCommit: e.lastIndexedCommit ?? reg?.lastCommit,
         indexedAt: reg?.indexedAt,
         stats: reg?.stats,
       };
     });
+
+  return Promise.all(
+    publicEntries.map(async (entry) => ({
+      ...entry,
+      docStatus: entry.registryName ? await readCodeDocStatus(entry.registryName) : 'idle',
+    })),
+  );
 };
 
 /** Normalize GitHub URLs for webhook / catalog matching. */

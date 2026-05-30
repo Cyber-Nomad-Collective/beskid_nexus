@@ -34,6 +34,18 @@ export interface NexusSessionPayload {
   hubSessionId: string;
 }
 
+/** Repo-scoped AI code documentation — separate from platform spec body text. */
+export interface CodeDocRecord {
+  entityId: string;
+  entityKind: 'node' | 'cluster';
+  /** Describes what this code does in the repo. Must NOT contain platform-spec prose. */
+  codeDoc: string;
+  /** 0–3 canonical links into site/website platform-spec. href must exist in spec index. */
+  specLinks: Array<{ title: string; href: string }>;
+  contentHash: string;
+  updatedAt: string;
+}
+
 export interface PublicCatalogEntry {
   id: string;
   displayName: string;
@@ -52,4 +64,5 @@ export interface PublicCatalogEntry {
     communities?: number;
     processes?: number;
   };
+  docStatus?: 'idle' | 'running' | 'failed' | 'ready';
 }

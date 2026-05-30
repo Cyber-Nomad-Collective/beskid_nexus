@@ -3,7 +3,7 @@ import type { PublicCatalogEntry } from '../services/nexus-api';
 
 /** Normalize GitHub/Git URLs for catalog ↔ registry matching. */
 export function normalizeGitRepoUrl(url: string): string {
-  const trimmed = url.trim().replace(/\.git$/i, '').replace(/\/$/, '');
+  const trimmed = url.trim().replace(/\/$/, '').replace(/\.git$/i, '');
   try {
     const u = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
     return `${u.protocol}//${u.host}${u.pathname}`.toLowerCase();

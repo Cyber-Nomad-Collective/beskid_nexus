@@ -1,10 +1,4 @@
-@import 'tailwindcss';
-
-@source "../node_modules/@beskid/ui-react/src";
-@source inline("rounded-4xl");
-
-@import '@beskid/ui-react/styles/shadcn-entry.css';
-@import '@beskid/beskid-ui/styles/hub.css';
+@import './styles.css';
 @import './styles/beskid-nexus.css';
 @import './styles/nexus-app.css';
 
