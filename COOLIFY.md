@@ -60,3 +60,7 @@ docker compose up --build
 ```
 
 Then open the mapped port: graph-first landing, repo selector, and (when signed in as a GitHub repo owner) **Manage repo** and **Connect MCP**.
+
+## Platform matrix
+
+Cross-service URLs, OpenBao paths, and shared auth variables: [beskid_infra/docs/deploy-matrix.md](../beskid_infra/docs/deploy-matrix.md).
