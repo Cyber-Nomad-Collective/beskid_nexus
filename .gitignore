@@ -109,9 +109,6 @@ local_docs/
 .context/
 gitnexus/web/
 
-# Lockfiles
-bun.lock
-
 # Build artifacts
 **/*.trace
 **/*.zip
