@@ -6,6 +6,7 @@
 :root {
 	--void: var(--sl-color-black, #0a0a0f);
 	--surface: color-mix(in srgb, var(--sl-color-gray-6, #1e1e2e) 40%, transparent);
+	--elevated: var(--card);
 }
 
 .beskid-nexus-header {

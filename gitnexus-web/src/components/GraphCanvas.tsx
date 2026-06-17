@@ -353,7 +353,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
           onClick={handleToggleAIHighlights}
           className={
             isAIHighlightsEnabled
-              ? 'flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/15 text-cyan-200 transition-colors hover:border-cyan-300/60 hover:bg-cyan-500/20'
+              ? 'flex h-10 w-10 items-center justify-center rounded-lg border border-primary/40 bg-primary/15 text-primary transition-colors hover:border-primary/60 hover:bg-primary/20'
               : 'flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
           }
           title={isAIHighlightsEnabled ? 'Turn off all highlights' : 'Turn on AI highlights'}

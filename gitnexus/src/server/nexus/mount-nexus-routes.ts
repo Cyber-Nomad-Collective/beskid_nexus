@@ -12,6 +12,11 @@ import {
   saveNexusConfigFile,
 } from './nexus-config.js';
 import {
+  getOpenRouterSettingsPublic,
+  updateOpenRouterSettings,
+  FREE_DOC_MODEL,
+} from './openrouter-settings.js';
+import {
   createCatalogEntry,
   deleteCatalogEntry,
   getCatalogEntry,
@@ -122,6 +127,37 @@ const requireRepoOwnerForEntry = async (req: Request, res: Response, next: NextF
     });
     if (!owned) {
       res.status(403).json({ error: 'GitHub repo owner access required' });
+      return;
+    }
+    (req as any).nexusSession = session;
+    next();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Auth check failed' });
+  }
+};
+
+const requireAdminOrRepoOwnerForEntry = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const session = await getSessionFromRequest(req);
+    if (!session) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+    const entry = await getCatalogEntry(req.params.id);
+    if (!entry) {
+      res.status(404).json({ error: 'Catalog entry not found' });
+      return;
+    }
+    const isAdmin = await isNexusAdmin(session.login);
+    const owned = await isUserRepoOwner(session.login, entry.gitUrl, {
+      hubUserToken: session.hubUserToken,
+    });
+    if (!isAdmin && !owned) {
+      res.status(403).json({ error: 'Admin or GitHub repo owner access required' });
       return;
     }
     (req as any).nexusSession = session;
@@ -451,7 +487,7 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
 
   app.post(
     '/api/admin/catalog/:id/analyze',
-    requireRepoOwnerForEntry,
+    requireAdminOrRepoOwnerForEntry,
     createRouteLimiter({ limit: 10 }),
     async (req, res) => {
       try {
@@ -490,7 +526,7 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
 
   app.post(
     '/api/admin/catalog/:id/refresh-docs',
-    requireRepoOwnerForEntry,
+    requireAdminOrRepoOwnerForEntry,
     createRouteLimiter({ limit: 10 }),
     async (req, res) => {
       try {
@@ -520,6 +556,32 @@ export const mountNexusRoutes = (app: Express, deps: MountNexusRoutesDeps): void
       }
     },
   );
+
+  // ── Admin settings ────────────────────────────────────────────────────
+
+  app.get('/api/admin/settings/openrouter', requireAdmin, async (_req, res) => {
+    try {
+      res.json(await getOpenRouterSettingsPublic());
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to load OpenRouter settings' });
+    }
+  });
+
+  app.patch('/api/admin/settings/openrouter', requireAdmin, async (req, res) => {
+    try {
+      const { apiKey, model } = req.body ?? {};
+      if (typeof model === 'string' && model.trim() && model.trim() !== FREE_DOC_MODEL) {
+        res.status(400).json({ error: `Only ${FREE_DOC_MODEL} is supported` });
+        return;
+      }
+      const result = await updateOpenRouterSettings({
+        apiKey: typeof apiKey === 'string' ? apiKey : undefined,
+      });
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to update OpenRouter settings' });
+    }
+  });
 
 };
 

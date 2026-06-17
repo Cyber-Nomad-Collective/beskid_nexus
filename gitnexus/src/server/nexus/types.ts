@@ -24,6 +24,10 @@ export interface NexusConfigFile {
   /** @deprecated use authHubServiceToken */
   authHubHandoffSecret?: string;
   authHubServiceToken?: string;
+  openRouter?: {
+    apiKey?: string;
+    model?: string;
+  };
 }
 
 export interface NexusSessionPayload {

@@ -209,7 +209,7 @@ export const runCodeDocPipeline = async (params: RunCodeDocPipelineParams): Prom
   const { registryName, repoPath, maxEntities = 40 } = params;
   const lbugPath = path.join(getStoragePath(repoPath), 'lbug');
 
-  if (!isOpenRouterConfigured()) {
+  if (!(await isOpenRouterConfigured())) {
     await setCodeDocStatus(registryName, 'failed');
     logger.warn({ registryName }, 'Code doc pipeline skipped: OPENROUTER_API_KEY not set');
     return;

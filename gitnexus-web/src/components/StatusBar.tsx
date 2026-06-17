@@ -25,14 +25,14 @@ export const StatusBar = () => {
   }, [graph]);
 
   return (
-    <footer className="flex items-center justify-between border-t border-dashed border-border bg-muted px-5 py-2 text-[11px] text-muted-foreground">
+    <footer className="flex items-center justify-between bg-muted/80 px-5 py-2 text-[11px] text-muted-foreground">
       {/* Left - Status */}
       <div className="flex items-center gap-4">
         {progress && progress.phase !== 'complete' ? (
           <>
             <div className="h-1 w-28 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-node-interface transition-all duration-300"
+                className="h-full rounded-full bg-gradient-to-r from-primary to-[var(--beskid-secondary,var(--primary))] transition-all duration-300"
                 style={{ width: `${progress.percent}%` }}
               />
             </div>

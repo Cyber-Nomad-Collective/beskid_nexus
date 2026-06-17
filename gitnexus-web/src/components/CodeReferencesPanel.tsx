@@ -3,12 +3,11 @@ import {
   Code,
   PanelLeftClose,
   PanelLeft,
+  Plus,
   Trash2,
   X,
   Target,
-  FileCode,
   Sparkles,
-  MousePointerClick,
   Loader2,
 } from '@/lib/lucide-icons';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -45,6 +44,14 @@ export interface CodeReferencesPanelProps {
   onFocusNode: (nodeId: string) => void;
 }
 
+interface InspectorTab {
+  id: string;
+  label: string;
+  filePath: string;
+  nodeId?: string;
+  source: 'selection' | 'citation';
+}
+
 export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) => {
   const {
     graph,
@@ -63,6 +70,8 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
   }, [graph]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [tabs, setTabs] = useState<InspectorTab[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [glowRefId, setGlowRefId] = useState<string | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -132,6 +141,71 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
     [codeReferences],
   );
 
+  const openTabForNode = useCallback((node: GraphNode) => {
+    const filePath = node.properties?.filePath as string | undefined;
+    if (!filePath) return;
+    const label =
+      filePath.split('/').pop() ?? (node.properties?.name as string | undefined) ?? 'file';
+    const tabId = `tab-${node.id}`;
+    setTabs((prev) => {
+      const existing = prev.find((t) => t.id === tabId);
+      if (existing) {
+        setActiveTabId(existing.id);
+        return prev;
+      }
+      setActiveTabId(tabId);
+      return [...prev, { id: tabId, label, filePath, nodeId: node.id, source: 'selection' }];
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedNode?.properties?.filePath) {
+      openTabForNode(selectedNode);
+    }
+  }, [selectedNode, openTabForNode]);
+
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? null,
+    [tabs, activeTabId],
+  );
+
+  const activeNode = useMemo(() => {
+    if (!activeTab?.nodeId) return selectedNode;
+    return nodeById.get(activeTab.nodeId) ?? selectedNode;
+  }, [activeTab, nodeById, selectedNode]);
+
+  const closeTab = useCallback(
+    (tabId: string) => {
+      setTabs((prev) => {
+        const idx = prev.findIndex((t) => t.id === tabId);
+        if (idx < 0) return prev;
+        const closed = prev[idx];
+        const next = prev.filter((t) => t.id !== tabId);
+        setActiveTabId((current) => {
+          if (current !== tabId) return current;
+          const neighbor = next[idx] ?? next[idx - 1] ?? null;
+          return neighbor?.id ?? null;
+        });
+        if (closed?.nodeId && selectedNode?.id === closed.nodeId) {
+          setSelectedNode(null);
+        }
+        return next;
+      });
+    },
+    [selectedNode, setSelectedNode],
+  );
+
+  const handleAddTab = useCallback(() => {
+    if (selectedNode?.properties?.filePath) {
+      openTabForNode(selectedNode);
+      return;
+    }
+    if (activeTab?.nodeId) {
+      const node = nodeById.get(activeTab.nodeId);
+      if (node) openTabForNode(node);
+    }
+  }, [activeTab?.nodeId, nodeById, openTabForNode, selectedNode]);
+
   // When the user clicks a citation badge in chat, focus the corresponding snippet card:
   // - expand the panel if collapsed
   // - smooth-scroll the card into view
@@ -191,9 +265,9 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
     });
   }, [aiReferences]);
 
-  const selectedFilePath = selectedNode?.properties?.filePath;
-  const selectedIsFile = selectedNode?.label === 'File' && !!selectedFilePath;
-  const showSelectedViewer = !!selectedNode && !!selectedFilePath;
+  const selectedFilePath = activeTab?.filePath ?? activeNode?.properties?.filePath;
+  const selectedIsFile = activeNode?.label === 'File' && !!selectedFilePath;
+  const showFileViewer = tabs.length > 0 && !!activeTab;
   const showCitations = aiReferences.length > 0;
 
   // Fetch file content from the server when a node with a filePath is selected.
@@ -219,8 +293,8 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
     setFileResult(null);
 
     // Determine read range: full file for File nodes, buffered for symbols
-    const startLine = selectedNode?.properties?.startLine as number | undefined;
-    const endLine = selectedNode?.properties?.endLine as number | undefined;
+    const startLine = activeNode?.properties?.startLine as number | undefined;
+    const endLine = activeNode?.properties?.endLine as number | undefined;
     const isWholeFile = selectedIsFile || startLine === undefined;
 
     const options = isWholeFile
@@ -250,16 +324,16 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
     };
   }, [
     selectedFilePath,
-    selectedNode?.properties?.startLine,
-    selectedNode?.properties?.endLine,
+    activeNode?.properties?.startLine,
+    activeNode?.properties?.endLine,
     selectedIsFile,
     projectName,
   ]);
 
   // Scroll to the selected node's startLine after content loads
   useEffect(() => {
-    if (!selectedFileContent || !selectedNode?.properties?.startLine) return;
-    const startLine = selectedNode.properties.startLine as number;
+    if (!selectedFileContent || !activeNode?.properties?.startLine) return;
+    const startLine = activeNode.properties.startLine as number;
 
     // Double rAF: wait for SyntaxHighlighter to fully render before scrolling
     let cancelled = false;
@@ -286,26 +360,26 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
       cancelled = true;
       rafIds.forEach((id) => cancelAnimationFrame(id));
     };
-  }, [selectedFileContent, selectedNode?.properties?.startLine]);
+  }, [selectedFileContent, activeNode?.properties?.startLine]);
 
   if (isCollapsed) {
     return (
-      <aside className="flex h-full w-12 flex-shrink-0 flex-col items-center gap-2 border-r border-border bg-card py-3">
+      <aside className="flex h-full w-12 flex-shrink-0 flex-col items-center gap-2 bg-card py-3">
         <button
           onClick={() => setIsCollapsed(false)}
-          className="rounded p-2 text-muted-foreground transition-colors hover:bg-cyan-500/10 hover:text-cyan-400"
+          className="rounded p-2 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
           title="Expand Code Panel"
         >
           <PanelLeft className="h-5 w-5" />
         </button>
         <div className="my-1 h-px w-6 bg-border" />
-        {showSelectedViewer && (
-          <div className="rotate-90 text-[9px] font-medium tracking-wide whitespace-nowrap text-amber-400">
-            SELECTED
+        {tabs.length > 0 && (
+          <div className="rotate-90 text-[9px] font-medium tracking-wide whitespace-nowrap text-primary">
+            {tabs.length} tab{tabs.length !== 1 ? 's' : ''}
           </div>
         )}
         {showCitations && (
-          <div className="mt-4 rotate-90 text-[9px] font-medium tracking-wide whitespace-nowrap text-cyan-400">
+          <div className="mt-4 rotate-90 text-[9px] font-medium tracking-wide whitespace-nowrap text-muted-foreground">
             AI • {aiReferences.length}
           </div>
         )}
@@ -318,26 +392,26 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
       ref={(el) => {
         panelRef.current = el;
       }}
-      className="relative flex h-full animate-slide-in flex-col border-r border-border bg-card/95 shadow-2xl backdrop-blur-md"
+      className="relative flex h-full animate-slide-in flex-col bg-card/95 shadow-2xl backdrop-blur-md"
       style={{ width: panelWidth }}
     >
       {/* Resize handle */}
       <div
         onMouseDown={startResize}
-        className="absolute top-0 right-0 h-full w-2 cursor-col-resize bg-transparent transition-colors hover:bg-cyan-500/25"
+        className="absolute top-0 right-0 h-full w-2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/20"
         title="Drag to resize"
       />
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-elevated/60 to-surface/60 px-3 py-2.5">
+      <div className="flex items-center justify-between bg-gradient-to-r from-card to-muted/30 px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <Code className="h-4 w-4 text-cyan-400" />
+          <Code className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">Code Inspector</span>
         </div>
         <div className="flex items-center gap-1.5">
           {showCitations && (
             <button
               onClick={() => clearCodeReferences()}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
+              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
               title="Clear AI citations"
             >
               <Trash2 className="h-4 w-4" />
@@ -353,30 +427,62 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col">
-        {/* Top: Selected file viewer (when a node is selected) */}
-        {showSelectedViewer && (
-          <div className={`${showCitations ? 'h-[42%]' : 'flex-1'} flex min-h-0 flex-col`}>
-            <div className="flex items-center gap-2 border-b border-amber-500/20 bg-gradient-to-r from-amber-500/8 to-orange-500/5 px-3 py-2">
-              <div className="flex items-center gap-1.5 rounded-md border border-amber-500/25 bg-amber-500/15 px-2 py-0.5">
-                <MousePointerClick className="h-3 w-3 text-amber-400" />
-                <span className="text-[10px] font-semibold tracking-wide text-amber-300 uppercase">
-                  Selected
-                </span>
-              </div>
-              <FileCode className="ml-1 h-3.5 w-3.5 text-amber-400/70" />
-              <span className="flex-1 truncate font-mono text-xs text-foreground">
-                {selectedNode?.properties?.filePath?.split('/').pop() ??
-                  selectedNode?.properties?.name}
-              </span>
+      {tabs.length > 0 ? (
+        <div className="flex items-center gap-1 overflow-x-auto bg-muted/20 px-2 py-1.5">
+          {tabs.map((tab) => (
+            <div
+              key={tab.id}
+              className={[
+                'flex max-w-[180px] shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs',
+                tab.id === activeTabId
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              ].join(' ')}
+            >
               <button
-                onClick={() => setSelectedNode(null)}
-                className="rounded p-1 text-muted-foreground transition-colors hover:bg-amber-500/10 hover:text-amber-400"
-                title="Clear selection"
+                type="button"
+                className="min-w-0 truncate font-mono"
+                onClick={() => setActiveTabId(tab.id)}
+                title={tab.label}
               >
-                <X className="h-4 w-4" />
+                {tab.label}
+              </button>
+              <button
+                type="button"
+                className="shrink-0 rounded p-0.5 hover:bg-background/60"
+                onClick={() => closeTab(tab.id)}
+                aria-label={`Close ${tab.label}`}
+              >
+                <X className="h-3 w-3" />
               </button>
             </div>
+          ))}
+          <button
+            type="button"
+            className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-primary"
+            onClick={handleAddTab}
+            title="Open tab for current selection"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1 bg-muted/20 px-2 py-1.5">
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-primary"
+            onClick={handleAddTab}
+            title="Open tab for current selection"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add tab
+          </button>
+        </div>
+      )}
+
+      <div className="flex min-h-0 flex-1 flex-col">
+        {showFileViewer && (
+          <div className={`${showCitations ? 'h-[42%]' : 'flex-1'} flex min-h-0 flex-col`}>
             <div ref={selectedViewerRef} className="scrollbar-thin min-h-0 flex-1 overflow-auto">
               {isLoadingFile ? (
                 <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
@@ -397,8 +503,8 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
                     userSelect: 'none',
                   }}
                   lineProps={(lineNumber) => {
-                    const symStart = selectedNode?.properties?.startLine;
-                    const symEnd = selectedNode?.properties?.endLine ?? symStart;
+                    const symStart = activeNode?.properties?.startLine;
+                    const symEnd = activeNode?.properties?.endLine ?? symStart;
                     const isHighlighted =
                       typeof symStart === 'number' &&
                       lineNumber >= symStart + 1 &&
@@ -406,8 +512,12 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
                     return {
                       style: {
                         display: 'block',
-                        backgroundColor: isHighlighted ? 'rgba(6, 182, 212, 0.14)' : 'transparent',
-                        borderLeft: isHighlighted ? '3px solid #06b6d4' : '3px solid transparent',
+                        backgroundColor: isHighlighted
+                          ? 'color-mix(in srgb, var(--primary) 14%, transparent)'
+                          : 'transparent',
+                        borderLeft: isHighlighted
+                          ? '3px solid var(--primary)'
+                          : '3px solid transparent',
                         paddingLeft: '12px',
                         paddingRight: '16px',
                       },
@@ -433,19 +543,16 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
           </div>
         )}
 
-        {/* Divider between Selected viewer and AI refs (more visible) */}
-        {showSelectedViewer && showCitations && (
+        {showFileViewer && showCitations && (
           <div className="h-1.5 bg-gradient-to-r from-transparent via-border to-transparent" />
         )}
 
-        {/* Bottom: AI citations list */}
         {showCitations && (
           <div className="flex min-h-0 flex-1 flex-col">
-            {/* AI Citations Section Header */}
-            <div className="flex items-center gap-2 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-500/8 to-teal-500/5 px-3 py-2">
-              <div className="flex items-center gap-1.5 rounded-md border border-cyan-500/25 bg-cyan-500/15 px-2 py-0.5">
-                <Sparkles className="h-3 w-3 text-cyan-400" />
-                <span className="text-[10px] font-semibold tracking-wide text-cyan-300 uppercase">
+            <div className="flex items-center gap-2 bg-muted/30 px-3 py-2">
+              <div className="flex items-center gap-1.5 rounded-md bg-primary/15 px-2 py-0.5">
+                <Sparkles className="h-3 w-3 text-primary" />
+                <span className="text-[10px] font-semibold tracking-wide text-primary uppercase">
                   AI Citations
                 </span>
               </div>
@@ -473,13 +580,13 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
                         refCardEls.current.set(ref.id, el);
                       }}
                       className={[
-                        'overflow-hidden rounded-xl border border-border bg-muted transition-all',
+                        'overflow-hidden rounded-xl bg-muted transition-all',
                         isGlowing
-                          ? 'animate-pulse shadow-[0_0_0_6px_rgba(34,211,238,0.14)] ring-2 ring-cyan-300/70'
+                          ? 'animate-pulse shadow-[0_0_0_6px_color-mix(in_srgb,var(--primary)_14%,transparent)] ring-2 ring-primary/50'
                           : '',
                       ].join(' ')}
                     >
-                      <div className="flex items-start gap-2 border-b border-border bg-card/40 px-3 py-2">
+                      <div className="flex items-start gap-2 bg-card/40 px-3 py-2">
                         <span
                           className="mt-0.5 flex-shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase"
                           style={{ backgroundColor: nodeColor, color: '#06060a' }}
@@ -556,10 +663,10 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
                                 style: {
                                   display: 'block',
                                   backgroundColor: isHighlighted
-                                    ? 'rgba(6, 182, 212, 0.14)'
+                                    ? 'color-mix(in srgb, var(--primary) 14%, transparent)'
                                     : 'transparent',
                                   borderLeft: isHighlighted
-                                    ? '3px solid #06b6d4'
+                                    ? '3px solid var(--primary)'
                                     : '3px solid transparent',
                                   paddingLeft: '12px',
                                   paddingRight: '16px',

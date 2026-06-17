@@ -32,7 +32,11 @@ export function RepoSelector({ entries, activeEntryId, onSelect, disabled }: Rep
 			}}
 			disabled={disabled}
 		>
-			<SelectTrigger size="sm" className="max-w-[220px]" data-testid="repo-selector">
+			<SelectTrigger
+				size="sm"
+				className="hidden h-8 max-w-[240px] border-0 bg-transparent px-1 font-semibold shadow-none hover:bg-muted/50 md:inline-flex"
+				data-testid="repo-selector"
+			>
 				<SelectValue placeholder="Select repository" />
 			</SelectTrigger>
 			<SelectContent align="start">

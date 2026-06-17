@@ -367,23 +367,23 @@ export const ProcessesPanel = () => {
           <button
             onClick={handleViewAllProcesses}
             disabled={loadingProcess !== null}
-            className="group flex w-full items-center gap-3 rounded-xl border border-border bg-muted/40 p-3 text-left shadow-sm transition-all hover:border-cyan-500/30 hover:bg-muted/80 hover:shadow-cyan-900/10"
+            className="group flex w-full items-center gap-3 rounded-xl bg-muted/40 p-3 text-left shadow-sm transition-all hover:bg-muted/80"
           >
-            <div className="rounded-lg bg-cyan-500/10 p-2 transition-colors group-hover:bg-cyan-500/20">
-              <Layers className="h-5 w-5 text-cyan-400" />
+            <div className="rounded-lg bg-primary/10 p-2 transition-colors group-hover:bg-primary/20">
+              <Layers className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-medium text-foreground group-hover:text-cyan-200">
+              <h4 className="text-sm font-medium text-foreground group-hover:text-primary">
                 Full Process Map
               </h4>
               <p className="text-xs text-muted-foreground">View combined map of {totalCount} processes</p>
             </div>
             {loadingProcess === 'all' ? (
               <span className="mr-1 animate-spin">
-                <Sparkles className="h-4 w-4 text-cyan-400" />
+                <Sparkles className="h-4 w-4 text-primary" />
               </span>
             ) : (
-              <Eye className="h-4 w-4 text-muted-foreground group-hover:text-cyan-400" />
+              <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
             )}
           </button>
         </div>
@@ -400,7 +400,7 @@ export const ProcessesPanel = () => {
               ) : (
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
-              <Zap className="h-4 w-4 text-amber-400" />
+              <Zap className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-foreground">Cross-Community</span>
               <span className="ml-auto rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">
                 {filteredProcesses.cross.length}
@@ -494,9 +494,9 @@ const ProcessItem = ({
 }: ProcessItemProps) => {
   // Determine row styling - focused gets special highlight
   const rowClass = isFocused
-    ? 'bg-amber-950/40 border border-amber-500/50 ring-1 ring-amber-400/30'
+    ? 'bg-primary/10 ring-1 ring-primary/30'
     : isSelected
-      ? 'bg-cyan-950/40 border border-cyan-500/50 ring-1 ring-cyan-400/30'
+      ? 'bg-accent/10 ring-1 ring-accent/30'
       : '';
 
   return (
@@ -522,8 +522,8 @@ const ProcessItem = ({
         onClick={onToggleFocus}
         className={`rounded-md p-1.5 transition-all ${
           isFocused
-            ? 'animate-pulse border border-amber-400/40 bg-amber-500/20 text-amber-400 opacity-100 hover:bg-amber-500/30 hover:text-amber-300'
-            : 'border border-white/10 bg-white/5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-400'
+            ? 'animate-pulse border border-primary/40 bg-primary/20 text-primary opacity-100 hover:bg-primary/30'
+            : 'border border-border/60 bg-muted/30 text-muted-foreground opacity-0 group-hover:opacity-100 hover:border-primary/40 hover:bg-primary/15 hover:text-primary'
         }`}
         title={isFocused ? 'Click to remove highlight from graph' : 'Click to highlight in graph'}
         data-testid="process-highlight-button"
@@ -536,8 +536,8 @@ const ProcessItem = ({
         data-testid="process-view-button"
         className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium shadow-sm transition-all disabled:opacity-50 ${
           isSelected
-            ? 'border border-cyan-400/60 bg-cyan-900/60 text-cyan-300 opacity-100'
-            : 'border border-cyan-500/30 bg-cyan-950/30 text-cyan-400 opacity-0 shadow-cyan-900/20 group-hover:opacity-100 hover:border-cyan-400/50 hover:bg-cyan-900/50 hover:text-cyan-300'
+            ? 'border border-primary/50 bg-primary/15 text-primary opacity-100'
+            : 'border border-border/60 bg-muted/30 text-muted-foreground opacity-0 group-hover:opacity-100 hover:border-primary/40 hover:bg-primary/15 hover:text-primary'
         }`}
       >
         {isLoading ? (

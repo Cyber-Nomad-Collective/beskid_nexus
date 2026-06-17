@@ -18,7 +18,8 @@ const gitnexusPkg = _require('../gitnexus/package.json');
 assertBeskidPackagesInstalled();
 const beskidUi = resolveBeskidUi();
 const beskidUiSrc = resolveBeskidUiSrc()!;
-const uiReactSrc = resolveUiReactSrc()!;
+const uiReactSrc = resolveUiReactSrc() ?? path.resolve(__dirname, '../../beskid_web_common/packages/beskid-ui-react/src');
+const uiReactAliases = resolveUiReactAliases();
 
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
@@ -39,13 +40,13 @@ export default defineConfig({
 			'@': path.resolve(__dirname, './src'),
 			'@beskid/beskid-ui': beskidUiSrc,
 			'@beskid/material-theme': path.join(beskidUiSrc, 'styles/theme.material.css'),
+			...uiReactAliases,
 			'@beskid/ui-react': uiReactSrc,
 			'@beskid/ui-react/styles/shadcn-entry.css': path.join(
 				uiReactSrc,
 				'styles/shadcn-entry.css',
 			),
 			...beskidUi.aliases,
-			...resolveUiReactAliases(),
 			'gitnexus-shared': path.resolve(__dirname, '../gitnexus-shared/src/index.ts'),
 			'@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
 				__dirname,

@@ -27,7 +27,7 @@ export const EmbeddingStatus = () => {
           className="group flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-primary/50 hover:bg-muted hover:text-foreground"
           title="Generate embeddings for semantic search"
         >
-          <Brain className="h-4 w-4 text-node-interface transition-colors group-hover:text-primary" />
+          <Brain className="h-4 w-4 text-primary transition-colors group-hover:text-primary" />
           <span className="hidden sm:inline">Enable Semantic Search</span>
           <Zap className="h-3 w-3 text-muted-foreground" />
         </button>
@@ -44,7 +44,7 @@ export const EmbeddingStatus = () => {
           <span className="text-xs text-muted-foreground">Loading AI model...</span>
           <div className="h-1 w-24 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-primary to-node-interface transition-all duration-300"
+              className="h-full rounded-full bg-gradient-to-r from-primary to-[var(--beskid-secondary,var(--primary))] transition-all duration-300"
               style={{ width: `${downloadPercent}%` }}
             />
           </div>
@@ -73,8 +73,8 @@ export const EmbeddingStatus = () => {
 
   if (embeddingStatus === 'indexing') {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-node-interface/30 bg-card px-3 py-1.5 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin text-node-interface" />
+      <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-card px-3 py-1.5 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin text-primary" />
         <span className="text-xs">Creating vector index...</span>
       </div>
     );

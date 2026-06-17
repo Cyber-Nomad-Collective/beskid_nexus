@@ -130,4 +130,21 @@ export const analyzeCatalogEntry = (
     body: JSON.stringify(opts ?? {}),
   });
 
+export interface OpenRouterSettings {
+  configured: boolean;
+  model: string;
+  apiKeyMasked: string | null;
+}
+
+export const fetchOpenRouterSettings = (): Promise<OpenRouterSettings> =>
+  nexusFetch<OpenRouterSettings>('/api/admin/settings/openrouter');
+
+export const updateOpenRouterSettings = (body: {
+  apiKey?: string;
+}): Promise<OpenRouterSettings> =>
+  nexusFetch<OpenRouterSettings>('/api/admin/settings/openrouter', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+
 export const githubLoginUrl = (): string => '/api/auth/github';

@@ -55,16 +55,36 @@ export function resolveUiReactSrc(): string | null {
 	return root ? path.join(root, 'src') : null;
 }
 
+function resolveMonorepoUiReactSrc(): string | null {
+	const monorepo = path.resolve(webRoot, '../../beskid_web_common/packages/beskid-ui-react/src');
+	if (fs.existsSync(monorepo)) return monorepo;
+	return null;
+}
+
+export function resolveUiReactSettingsEntry(): string | null {
+	for (const src of [resolveUiReactSrc(), resolveMonorepoUiReactSrc()]) {
+		if (!src) continue;
+		const entry = path.join(src, 'components/settings/index.ts');
+		if (fs.existsSync(entry)) return entry;
+	}
+	return null;
+}
+
 /** Tracker-style shadcn aliases into installed @beskid/ui-react/src. */
 export function resolveUiReactAliases(): Record<string, string> {
-	const src = resolveUiReactSrc();
+	const src = resolveUiReactSrc() ?? resolveMonorepoUiReactSrc();
 	if (!src) return {};
-	return {
+	const aliases: Record<string, string> = {
 		'#/components/ui': path.join(src, 'components/ui'),
 		'#/lib/utils.ts': path.join(src, 'lib/utils.ts'),
 		'#/lib/utils': path.join(src, 'lib/utils.ts'),
 		'#/hooks/use-mobile.ts': path.join(src, 'hooks/use-mobile.ts'),
 	};
+	const settingsEntry = resolveUiReactSettingsEntry();
+	if (settingsEntry) {
+		aliases['@beskid/ui-react/settings'] = settingsEntry;
+	}
+	return aliases;
 }
 
 export function resolveBeskidUiSrc(): string | null {

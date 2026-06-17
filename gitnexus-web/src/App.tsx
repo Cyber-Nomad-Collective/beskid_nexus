@@ -5,7 +5,6 @@ import { LoadingOverlay } from './components/LoadingOverlay';
 import { NexusAppShell } from './components/nexus-app-shell';
 import { NexusServiceUnavailable } from './components/NexusServiceUnavailable';
 import { OAuthSetupWizard } from './components/OAuthSetupWizard';
-import { RepoAdminSheet } from './components/RepoAdminSheet';
 import { RepoSelector } from './components/repo-selector';
 import { ERROR_RESET_DELAY_MS } from './config/ui-constants';
 import { createKnowledgeGraph } from './core/graph/graph';
@@ -35,7 +34,6 @@ type ShellPhase = 'boot' | 'setup' | 'server-down' | 'explorer';
 const AppContent = () => {
 	const [shellPhase, setShellPhase] = useState<ShellPhase>('boot');
 	const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-	const [adminOpen, setAdminOpen] = useState(false);
 	const [serverDisconnected, setServerDisconnected] = useState(false);
 	const bootstrapped = useRef(false);
 
@@ -223,18 +221,15 @@ const AppContent = () => {
 
 	const indexedEntries = catalog.filter((entry) => entry.indexed);
 	const showEmptyCatalog = shellPhase === 'explorer' && !catalogLoading && indexedEntries.length === 0;
-	const canManageRepos = Boolean(authUser);
-	const manageRepoLabel =
-		authUser && (authUser.ownedRepoIds?.length ?? 0) > 0 ? 'Manage repo' : 'Add repository';
-	const manageRepoAction = canManageRepos ? (
-		<button
-			type="button"
-			className="inline-flex h-8 items-center rounded-4xl border border-input bg-background px-3 text-sm font-medium hover:bg-muted"
-			onClick={() => setAdminOpen(true)}
-		>
-			{manageRepoLabel}
-		</button>
-	) : null;
+
+	const repoSelector = (
+		<RepoSelector
+			entries={catalog}
+			activeEntryId={activeEntry?.id}
+			onSelect={selectRepo}
+			disabled={catalogLoading || (viewMode === 'loading' && !!progress)}
+		/>
+	);
 
 	if (shellPhase === 'boot') {
 		return (
@@ -280,97 +275,61 @@ const AppContent = () => {
 
 	if (viewMode === 'loading' && progress) {
 		return (
-			<>
-				<NexusAppShell
-					authUser={authUser}
-					repoName={activeEntry?.displayName}
-					repoSelector={
-						<RepoSelector
-							entries={catalog}
-							activeEntryId={activeEntry?.id}
-							onSelect={selectRepo}
-							disabled
-						/>
-					}
-					search={<SymbolSearch onFocusNode={handleFocusNode} />}
-					actions={manageRepoAction}
-				>
-					<LoadingOverlay progress={progress} />
-				</NexusAppShell>
-				<RepoAdminSheet
-					open={adminOpen}
-					onOpenChange={setAdminOpen}
-					authUser={authUser}
-					catalog={catalog}
-					onCatalogChanged={() => void refreshCatalog()}
-				/>
-			</>
+			<NexusAppShell
+				authUser={authUser}
+				repoSelector={repoSelector}
+				search={<SymbolSearch onFocusNode={handleFocusNode} />}
+				onCatalogChanged={() => void refreshCatalog()}
+			>
+				<LoadingOverlay progress={progress} />
+			</NexusAppShell>
 		);
 	}
 
 	return (
-		<>
-			<NexusAppShell
-				authUser={authUser}
-				repoName={activeEntry?.displayName}
-				repoSelector={
-					<RepoSelector
-						entries={catalog}
-						activeEntryId={activeEntry?.id}
-						onSelect={selectRepo}
-						disabled={catalogLoading}
-					/>
-				}
-				search={<SymbolSearch onFocusNode={handleFocusNode} />}
-				actions={manageRepoAction}
-			>
-				{catalogLoading ? (
-					<div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-						Loading catalog…
-					</div>
-				) : showEmptyCatalog ? (
-					<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-						<h1 className="text-2xl font-semibold">No indexed repositories yet</h1>
-						<p className="max-w-md text-muted-foreground">
-							Beskid Nexus publishes knowledge graphs for registered repositories. When indexing
-							completes, the first repo opens here automatically.
+		<NexusAppShell
+			authUser={authUser}
+			repoSelector={repoSelector}
+			search={<SymbolSearch onFocusNode={handleFocusNode} />}
+			onCatalogChanged={() => void refreshCatalog()}
+		>
+			{catalogLoading ? (
+				<div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
+					Loading catalog…
+				</div>
+			) : showEmptyCatalog ? (
+				<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+					<h1 className="text-2xl font-semibold">No indexed repositories yet</h1>
+					<p className="max-w-md text-muted-foreground">
+						Beskid Nexus publishes knowledge graphs for registered repositories. When indexing
+						completes, the first repo opens here automatically.
+					</p>
+					{catalogError ? <p className="text-sm text-destructive">{catalogError}</p> : null}
+					{!authUser ? (
+						<a
+							href={githubLoginUrl()}
+							className="inline-flex h-9 items-center rounded-4xl bg-primary px-4 text-sm font-medium text-primary-foreground"
+						>
+							Sign in with GitHub
+						</a>
+					) : authUser.isAdmin ? (
+						<p className="text-sm text-muted-foreground">
+							Open settings to add and index a repository.
 						</p>
-						{catalogError ? (
-							<p className="text-sm text-destructive">{catalogError}</p>
-						) : null}
-						{!authUser ? (
-							<a
-								href={githubLoginUrl()}
-								className="inline-flex h-9 items-center rounded-4xl border border-input bg-primary px-4 text-sm font-medium text-primary-foreground"
-							>
-								Sign in with GitHub to add a repository
-							</a>
-						) : (
-							<button
-								type="button"
-								className="inline-flex h-9 items-center rounded-4xl border border-input bg-primary px-4 text-sm font-medium text-primary-foreground"
-								onClick={() => setAdminOpen(true)}
-							>
-								Add repository
-							</button>
-						)}
-					</div>
-				) : (
-					<GraphExplorerLayout
-						graphCanvasRef={graphCanvasRef}
-						onFocusNode={handleFocusNode}
-						serverDisconnected={serverDisconnected}
-					/>
-				)}
-			</NexusAppShell>
-			<RepoAdminSheet
-				open={adminOpen}
-				onOpenChange={setAdminOpen}
-				authUser={authUser}
-				catalog={catalog}
-				onCatalogChanged={() => void refreshCatalog()}
-			/>
-		</>
+					) : (
+						<p className="text-sm text-muted-foreground">
+							Ask a Nexus administrator to register and index a repository.
+						</p>
+					)}
+				</div>
+			) : (
+				<GraphExplorerLayout
+					graphCanvasRef={graphCanvasRef}
+					onFocusNode={handleFocusNode}
+					serverDisconnected={serverDisconnected}
+				/>
+			)}
+		</NexusAppShell>
 	);
 };
 

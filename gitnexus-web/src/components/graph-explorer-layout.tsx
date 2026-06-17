@@ -37,9 +37,9 @@ function NodeDocumentationPanel() {
 	}
 
 	return (
-		<aside className="pointer-events-auto absolute top-4 right-4 z-40 flex max-h-[min(60vh,520px)] w-80 flex-col overflow-hidden rounded-xl border border-border bg-card/95 shadow-2xl backdrop-blur-md">
+		<aside className="pointer-events-auto absolute top-4 right-4 z-40 flex max-h-[min(60vh,520px)] w-80 flex-col overflow-hidden rounded-xl bg-card/95 shadow-2xl backdrop-blur-md">
 			{codeDoc ? (
-				<section className="border-b border-border px-4 py-3">
+				<section className="px-4 py-3">
 					<h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
 						Code documentation
 					</h3>

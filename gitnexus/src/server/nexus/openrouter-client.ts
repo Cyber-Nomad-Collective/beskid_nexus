@@ -1,4 +1,9 @@
 import { logger } from '../../core/logger.js';
+import {
+  isOpenRouterConfigured,
+  resolveDocModel,
+  resolveOpenRouterApiKey,
+} from './openrouter-settings.js';
 
 export interface OpenRouterTool {
   type: 'function';
@@ -74,17 +79,13 @@ export const RESOLVE_SPEC_LINKS_TOOL: OpenRouterTool = {
   },
 };
 
-export const isOpenRouterConfigured = (): boolean =>
-  !!process.env.OPENROUTER_API_KEY?.trim();
-
-export const resolveDocModel = (): string =>
-  process.env.NEXUS_DOC_MODEL?.trim() || 'openrouter/free';
+export { isOpenRouterConfigured, resolveDocModel };
 
 export const callOpenRouter = async (
   messages: OpenRouterMessage[],
   tools?: OpenRouterTool[],
 ): Promise<OpenRouterResult> => {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+  const apiKey = await resolveOpenRouterApiKey();
   if (!apiKey) {
     throw new Error('OPENROUTER_API_KEY is not configured');
   }

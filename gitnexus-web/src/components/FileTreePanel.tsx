@@ -126,7 +126,7 @@ const TreeItem = ({
     <div>
       <button
         onClick={handleClick}
-        className={`relative flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-sm transition-colors hover:bg-muted ${isSelected ? 'border-l-2 border-amber-400 bg-amber-500/15 text-amber-300' : 'border-l-2 border-transparent text-muted-foreground hover:text-foreground'} ${matchesSearch ? 'bg-primary/10' : ''} `}
+        className={`relative flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-sm transition-colors hover:bg-muted ${isSelected ? 'border-l-2 border-primary bg-primary/15 text-primary' : 'border-l-2 border-transparent text-muted-foreground hover:text-foreground'} ${matchesSearch ? 'bg-primary/10' : ''} `}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
       >
         {/* Expand/collapse icon */}
@@ -299,7 +299,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
 
   if (isCollapsed) {
     return (
-      <div className="flex h-full w-12 flex-col items-center gap-2 border-r border-border bg-card py-3">
+      <div className="flex h-full w-12 flex-col items-center gap-2 bg-card py-3">
         <button
           onClick={() => setIsCollapsed(false)}
           className="rounded p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -333,9 +333,9 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
   }
 
   return (
-    <div className="flex h-full w-64 animate-slide-in flex-col border-r border-border bg-card">
+    <div className="flex h-full w-64 animate-slide-in flex-col bg-card">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+      <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveTab('files')}
@@ -370,7 +370,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
       {activeTab === 'files' && (
         <>
           {/* Search */}
-          <div className="border-b border-border px-3 py-2">
+          <div className="px-3 py-2">
             <div className="relative">
               <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -517,7 +517,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
             </div>
 
             {depthFilter !== null && !selectedNode && (
-              <p className="mt-2 text-[10px] text-amber-400">Select a node to apply depth filter</p>
+              <p className="mt-2 text-[10px] text-primary">Select a node to apply depth filter</p>
             )}
           </div>
 
