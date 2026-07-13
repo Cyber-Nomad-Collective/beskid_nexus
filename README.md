@@ -33,7 +33,7 @@ export AUTH_HUB_PUBLIC_URL="http://localhost:8090"
 # Optional: code-doc pipeline (server-side only, invisible in public UI)
 # export OPENROUTER_API_KEY="..."
 # export NEXUS_DOC_MODEL="openrouter/free"
-# export NEXUS_SPEC_ROOT="/path/to/site/website/src/content/docs/platform-spec"
+# export NEXUS_OPEN_SPEC_CATALOG="/path/to/beskid/openspec/catalog.json"
 node dist/cli/index.js serve --host 0.0.0.0 --port "$PORT"
 ```
 
@@ -68,10 +68,19 @@ On macOS, LadybugDB native bindings may require the Linux optional package used 
 
 ```bash
 cp .env.example .env   # SESSION_SECRET, AUTH_HUB_PUBLIC_URL, NEXUS_MCP_AUTH_TOKEN, etc.
-podman compose up --build
+docker buildx build \
+  --build-context openspec=../openspec \
+  --tag beskid-nexus:local \
+  --load .
 ```
 
-Data persists in the `nexus-data` volume (`GITNEXUS_HOME=/data/gitnexus`). Graphs are indexed when **repo owners** add entries or GitHub push webhooks fire.
+The root delivery workflow supplies the same `openspec` named context while
+keeping `beskid_nexus` as the primary Docker context. The resulting image sets
+`NEXUS_OPEN_SPEC_CATALOG=/app/openspec/catalog.json`; operators may override
+that variable with an explicit read-only runtime mount when testing another
+catalog. Data persists in the `nexus-data` volume
+(`GITNEXUS_HOME=/data/gitnexus`). Graphs are indexed when **repo owners** add
+entries or GitHub push webhooks fire.
 
 ## MCP client
 

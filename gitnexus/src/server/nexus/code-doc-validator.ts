@@ -11,10 +11,10 @@ export const containsSpecProse = (codeDoc: string, excerpts: string[]): boolean 
   return false;
 };
 
-export const validateSpecLinks = (
-  links: Array<{ title: string; href: string }>,
+export const validateSpecLinks = <T extends { title: string; href: string }>(
+  links: T[],
   index: Set<string>,
-): Array<{ title: string; href: string }> =>
+): T[] =>
   links.filter((link) => index.has(link.href)).slice(0, MAX_SPEC_LINKS);
 
 const tokenize = (text: string): Set<string> =>

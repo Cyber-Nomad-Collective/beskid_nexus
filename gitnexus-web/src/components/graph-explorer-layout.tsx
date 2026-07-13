@@ -6,6 +6,8 @@ import { CodeReferencesPanel } from './CodeReferencesPanel';
 import { FileTreePanel } from './FileTreePanel';
 import { GraphCanvas, type GraphCanvasHandle } from './GraphCanvas';
 import { StatusBar } from './StatusBar';
+import { StandardLinks, type StandardLink } from './standard-links';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { useAppState } from '../hooks/useAppState';
 
 const NODE_TYPE_COLORS: Record<string, string> = {
@@ -20,16 +22,11 @@ const NODE_TYPE_COLORS: Record<string, string> = {
 	Type: '#a78bfa',
 };
 
-interface SpecLink {
-	title: string;
-	href: string;
-}
-
 function NodeDocumentationPanel() {
 	const { selectedNode } = useAppState();
 
 	const codeDoc = selectedNode?.properties?.codeDoc as string | undefined;
-	const specLinks = selectedNode?.properties?.specLinks as SpecLink[] | undefined;
+	const specLinks = selectedNode?.properties?.specLinks as StandardLink[] | undefined;
 	const hasSpecLinks = Array.isArray(specLinks) && specLinks.length > 0;
 
 	if (!selectedNode || (!codeDoc && !hasSpecLinks)) {
@@ -43,7 +40,7 @@ function NodeDocumentationPanel() {
 					<h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
 						Code documentation
 					</h3>
-					<p className="text-sm leading-relaxed text-foreground">{codeDoc}</p>
+					<MarkdownRenderer content={codeDoc} />
 				</section>
 			) : null}
 
@@ -52,20 +49,7 @@ function NodeDocumentationPanel() {
 					<h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
 						Platform spec
 					</h3>
-					<ul className="space-y-2">
-						{specLinks!.map((link) => (
-							<li key={link.href}>
-								<a
-									href={link.href}
-									className="text-sm text-primary underline-offset-2 hover:underline"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									{link.title}
-								</a>
-							</li>
-						))}
-					</ul>
+					<StandardLinks links={specLinks!} />
 				</section>
 			) : null}
 		</aside>

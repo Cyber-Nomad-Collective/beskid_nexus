@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { MermaidDiagram } from './MermaidDiagram';
 import { Copy, Check } from '@/lib/lucide-icons';
+import { parseTypedDocLink, TypedDocLinkCard } from './typed-doc-link';
 
 // Custom syntax theme
 const customTheme = {
@@ -157,6 +158,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         // Render Mermaid diagrams
         if (language === 'mermaid') {
           return <MermaidDiagram code={codeContent} />;
+        }
+
+        if (['spec', 'book', 'nexus', 'bug'].includes(language)) {
+          const link = parseTypedDocLink(language, codeContent);
+          return link ? <TypedDocLinkCard link={link} /> : <code {...props}>{children}</code>;
         }
 
         return (

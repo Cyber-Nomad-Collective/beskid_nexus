@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'url';
-import type { CodeDocRecord } from './types.js';
+import type { CodeDocRecord, StandardLink } from './types.js';
 import {
   callOpenRouter,
   isOpenRouterConfigured,
@@ -179,7 +179,7 @@ const generateCodeDocText = async (entity: CodeDocEntity): Promise<string | null
   return result.message.content?.trim() || null;
 };
 
-const generateSpecLinks = async (entity: CodeDocEntity): Promise<Array<{ title: string; href: string }>> => {
+const generateSpecLinks = async (entity: CodeDocEntity): Promise<StandardLink[]> => {
   const index = await ensureSpecLinkIndex();
   const hrefIndex = allSpecHrefs(index);
   const messages: OpenRouterMessage[] = [
@@ -201,7 +201,13 @@ const generateSpecLinks = async (entity: CodeDocEntity): Promise<Array<{ title: 
     : [entity.name];
 
   const hits = searchSpecPages(index, searchTerms.join(' '), 5);
-  const candidates = hits.map((hit) => ({ title: hit.title, href: hit.href }));
+  const candidates = hits.map((hit) => ({
+    type: 'spec' as const,
+    stableId: hit.stableId,
+    title: hit.title,
+    href: hit.href,
+    revision: hit.revision,
+  }));
   return validateSpecLinks(candidates, hrefIndex);
 };
 

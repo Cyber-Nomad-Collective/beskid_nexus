@@ -44,10 +44,19 @@ export interface CodeDocRecord {
   entityKind: 'node' | 'cluster';
   /** Describes what this code does in the repo. Must NOT contain platform-spec prose. */
   codeDoc: string;
-  /** 0–3 canonical links into site/website platform-spec. href must exist in spec index. */
-  specLinks: Array<{ title: string; href: string }>;
+  /** 0–3 canonical OpenSpec catalog links. href must exist in the revisioned index. */
+  specLinks: StandardLink[];
   contentHash: string;
   updatedAt: string;
+}
+
+export interface StandardLink {
+  /** Omitted only for version-1 persisted records. New records always use `spec`. */
+  type?: 'spec';
+  stableId?: string;
+  title: string;
+  href: string;
+  revision?: string;
 }
 
 export interface PublicCatalogEntry {

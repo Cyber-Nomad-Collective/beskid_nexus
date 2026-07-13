@@ -4,88 +4,112 @@ import path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   buildSpecLinkIndex,
-  mdxRelativePathToHref,
+  ensureSpecLinkIndex,
+  loadSpecLinkIndex,
   resetSpecLinkIndexCache,
-  saveSpecLinkIndex,
   searchSpecPages,
 } from '../../src/server/nexus/spec-link-index.js';
 
-describe('mdxRelativePathToHref', () => {
-  it('maps index pages to trailing-slash hrefs', () => {
-    expect(mdxRelativePathToHref('tooling/nexus/index.mdx')).toBe('/platform-spec/tooling/nexus/');
-    expect(mdxRelativePathToHref('tooling/nexus/design-model.mdx')).toBe(
-      '/platform-spec/tooling/nexus/design-model',
-    );
-  });
-});
-
-describe('buildSpecLinkIndex', () => {
+describe('OpenSpec catalog link index', () => {
   let tempRoot: string;
+  let catalogPath: string;
+  let previousHome: string | undefined;
+
+  const writeCatalog = async (revision: string, title = 'MCP transport') => {
+    await fs.writeFile(
+      catalogPath,
+      JSON.stringify({
+        revision,
+        entries: [
+          {
+            stableId: 'standard.tooling.nexus.mcp',
+            title,
+            kind: 'requirement',
+            canonicalUrl: '/standard/tooling--nexus#mcp-transport',
+            legacySlugs: ['platform-spec/tooling/nexus/contracts-and-edge-cases'],
+            requirementAnchor: 'MCP transport',
+            normativeText:
+              'Nexus shall expose a versioned transport endpoint with explicit authentication.',
+            requirements: [
+              {
+                id: 'BSP-REQ-MCP-AUTH',
+                title: 'Authenticated transport',
+                anchor: 'requirement-authenticated-transport',
+                legacySlug: '/platform-spec/tooling/nexus/contracts-and-edge-cases/',
+              },
+            ],
+          },
+          {
+            stableId: 'standard.tooling.nexus.code-docs',
+            title: 'Code documentation',
+            canonicalUrl: '/standard/tooling--nexus#code-documentation',
+            legacySlugs: ['platform-spec/tooling/nexus/design-model'],
+          },
+        ],
+      }),
+      'utf-8',
+    );
+  };
 
   beforeEach(async () => {
-    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'gitnexus-spec-index-'));
-    await fs.mkdir(path.join(tempRoot, 'tooling/nexus'), { recursive: true });
-    await fs.writeFile(
-      path.join(tempRoot, 'tooling/nexus/index.mdx'),
-      `---
-title: Beskid Nexus
----
-## Graph-first explorer
-Public graph explorer for indexed repositories.
-`,
-      'utf-8',
-    );
-    await fs.writeFile(
-      path.join(tempRoot, 'tooling/nexus/design-model.mdx'),
-      `---
-title: Nexus design model
----
-## Code documentation
-Repo-scoped code docs stay separate from platform spec.
-`,
-      'utf-8',
-    );
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'gitnexus-openspec-index-'));
+    catalogPath = path.join(tempRoot, 'catalog.json');
+    previousHome = process.env.GITNEXUS_HOME;
+    process.env.GITNEXUS_HOME = path.join(tempRoot, 'home');
+    await writeCatalog('revision-1');
   });
 
   afterEach(async () => {
     resetSpecLinkIndexCache();
+    if (previousHome === undefined) delete process.env.GITNEXUS_HOME;
+    else process.env.GITNEXUS_HOME = previousHome;
     await fs.rm(tempRoot, { recursive: true, force: true });
   });
 
-  it('indexes title, href, and headings without storing prompt bodies', async () => {
-    const index = await buildSpecLinkIndex(tempRoot);
-    expect(index.pages).toHaveLength(2);
-    expect(index.pages.find((p) => p.href === '/platform-spec/tooling/nexus/')).toMatchObject({
-      title: 'Beskid Nexus',
-      headings: ['Graph-first explorer'],
+  it('indexes stable IDs, canonical hrefs, aliases, and catalog revision', async () => {
+    const index = await buildSpecLinkIndex(catalogPath);
+    expect(index).toMatchObject({
+      version: 2,
+      revision: 'revision-1',
+      catalogPath,
     });
-    for (const page of index.pages) {
-      expect(page.headings.length).toBeGreaterThan(0);
-      expect(page.excerpts.length).toBeGreaterThan(0);
-    }
+    expect(index.pages.find((page) => page.stableId === 'standard.tooling.nexus.code-docs')).toMatchObject({
+      stableId: 'standard.tooling.nexus.code-docs',
+      href: '/standard/tooling--nexus#code-documentation',
+    });
+    expect(index.pages.find((page) => page.stableId === 'BSP-REQ-MCP-AUTH')).toMatchObject({
+      stableId: 'BSP-REQ-MCP-AUTH',
+      href: '/standard/tooling--nexus#requirement-authenticated-transport',
+    });
+    expect(index.pages.find((page) => page.stableId === 'standard.tooling.nexus.mcp')).toMatchObject({
+      stableId: 'standard.tooling.nexus.mcp',
+      aliases: ['platform-spec/tooling/nexus/contracts-and-edge-cases'],
+    });
   });
 
-  it('searches indexed pages by query terms', async () => {
-    const index = await buildSpecLinkIndex(tempRoot);
-    const hits = searchSpecPages(index, 'code documentation repo scoped', 3);
-    expect(hits[0]?.href).toBe('/platform-spec/tooling/nexus/design-model');
-    expect(hits[0]?.relevance).toBeGreaterThan(0);
+  it('searches stable IDs and legacy aliases while returning typed revision metadata', async () => {
+    const index = await buildSpecLinkIndex(catalogPath);
+    const hits = searchSpecPages(index, 'nexus mcp transport', 3);
+    expect(hits[0]).toMatchObject({
+      stableId: 'standard.tooling.nexus.mcp',
+      href: '/standard/tooling--nexus#mcp-transport',
+      revision: 'revision-1',
+    });
   });
 
-  it('persists and reloads from GITNEXUS_HOME', async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'gitnexus-home-'));
-    const previousHome = process.env.GITNEXUS_HOME;
-    process.env.GITNEXUS_HOME = tempHome;
-    try {
-      const built = await buildSpecLinkIndex(tempRoot);
-      await saveSpecLinkIndex(built);
-      resetSpecLinkIndexCache();
-      const { loadSpecLinkIndex } = await import('../../src/server/nexus/spec-link-index.js');
-      const loaded = await loadSpecLinkIndex();
-      expect(loaded?.pages).toHaveLength(2);
-    } finally {
-      process.env.GITNEXUS_HOME = previousHome;
-      await fs.rm(tempHome, { recursive: true, force: true });
-    }
+  it('invalidates memory and persisted caches when catalog content changes', async () => {
+    const first = await ensureSpecLinkIndex(catalogPath);
+    expect(first.revision).toBe('revision-1');
+
+    await writeCatalog('revision-2', 'Authenticated MCP transport');
+    const second = await ensureSpecLinkIndex(catalogPath);
+    expect(second.revision).toBe('revision-2');
+    expect(second.sourceHash).not.toBe(first.sourceHash);
+    expect(second.pages.find((page) => page.stableId === 'standard.tooling.nexus.mcp')?.title).toBe(
+      'Authenticated MCP transport',
+    );
+
+    resetSpecLinkIndexCache();
+    expect((await loadSpecLinkIndex())?.revision).toBe('revision-2');
   });
 });

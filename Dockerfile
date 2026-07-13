@@ -46,10 +46,16 @@ COPY --from=builder /app/gitnexus/scripts/install-duckdb-extension.mjs ./gitnexu
 COPY --from=builder /app/gitnexus/vendor ./gitnexus/vendor
 COPY --from=builder /app/gitnexus/web ./gitnexus/web
 
+# The root delivery workflow supplies this read-only named BuildKit context.
+# Keeping it separate preserves the service-local primary build context while
+# making the exact canonical standard catalog part of the immutable image.
+COPY --from=openspec catalog.json /app/openspec/catalog.json
+
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENV GITNEXUS_HOME=/data/gitnexus \
+    NEXUS_OPEN_SPEC_CATALOG=/app/openspec/catalog.json \
     NODE_ENV=production \
     GITNEXUS_SERVE_HOST=0.0.0.0 \
     PORT=8452

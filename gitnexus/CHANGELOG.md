@@ -4,6 +4,11 @@ All notable changes to GitNexus will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Package the canonical OpenSpec catalog as an explicit read-only BuildKit
+  context and configure the deployed server to index that immutable catalog.
+
 ## [1.6.5] - 2026-05-16
 
 ### Added

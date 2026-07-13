@@ -4,6 +4,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      additional_contexts:
+        openspec: ${NEXUS_OPEN_SPEC_CONTEXT:-../../openspec}
     restart: unless-stopped
     ports:
       - "8452:8452"
@@ -17,6 +19,7 @@ services:
       NEXUS_ADMIN_GITHUB_LOGINS: ${NEXUS_ADMIN_GITHUB_LOGINS:-}
       NEXUS_SETUP_TOKEN: ${NEXUS_SETUP_TOKEN:-}
       GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-}
+      NEXUS_OPEN_SPEC_CATALOG: ${NEXUS_OPEN_SPEC_CATALOG:-/app/openspec/catalog.json}
     volumes:
       - nexus-data:/data/gitnexus
     healthcheck:

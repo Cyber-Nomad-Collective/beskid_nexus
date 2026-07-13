@@ -26,7 +26,7 @@ Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `ma
 | `GITHUB_WEBHOOK_SECRET` | optional | Verifies `POST /api/webhooks/github` push events for re-index |
 | `OPENROUTER_API_KEY` | optional | Enables server-side code-doc maintenance after analyze (no public UI) |
 | `NEXUS_DOC_MODEL` | optional | OpenRouter model id (e.g. `openrouter/free`); default applied when key is set |
-| `NEXUS_SPEC_ROOT` | optional | Path to `site/website/src/content/docs/platform-spec` for **spec link index** only (not copied into code docs) |
+| `NEXUS_OPEN_SPEC_CATALOG` | optional | Path to the mounted `openspec/catalog.json` used for typed standard links (not copied into code docs) |
 | `GITNEXUS_HOME` | set in compose | `/data/gitnexus` (volume) |
 | `PORT` | optional | Default **8452** |
 
@@ -43,7 +43,7 @@ Pairing stores `authHubServiceToken` in `nexus-config.json` under `GITNEXUS_HOME
 
 ## Code documentation (operator)
 
-When `OPENROUTER_API_KEY` is set, analyze completion triggers a background job that writes `code-docs/{registryName}.json` under `GITNEXUS_HOME`. Public graph responses expose `properties.codeDoc` and `properties.specLinks` separately — no AI or OpenRouter details in API or UI copy. Mount platform-spec MDX at `NEXUS_SPEC_ROOT` (or bake into the image) so spec links resolve to canonical site URLs.
+When `OPENROUTER_API_KEY` is set, analyze completion triggers a background job that writes `code-docs/{registryName}.json` under `GITNEXUS_HOME`. Public graph responses expose `properties.codeDoc` and typed `properties.specLinks` separately — no AI or OpenRouter details in API or UI copy. Mount the generated OpenSpec catalog and set `NEXUS_OPEN_SPEC_CATALOG`; its revision and content hash invalidate Nexus's persisted link index automatically.
 
 ## MCP over HTTP
 

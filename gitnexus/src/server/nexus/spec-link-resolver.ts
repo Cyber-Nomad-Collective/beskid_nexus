@@ -4,6 +4,7 @@ import {
   type SpecLinkIndexFile,
   type SpecSearchHit,
 } from './spec-link-index.js';
+import type { StandardLink } from './types.js';
 
 export { searchSpecPages };
 
@@ -12,11 +13,17 @@ export const getSpecLinkIndex = async (): Promise<SpecLinkIndexFile> => ensureSp
 export const resolveSpecLinksFromSearch = async (
   searchTerms: string[],
   limit = 3,
-): Promise<Array<{ title: string; href: string }>> => {
+): Promise<StandardLink[]> => {
   const index = await getSpecLinkIndex();
   const query = searchTerms.filter(Boolean).join(' ');
   const hits = searchSpecPages(index, query, limit);
-  return hits.map((hit) => ({ title: hit.title, href: hit.href }));
+  return hits.map((hit) => ({
+    type: 'spec',
+    stableId: hit.stableId,
+    title: hit.title,
+    href: hit.href,
+    revision: hit.revision,
+  }));
 };
 
 export const validateHrefInIndex = async (href: string): Promise<boolean> => {
