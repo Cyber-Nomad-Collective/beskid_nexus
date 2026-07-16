@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@beskid/beskid-ui": "npm:@cyber-nomad-collective/beskid-ui@^0.2.0",
-    "@beskid/ui-react": "npm:@cyber-nomad-collective/beskid-ui-react@^0.2.0",
+    "@beskid/ui-react": "npm:@cyber-nomad-collective/beskid-ui-react@^0.2.8",
     "@sigma/edge-curve": "^3.1.0",
     "@tailwindcss/vite": "^4.2.4",
     "axios": "^1.16.0",
