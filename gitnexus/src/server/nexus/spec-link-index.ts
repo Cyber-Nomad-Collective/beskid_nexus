@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { getGlobalDir } from '../../storage/repo-manager.js';
+import type { TrackerDeliveryNode, TrackerDeliveryRelation } from './types.js';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -41,7 +42,47 @@ export interface SpecSearchHit {
   relevance: number;
 }
 
+export interface TrackerDeliveryLinkInput {
+  trackerId: string;
+  catalogRevision: string;
+  standardId: string;
+  relation: TrackerDeliveryRelation['relation'];
+}
+
 const INDEX_FILE = 'spec-link-index.json';
+
+const requiredTrackerLinkPart = (value: string, name: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) throw new Error(`Tracker delivery link requires ${name}`);
+  return trimmed;
+};
+
+/** Stable graph identity prevents a Tracker ID from crossing catalog revisions. */
+export const trackerDeliveryNodeId = (trackerId: string, catalogRevision: string): string =>
+  `tracker:${requiredTrackerLinkPart(trackerId, 'tracker ID')}:${requiredTrackerLinkPart(catalogRevision, 'catalog revision')}`;
+
+export const trackerDeliveryNode = (trackerId: string, catalogRevision: string): TrackerDeliveryNode => ({
+  id: trackerDeliveryNodeId(trackerId, catalogRevision),
+  trackerId: requiredTrackerLinkPart(trackerId, 'tracker ID'),
+  catalogRevision: requiredTrackerLinkPart(catalogRevision, 'catalog revision'),
+});
+
+/** Converts Tracker's revisioned typed link contract into a Nexus graph edge. */
+export const trackerDeliveryRelation = (
+  input: TrackerDeliveryLinkInput,
+): TrackerDeliveryRelation => {
+  const catalogRevision = requiredTrackerLinkPart(input.catalogRevision, 'catalog revision');
+  const standardId = requiredTrackerLinkPart(input.standardId, 'standard ID');
+  const from = trackerDeliveryNodeId(input.trackerId, catalogRevision);
+  const to = `openspec:${standardId}:${catalogRevision}`;
+  return {
+    id: `${from}->${to}`,
+    from,
+    to,
+    relation: input.relation,
+    catalogRevision,
+  };
+};
 
 export const specLinkIndexPath = (): string => path.join(getGlobalDir(), INDEX_FILE);
 

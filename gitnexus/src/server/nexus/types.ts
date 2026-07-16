@@ -59,6 +59,22 @@ export interface StandardLink {
   revision?: string;
 }
 
+/** A Tracker entity at the exact OpenSpec catalog revision it cites. */
+export interface TrackerDeliveryNode {
+  id: string;
+  trackerId: string;
+  catalogRevision: string;
+}
+
+/** Typed Tracker-to-OpenSpec relation retained in the Nexus graph. */
+export interface TrackerDeliveryRelation {
+  id: string;
+  from: string;
+  to: string;
+  relation: 'implements' | 'verifies' | 'blocks' | 'relates';
+  catalogRevision: string;
+}
+
 export interface PublicCatalogEntry {
   id: string;
   displayName: string;
