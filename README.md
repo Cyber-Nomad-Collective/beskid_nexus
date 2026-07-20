@@ -57,12 +57,30 @@ Pair with the shared [auth hub](../site/auth/README.md): hub **Admin → Pairing
 
 ## Tests
 
+Authoritative runners for `gitnexus-web` (see also
+[gitnexus-web/TESTING.md](gitnexus-web/TESTING.md)). Do **not** use raw
+`bun test` — it has no jsdom and is blocked via `bunfig.toml` preload:
+
+| Suite | Command | Runner |
+|-------|---------|--------|
+| Unit (jsdom) | `cd gitnexus-web && bun run test` (alias: `bun run test:unit`) | Vitest + jsdom |
+| E2E | `cd gitnexus-web && bun run test:e2e:install && bun run test:e2e` | Playwright (Chromium) |
+| Both (package gate) | `cd gitnexus-web && bun run test:gate` | unit then E2E; prints each runner's totals |
+
+Playwright starts the Vite dev server via `playwright.config.ts`. Backend-dependent
+specs skip cleanly when `gitnexus serve` is unavailable; mock-based specs (e.g.
+`e2e/graph-first.spec.ts`) run without a live backend. Manual/debug harnesses are
+`testIgnore`d from `test:e2e`.
+
 ```bash
 cd gitnexus && bun run test test/unit/github-ownership.test.ts test/unit/repo-owner-admin.test.ts test/unit/code-doc-store.test.ts test/unit/spec-link-index.test.ts test/unit/code-doc-validator.test.ts
 cd ../gitnexus-web && bun run test && bun run build
+# Optional E2E (requires Chromium once): bun run test:e2e:install && bun run test:e2e
 ```
 
 On macOS, LadybugDB native bindings may require the Linux optional package used in [Dockerfile](Dockerfile); route unit tests above avoid loading Ladybug at import time.
+
+Root release-gate wiring that invokes these package commands lives in CYB-93.
 
 ## Container (Podman or Docker)
 
