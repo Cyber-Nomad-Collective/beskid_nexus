@@ -11,11 +11,14 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:gate": "bun run test:unit && bun run test:e2e"
   },
   "dependencies": {
     "@beskid/beskid-ui": "npm:@cyber-nomad-collective/beskid-ui@^0.2.0",

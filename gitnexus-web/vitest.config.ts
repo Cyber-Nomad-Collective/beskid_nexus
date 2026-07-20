@@ -27,10 +27,13 @@ export default defineConfig({
     },
   },
   test: {
+    // Authoritative unit runner: `bun run test` (not bare `bun test`).
+    // E2E lives under e2e/ and must only run via `bun run test:e2e`.
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
     include: ['test/**/*.test.{ts,tsx}'],
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     testTimeout: 15000,
     coverage: {
       provider: 'v8',

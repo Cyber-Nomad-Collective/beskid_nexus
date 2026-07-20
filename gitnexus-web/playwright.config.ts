@@ -1,7 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
+	// Authoritative E2E runner: `bun run test:e2e` (after `bun run test:e2e:install`).
+	// Do not run these specs through Bun or Vitest.
 	testDir: './e2e',
+	testIgnore: ['**/manual-record.spec.ts', '**/debug-issues.spec.ts'],
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,

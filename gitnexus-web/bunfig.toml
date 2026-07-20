@@ -1,0 +1,11 @@
+# Bare `bun test` is NOT an authoritative runner for gitnexus-web.
+# Always use package scripts:
+#   bun run test      → Vitest + jsdom (unit)
+#   bun run test:e2e  → Playwright (E2E)
+#
+# This config only softens the footgun if someone still types `bun test`.
+
+[test]
+root = "./test"
+pathIgnorePatterns = ["e2e/**"]
+preload = ["./test/redirect-to-vitest.ts"]
