@@ -1,20 +1,34 @@
 # Beskid Nexus — gitnexus serve (REST API, MCP, static web UI; runtime indexing)
+#
+# CI / GHCR (platform-delivery): context = beskid_nexus/, plus named BuildKit
+# contexts:
+#   web_common -> ./beskid_web_common  (file:../../beskid_web_common from gitnexus-web)
+#   openspec   -> ./openspec
+# Local:
+#   docker build -f Dockerfile \
+#     --build-context web_common=../beskid_web_common \
+#     --build-context openspec=../openspec .
 
 FROM oven/bun:latest AS builder
 
-WORKDIR /app
+# Layout mirrors the superrepo so gitnexus-web file:../../beskid_web_common resolves.
+WORKDIR /src/beskid_nexus
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
 
-COPY .npmrc ./
+COPY --from=web_common package.json bun.lock /src/beskid_web_common/
+COPY --from=web_common packages /src/beskid_web_common/packages
 ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
+ENV BUN_INSTALL_CACHE_DIR=/bun-cache
+RUN --mount=type=cache,target=/bun-cache bun install --cwd=/src/beskid_web_common --frozen-lockfile
 
+COPY .npmrc ./
 COPY gitnexus-shared/package.json gitnexus-shared/bun.lock ./gitnexus-shared/
 COPY gitnexus-shared ./gitnexus-shared
-RUN cd gitnexus-shared && bun install --frozen-lockfile && bun run build
+RUN --mount=type=cache,target=/bun-cache cd gitnexus-shared && bun install --frozen-lockfile && bun run build
 
 COPY gitnexus/package.json gitnexus/bun.lock ./gitnexus/
 COPY gitnexus ./gitnexus
@@ -25,7 +39,7 @@ COPY .npmrc ./gitnexus-web/.npmrc
 
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
-RUN cd gitnexus && bun install --frozen-lockfile \
+RUN --mount=type=cache,target=/bun-cache cd gitnexus && bun install --frozen-lockfile \
   && bun add --optional @ladybugdb/core-linux-x64@0.16.1 \
   && ln -sf ../core-linux-x64/lbugjs.node node_modules/@ladybugdb/core/lbugjs.node \
   && bun run build
@@ -39,12 +53,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --from=builder /app/gitnexus/dist ./gitnexus/dist
-COPY --from=builder /app/gitnexus/node_modules ./gitnexus/node_modules
-COPY --from=builder /app/gitnexus/package.json ./gitnexus/package.json
-COPY --from=builder /app/gitnexus/scripts/install-duckdb-extension.mjs ./gitnexus/scripts/install-duckdb-extension.mjs
-COPY --from=builder /app/gitnexus/vendor ./gitnexus/vendor
-COPY --from=builder /app/gitnexus/web ./gitnexus/web
+COPY --from=builder /src/beskid_nexus/gitnexus/dist ./gitnexus/dist
+COPY --from=builder /src/beskid_nexus/gitnexus/node_modules ./gitnexus/node_modules
+COPY --from=builder /src/beskid_nexus/gitnexus/package.json ./gitnexus/package.json
+COPY --from=builder /src/beskid_nexus/gitnexus/scripts/install-duckdb-extension.mjs ./gitnexus/scripts/install-duckdb-extension.mjs
+COPY --from=builder /src/beskid_nexus/gitnexus/vendor ./gitnexus/vendor
+COPY --from=builder /src/beskid_nexus/gitnexus/web ./gitnexus/web
 
 # The root delivery workflow supplies this read-only named BuildKit context.
 # Keeping it separate preserves the service-local primary build context while
