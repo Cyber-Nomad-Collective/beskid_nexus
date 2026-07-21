@@ -18,7 +18,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=web_common package.json bun.lock /src/beskid_web_common/
+COPY --from=web_common package.json bun.lock tsconfig.base.json /src/beskid_web_common/
 COPY --from=web_common packages /src/beskid_web_common/packages
 ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
