@@ -5,7 +5,7 @@
     "": {
       "name": "gitnexus",
       "dependencies": {
-        "@beskid/auth-client": "npm:@cyber-nomad-collective/beskid-auth-client@^0.2.0",
+        "@beskid/auth-client": "^0.2.9",
         "@huggingface/transformers": "^4.1.0",
         "@ladybugdb/core": "^0.16.1",
         "@modelcontextprotocol/sdk": "^1.0.0",
@@ -78,7 +78,7 @@
 
     "@bcoe/v8-coverage": ["@bcoe/v8-coverage@1.0.2", "", {}, "sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA=="],
 
-    "@beskid/auth-client": ["@cyber-nomad-collective/beskid-auth-client@0.2.0", "https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-auth-client/0.2.0/47badfdfabec8937e8b4f70a304fd8e1fd9da140", { "dependencies": { "jose": "^6.2.3" } }, "sha512-CLCOJ0oo0Tih9KU86HsUjqCR0GpcTqImEfGPuhN2mQj4GerWj/+3nnQG0fiYpKauiYvolGZhanNuHvNr3wjhug=="],
+    "@beskid/auth-client": ["@cyber-nomad-collective/beskid-auth-client@0.2.9", "https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-auth-client/0.2.9/601fa820c31295ae41e6d47b03d7856de3f8a020", { "dependencies": { "jose": "^6.2.3" } }, "sha512-wsbUV78HTYS1np/HfqZAvbOiphv/z0AavxVUvQDo7RRNXolPL4IIIK8/AAPwa1vrgFOM6RaWbhy9GuQVPV5OUQ=="],
 
     "@emnapi/core": ["@emnapi/core@1.10.0", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.1", "tslib": "^2.4.0" } }, "sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw=="],
 
