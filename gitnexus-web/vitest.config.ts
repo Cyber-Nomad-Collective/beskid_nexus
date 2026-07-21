@@ -16,15 +16,34 @@ export default defineConfig({
     __REQUIRED_NODE_VERSION__: JSON.stringify(gitnexusPkg.engines.node.replace(/[>=^~\s]/g, '')),
   },
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      ...resolveUiReactAliases(),
-      '@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
-        __dirname,
-        'node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs',
-      ),
-      mermaid: path.resolve(__dirname, 'node_modules/mermaid/dist/mermaid.esm.min.mjs'),
-    },
+    // Exact-match aliases (array form) so `gitnexus-shared/test-helpers` is not
+    // swallowed by a file-level `gitnexus-shared` → index.ts mapping.
+    alias: [
+      {
+        find: /^gitnexus-shared$/,
+        replacement: path.resolve(__dirname, '../gitnexus-shared/src/index.ts'),
+      },
+      {
+        find: /^gitnexus-shared\/test-helpers$/,
+        replacement: path.resolve(__dirname, '../gitnexus-shared/src/test-helpers.ts'),
+      },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+      ...Object.entries(resolveUiReactAliases()).map(([find, replacement]) => ({
+        find,
+        replacement,
+      })),
+      {
+        find: '@anthropic-ai/sdk/lib/transform-json-schema',
+        replacement: path.resolve(
+          __dirname,
+          'node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs',
+        ),
+      },
+      {
+        find: 'mermaid',
+        replacement: path.resolve(__dirname, 'node_modules/mermaid/dist/mermaid.esm.min.mjs'),
+      },
+    ],
   },
   test: {
     // Authoritative unit runner: `bun run test` (not bare `bun test`).
