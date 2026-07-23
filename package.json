@@ -3,10 +3,10 @@
   "private": true,
   "description": "Beskid compiler knowledge graph (GitNexus fork)",
   "scripts": {
-    "build:shared": "cd gitnexus-shared && bun run build",
-    "build:web": "cd gitnexus-web && bun run build",
-    "build:cli": "cd gitnexus && bun run build",
-    "build": "bun run build:shared && bun run build:cli && bun run build:web",
-    "dev:web": "cd gitnexus-web && bun run dev"
+    "build:shared": "cd gitnexus-shared && pnpm build",
+    "build:web": "cd gitnexus-web && pnpm build",
+    "build:cli": "cd gitnexus && pnpm build",
+    "build": "pnpm build:shared && pnpm build:cli && pnpm build:web",
+    "dev:web": "cd gitnexus-web && pnpm dev"
   }
 }

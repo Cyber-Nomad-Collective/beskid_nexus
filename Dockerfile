@@ -9,40 +9,40 @@
 #     --build-context web_common=../beskid_web_common \
 #     --build-context openspec=../openspec .
 
-FROM oven/bun:latest AS builder
+FROM node:22.12.0 AS builder
 
 # Layout mirrors the superrepo so gitnexus-web file:../../beskid_web_common resolves.
 WORKDIR /src/beskid_nexus
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget nodejs npm libgomp1 libatomic1 \
+  && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
+RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
 
-COPY --from=web_common package.json bun.lock tsconfig.base.json /src/beskid_web_common/
+COPY --from=web_common package.json pnpm-lock.yaml tsconfig.base.json /src/beskid_web_common/
 COPY --from=web_common packages /src/beskid_web_common/packages
 ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
-ENV BUN_INSTALL_CACHE_DIR=/bun-cache
-RUN --mount=type=cache,target=/bun-cache bun install --cwd=/src/beskid_web_common --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /src/beskid_web_common --frozen-lockfile
 
 COPY .npmrc ./
-COPY gitnexus-shared/package.json gitnexus-shared/bun.lock ./gitnexus-shared/
+COPY gitnexus-shared/package.json gitnexus-shared/pnpm-lock.yaml ./gitnexus-shared/
 COPY gitnexus-shared ./gitnexus-shared
-RUN --mount=type=cache,target=/bun-cache cd gitnexus-shared && bun install --frozen-lockfile && bun run build
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir gitnexus-shared --frozen-lockfile && pnpm --dir gitnexus-shared build
 
-COPY gitnexus/package.json gitnexus/bun.lock ./gitnexus/
+COPY gitnexus/package.json gitnexus/pnpm-lock.yaml ./gitnexus/
 COPY gitnexus ./gitnexus
 COPY .npmrc ./gitnexus/.npmrc
-COPY gitnexus-web/package.json gitnexus-web/bun.lock ./gitnexus-web/
+COPY gitnexus-web/package.json gitnexus-web/pnpm-lock.yaml ./gitnexus-web/
 COPY gitnexus-web ./gitnexus-web
 COPY .npmrc ./gitnexus-web/.npmrc
 
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
-RUN --mount=type=cache,target=/bun-cache cd gitnexus && bun install --frozen-lockfile \
-  && bun add --optional @ladybugdb/core-linux-x64@0.16.1 \
-  && ln -sf ../core-linux-x64/lbugjs.node node_modules/@ladybugdb/core/lbugjs.node \
-  && bun run build
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm --dir gitnexus install --frozen-lockfile \
+  && pnpm --dir gitnexus add --save-optional @ladybugdb/core-linux-x64@0.16.1 \
+  && ln -sf ../core-linux-x64/lbugjs.node gitnexus/node_modules/@ladybugdb/core/lbugjs.node \
+  && pnpm --dir gitnexus build
 
 # ── Runtime: gitnexus serve on PORT (API + web/) ───────────────────────────
 FROM node:22-bookworm-slim@sha256:9f6d5975c7dca860947d3915877f85607946403fc55349f39b4bc3688448bb6e AS runtime

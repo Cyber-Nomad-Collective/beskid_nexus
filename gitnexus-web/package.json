@@ -18,7 +18,7 @@
     "test:e2e:install": "playwright install chromium",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "test:gate": "bun run test:unit && bun run test:e2e"
+    "test:gate": "pnpm test:unit && pnpm test:e2e"
   },
   "dependencies": {
     "@beskid/beskid-ui": "file:../../beskid_web_common/packages/beskid-ui",
