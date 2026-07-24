@@ -1,5 +1,5 @@
 mod utils;
-use utils::save;
+use utils::save as other_save;
 
 // Local function shadows imported save
 fn save(data: &str) {
