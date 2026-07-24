@@ -78,6 +78,8 @@ gitnexus/test/fixtures/mini-repo/.gitignore
 # Ignore csharp generated obj and bin folders
 gitnexus/test/fixtures/lang-resolution/**/obj
 gitnexus/test/fixtures/lang-resolution/**/bin
+gitnexus/test/fixtures/lang-resolution/**/target/
+gitnexus/test/fixtures/lang-resolution/**/Cargo.lock
 GitNexus.sln
 # Git worktrees
 .worktrees/
