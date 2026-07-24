@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import path from 'path';
-import { createRequire } from 'module';
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { createRequire } from "module";
+import path from "path";
+import { defineConfig } from "vite";
 
 import {
 	assertBeskidPackagesInstalled,
@@ -10,59 +10,70 @@ import {
 	resolveBeskidUiSrc,
 	resolveUiReactAliases,
 	resolveUiReactSrc,
-} from './vite.resolve-beskid-ui';
+} from "./vite.resolve-beskid-ui";
 
 const _require = createRequire(import.meta.url);
-const gitnexusPkg = _require('../gitnexus/package.json');
+const gitnexusPkg = _require("../gitnexus/package.json");
 
 assertBeskidPackagesInstalled();
 const beskidUi = resolveBeskidUi();
 const beskidUiSrc = resolveBeskidUiSrc()!;
-const uiReactSrc = resolveUiReactSrc() ?? path.resolve(__dirname, '../../beskid_web_common/packages/beskid-ui-react/src');
+const uiReactSrc =
+	resolveUiReactSrc() ??
+	path.resolve(
+		__dirname,
+		"../../beskid_web_common/packages/beskid-ui-react/src",
+	);
 const uiReactAliases = resolveUiReactAliases();
 
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	define: {
 		__REQUIRED_NODE_VERSION__: JSON.stringify(
-			gitnexusPkg.engines.node.replace(/[>=^~\s]/g, ''),
+			gitnexusPkg.engines.node.replace(/[>=^~\s]/g, ""),
 		),
-		'import.meta.env.VITE_NEXUS_DEFAULT_REPO': JSON.stringify(
-			process.env.VITE_NEXUS_DEFAULT_REPO || '',
+		"import.meta.env.VITE_NEXUS_DEFAULT_REPO": JSON.stringify(
+			process.env.VITE_NEXUS_DEFAULT_REPO || "",
 		),
-		'import.meta.env.VITE_NEXUS_HOSTED': JSON.stringify(
-			process.env.VITE_NEXUS_HOSTED || '',
+		"import.meta.env.VITE_NEXUS_HOSTED": JSON.stringify(
+			process.env.VITE_NEXUS_HOSTED || "",
 		),
 	},
 	resolve: {
-		dedupe: ['react', 'react-dom'],
+		dedupe: ["react", "react-dom"],
 		alias: {
-			'@': path.resolve(__dirname, './src'),
-			'@beskid/beskid-ui': beskidUiSrc,
-			'@beskid/material-theme': path.join(beskidUiSrc, 'styles/theme.material.css'),
+			"@": path.resolve(__dirname, "./src"),
+			"@beskid/beskid-ui": beskidUiSrc,
+			"@beskid/material-theme": path.join(
+				beskidUiSrc,
+				"styles/theme.material.css",
+			),
 			...uiReactAliases,
-			'@beskid/ui-react': uiReactSrc,
-			'@beskid/ui-react/styles/shadcn-entry.css': path.join(
+			"@beskid/ui-react": uiReactSrc,
+			"@beskid/ui-react/styles/shadcn-entry.css": path.join(
 				uiReactSrc,
-				'styles/shadcn-entry.css',
+				"styles/shadcn-entry.css",
 			),
 			...beskidUi.aliases,
-			'gitnexus-shared': path.resolve(__dirname, '../gitnexus-shared/src/index.ts'),
-			'@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
+			"gitnexus-shared": path.resolve(
 				__dirname,
-				'node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs',
+				"../gitnexus-shared/src/index.ts",
+			),
+			"@anthropic-ai/sdk/lib/transform-json-schema": path.resolve(
+				__dirname,
+				"node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs",
 			),
 			mermaid: path.resolve(
 				__dirname,
-				'node_modules/mermaid/dist/mermaid.esm.min.mjs',
+				"node_modules/mermaid/dist/mermaid.esm.min.mjs",
 			),
 		},
 	},
 	server: {
-		fs: { allow: ['..'] },
+		fs: { allow: [".."] },
 		proxy: {
-			'/api': {
-				target: process.env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:8452',
+			"/api": {
+				target: process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8452",
 				changeOrigin: true,
 			},
 		},

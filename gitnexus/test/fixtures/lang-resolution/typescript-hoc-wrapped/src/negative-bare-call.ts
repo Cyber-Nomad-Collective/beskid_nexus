@@ -7,24 +7,27 @@
 // of `call_expression` is NOT `variable_declarator`. The arrow stays
 // anonymous and calls inside fall back to the enclosing module scope.
 
-import { doStuff } from './helpers';
+import { doStuff } from "./helpers";
 
-const useCallback = <F extends (...args: unknown[]) => unknown>(fn: F, _deps: unknown[]): F => fn;
-const memo = <P,>(render: (props: P) => unknown) => render;
+const useCallback = <F extends (...args: unknown[]) => unknown>(
+	fn: F,
+	_deps: unknown[],
+): F => fn;
+const memo = <P>(render: (props: P) => unknown) => render;
 
 // Statement-level: result is discarded.
 useCallback(() => {
-  doStuff(1);
+	doStuff(1);
 }, []);
 
 memo<{ x: number }>(({ x }) => {
-  doStuff(x);
+	doStuff(x);
 });
 
 // Function-arg position (passed to another call): also unbound.
 const wrap = <T>(value: T): T => value;
 wrap(
-  memo<{ y: number }>(({ y }) => {
-    doStuff(y);
-  }),
+	memo<{ y: number }>(({ y }) => {
+		doStuff(y);
+	}),
 );

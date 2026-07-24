@@ -1,11 +1,11 @@
+import type { NextFunction, Request, Response } from "express";
 import {
-	Registry,
-	collectDefaultMetrics,
 	Counter,
+	collectDefaultMetrics,
 	Histogram,
+	Registry,
 	type RegistryContentType,
 } from "prom-client";
-import type { NextFunction, Request, Response } from "express";
 
 const SERVICE = "gitnexus";
 
@@ -73,9 +73,7 @@ export async function renderMetrics(): Promise<{
 	};
 }
 
-export function mountMetricsRoute(
-	app: import("express").Express,
-): void {
+export function mountMetricsRoute(app: import("express").Express): void {
 	app.get("/metrics", async (_req, res) => {
 		const { body, contentType } = await renderMetrics();
 		res.set("Content-Type", contentType);

@@ -58,69 +58,71 @@
  * annotates each with `primaryByLanguage[lang]`.
  */
 
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import {
-  aggregateDiffs,
-  diffResolutions,
-  type Resolution,
-  type ShadowCallsite,
-  type ShadowDiff,
-  type ShadowParityReport,
-  type SupportedLanguages,
-} from 'gitnexus-shared';
+	aggregateDiffs,
+	diffResolutions,
+	type Resolution,
+	type ShadowCallsite,
+	type ShadowDiff,
+	type ShadowParityReport,
+	type SupportedLanguages,
+} from "gitnexus-shared";
 
 // ─── Public API ────────────────────────────────────────────────────────────
 
 /** Which side of the dual-run is considered authoritative for this language. */
-export type PrimarySide = 'legacy' | 'registry';
+export type PrimarySide = "legacy" | "registry";
 
 /** One record per call site the caller dual-runs. */
 export interface ShadowRecordInput {
-  readonly language: SupportedLanguages;
-  readonly callsite: ShadowCallsite;
-  readonly legacy: readonly Resolution[];
-  readonly newResult: readonly Resolution[];
-  /**
-   * Which side drove the actual runtime answer for this record. Lets the
-   * dashboard distinguish "registry-primary, legacy is shadow" from the
-   * default "legacy-primary, registry is shadow" without re-reading
-   * `REGISTRY_PRIMARY_<LANG>` env vars at render time.
-   */
-  readonly primary: PrimarySide;
+	readonly language: SupportedLanguages;
+	readonly callsite: ShadowCallsite;
+	readonly legacy: readonly Resolution[];
+	readonly newResult: readonly Resolution[];
+	/**
+	 * Which side drove the actual runtime answer for this record. Lets the
+	 * dashboard distinguish "registry-primary, legacy is shadow" from the
+	 * default "legacy-primary, registry is shadow" without re-reading
+	 * `REGISTRY_PRIMARY_<LANG>` env vars at render time.
+	 */
+	readonly primary: PrimarySide;
 }
 
 /** Persisted JSON shape. Schema-versioned for future migrations. */
 export interface PersistedShadowReport {
-  readonly schemaVersion: 1;
-  readonly runId: string;
-  readonly generatedAt: string;
-  readonly primaryByLanguage: Readonly<Partial<Record<SupportedLanguages, PrimarySide>>>;
-  readonly report: ShadowParityReport;
+	readonly schemaVersion: 1;
+	readonly runId: string;
+	readonly generatedAt: string;
+	readonly primaryByLanguage: Readonly<
+		Partial<Record<SupportedLanguages, PrimarySide>>
+	>;
+	readonly report: ShadowParityReport;
 }
 
 export interface ShadowHarness {
-  /** `true` iff `GITNEXUS_SHADOW_MODE` is truthy. When `false`, `record()` is a no-op. */
-  readonly enabled: boolean;
-  /** Accumulate a dual-run observation. No-op when `enabled === false`. */
-  record(input: ShadowRecordInput): void;
-  /** Number of records accumulated so far. Useful for diagnostics / tests. */
-  size(): number;
-  /**
-   * Aggregate the accumulated records into a `ShadowParityReport`
-   * without persisting. Returns a deterministic snapshot each call;
-   * idempotent with respect to `record()` ordering.
-   */
-  snapshot(now?: Date): ShadowParityReport;
-  /**
-   * Write the aggregated snapshot to JSON. Resolves to the path of the
-   * per-run file. Also writes/overwrites `latest.json` alongside.
-   *
-   * Creates `outputDir` if it doesn't exist.
-   */
-  persist(outputDir: string, now?: Date): Promise<string>;
-  /** Reset the accumulator. Preserves `enabled`. */
-  clear(): void;
+	/** `true` iff `GITNEXUS_SHADOW_MODE` is truthy. When `false`, `record()` is a no-op. */
+	readonly enabled: boolean;
+	/** Accumulate a dual-run observation. No-op when `enabled === false`. */
+	record(input: ShadowRecordInput): void;
+	/** Number of records accumulated so far. Useful for diagnostics / tests. */
+	size(): number;
+	/**
+	 * Aggregate the accumulated records into a `ShadowParityReport`
+	 * without persisting. Returns a deterministic snapshot each call;
+	 * idempotent with respect to `record()` ordering.
+	 */
+	snapshot(now?: Date): ShadowParityReport;
+	/**
+	 * Write the aggregated snapshot to JSON. Resolves to the path of the
+	 * per-run file. Also writes/overwrites `latest.json` alongside.
+	 *
+	 * Creates `outputDir` if it doesn't exist.
+	 */
+	persist(outputDir: string, now?: Date): Promise<string>;
+	/** Reset the accumulator. Preserves `enabled`. */
+	clear(): void;
 }
 
 /**
@@ -129,63 +131,66 @@ export interface ShadowHarness {
  * env var in the hot path.
  */
 export function createShadowHarness(): ShadowHarness {
-  const enabled = parseShadowModeEnv(process.env['GITNEXUS_SHADOW_MODE']);
+	const enabled = parseShadowModeEnv(process.env["GITNEXUS_SHADOW_MODE"]);
 
-  interface Accumulated {
-    readonly language: SupportedLanguages;
-    readonly diff: ShadowDiff;
-  }
-  const records: Accumulated[] = [];
-  const primaryByLanguage: Partial<Record<SupportedLanguages, PrimarySide>> = {};
+	interface Accumulated {
+		readonly language: SupportedLanguages;
+		readonly diff: ShadowDiff;
+	}
+	const records: Accumulated[] = [];
+	const primaryByLanguage: Partial<Record<SupportedLanguages, PrimarySide>> = {};
 
-  const recordImpl = (input: ShadowRecordInput): void => {
-    if (!enabled) return;
-    const diff = diffResolutions(input.callsite, input.legacy, input.newResult);
-    records.push({ language: input.language, diff });
-    // Primary per-language is resolved by last-write. In practice a run
-    // is single-threaded with respect to flag readings, so this is
-    // deterministic; a language's primary cannot change mid-run.
-    primaryByLanguage[input.language] = input.primary;
-  };
+	const recordImpl = (input: ShadowRecordInput): void => {
+		if (!enabled) return;
+		const diff = diffResolutions(input.callsite, input.legacy, input.newResult);
+		records.push({ language: input.language, diff });
+		// Primary per-language is resolved by last-write. In practice a run
+		// is single-threaded with respect to flag readings, so this is
+		// deterministic; a language's primary cannot change mid-run.
+		primaryByLanguage[input.language] = input.primary;
+	};
 
-  const snapshotImpl = (now: Date = new Date()): ShadowParityReport => {
-    return aggregateDiffs(records, now);
-  };
+	const snapshotImpl = (now: Date = new Date()): ShadowParityReport => {
+		return aggregateDiffs(records, now);
+	};
 
-  const persistImpl = async (outputDir: string, now: Date = new Date()): Promise<string> => {
-    await fs.mkdir(outputDir, { recursive: true });
-    const report = snapshotImpl(now);
-    const runId = makeRunId(now);
-    const payload: PersistedShadowReport = {
-      schemaVersion: 1,
-      runId,
-      generatedAt: now.toISOString(),
-      primaryByLanguage,
-      report,
-    };
-    const json = JSON.stringify(payload, null, 2);
-    const perRunPath = path.join(outputDir, `${runId}.json`);
-    const latestPath = path.join(outputDir, 'latest.json');
-    await fs.writeFile(perRunPath, json, 'utf8');
-    await fs.writeFile(latestPath, json, 'utf8');
-    return perRunPath;
-  };
+	const persistImpl = async (
+		outputDir: string,
+		now: Date = new Date(),
+	): Promise<string> => {
+		await fs.mkdir(outputDir, { recursive: true });
+		const report = snapshotImpl(now);
+		const runId = makeRunId(now);
+		const payload: PersistedShadowReport = {
+			schemaVersion: 1,
+			runId,
+			generatedAt: now.toISOString(),
+			primaryByLanguage,
+			report,
+		};
+		const json = JSON.stringify(payload, null, 2);
+		const perRunPath = path.join(outputDir, `${runId}.json`);
+		const latestPath = path.join(outputDir, "latest.json");
+		await fs.writeFile(perRunPath, json, "utf8");
+		await fs.writeFile(latestPath, json, "utf8");
+		return perRunPath;
+	};
 
-  const clearImpl = (): void => {
-    records.length = 0;
-    for (const key of Object.keys(primaryByLanguage)) {
-      delete primaryByLanguage[key as SupportedLanguages];
-    }
-  };
+	const clearImpl = (): void => {
+		records.length = 0;
+		for (const key of Object.keys(primaryByLanguage)) {
+			delete primaryByLanguage[key as SupportedLanguages];
+		}
+	};
 
-  return {
-    enabled,
-    record: recordImpl,
-    size: () => records.length,
-    snapshot: snapshotImpl,
-    persist: persistImpl,
-    clear: clearImpl,
-  };
+	return {
+		enabled,
+		record: recordImpl,
+		size: () => records.length,
+		snapshot: snapshotImpl,
+		persist: persistImpl,
+		clear: clearImpl,
+	};
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────
@@ -197,9 +202,9 @@ export function createShadowHarness(): ShadowHarness {
  * `undefined`, `''`, `'false'`, `'off'`, typos — is false.
  */
 function parseShadowModeEnv(raw: string | undefined): boolean {
-  if (raw === undefined) return false;
-  const normalized = raw.trim().toLowerCase();
-  return normalized === 'true' || normalized === '1' || normalized === 'yes';
+	if (raw === undefined) return false;
+	const normalized = raw.trim().toLowerCase();
+	return normalized === "true" || normalized === "1" || normalized === "yes";
 }
 
 /**
@@ -209,14 +214,14 @@ function parseShadowModeEnv(raw: string | undefined): boolean {
  * clock-second. Shape: `YYYYMMDD-HHMMSS-xxxxxxxx`.
  */
 function makeRunId(now: Date): string {
-  const y = now.getUTCFullYear().toString().padStart(4, '0');
-  const m = (now.getUTCMonth() + 1).toString().padStart(2, '0');
-  const d = now.getUTCDate().toString().padStart(2, '0');
-  const h = now.getUTCHours().toString().padStart(2, '0');
-  const min = now.getUTCMinutes().toString().padStart(2, '0');
-  const s = now.getUTCSeconds().toString().padStart(2, '0');
-  const entropy = Math.floor(Math.random() * 0xffffffff)
-    .toString(16)
-    .padStart(8, '0');
-  return `${y}${m}${d}-${h}${min}${s}-${entropy}`;
+	const y = now.getUTCFullYear().toString().padStart(4, "0");
+	const m = (now.getUTCMonth() + 1).toString().padStart(2, "0");
+	const d = now.getUTCDate().toString().padStart(2, "0");
+	const h = now.getUTCHours().toString().padStart(2, "0");
+	const min = now.getUTCMinutes().toString().padStart(2, "0");
+	const s = now.getUTCSeconds().toString().padStart(2, "0");
+	const entropy = Math.floor(Math.random() * 0xffffffff)
+		.toString(16)
+		.padStart(8, "0");
+	return `${y}${m}${d}-${h}${min}${s}-${entropy}`;
 }

@@ -74,14 +74,23 @@
  * `test/integration/resolvers/csharp.test.ts`.
  */
 
-export { emitCsharpScopeCaptures } from './captures.js';
-export { getCsharpCaptureCacheStats, resetCsharpCaptureCacheStats } from './cache-stats.js';
-export { interpretCsharpImport, interpretCsharpTypeBinding } from './interpret.js';
-export { csharpMergeBindings } from './merge-bindings.js';
-export { csharpArityCompatibility } from './arity.js';
-export { resolveCsharpImportTarget, type CsharpResolveContext } from './import-target.js';
+export { csharpArityCompatibility } from "./arity.js";
 export {
-  csharpBindingScopeFor,
-  csharpImportOwningScope,
-  csharpReceiverBinding,
-} from './simple-hooks.js';
+	getCsharpCaptureCacheStats,
+	resetCsharpCaptureCacheStats,
+} from "./cache-stats.js";
+export { emitCsharpScopeCaptures } from "./captures.js";
+export {
+	type CsharpResolveContext,
+	resolveCsharpImportTarget,
+} from "./import-target.js";
+export {
+	interpretCsharpImport,
+	interpretCsharpTypeBinding,
+} from "./interpret.js";
+export { csharpMergeBindings } from "./merge-bindings.js";
+export {
+	csharpBindingScopeFor,
+	csharpImportOwningScope,
+	csharpReceiverBinding,
+} from "./simple-hooks.js";

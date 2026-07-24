@@ -24,11 +24,10 @@
  *      must not destabilize the legacy DAG.
  */
 
-import type { ParsedFile } from 'gitnexus-shared';
-import { extract as extractScope } from './scope-extractor.js';
-import type { LanguageProvider } from './language-provider.js';
-
-import { logger } from '../logger.js';
+import type { ParsedFile } from "gitnexus-shared";
+import { logger } from "../logger.js";
+import type { LanguageProvider } from "./language-provider.js";
+import { extract as extractScope } from "./scope-extractor.js";
 /** Callback used to report scope-extraction warnings to the host (worker or direct). */
 export type ScopeBridgeWarn = (message: string) => void;
 
@@ -38,23 +37,23 @@ export type ScopeBridgeWarn = (message: string) => void;
  * exceptions.
  */
 export function extractParsedFile(
-  provider: LanguageProvider,
-  sourceText: string,
-  filePath: string,
-  onWarn?: ScopeBridgeWarn,
-  cachedTree?: unknown,
+	provider: LanguageProvider,
+	sourceText: string,
+	filePath: string,
+	onWarn?: ScopeBridgeWarn,
+	cachedTree?: unknown,
 ): ParsedFile | undefined {
-  if (provider.emitScopeCaptures === undefined) return undefined;
-  if (sourceText.trim().length === 0) return undefined;
-  try {
-    const captures = provider.emitScopeCaptures(sourceText, filePath, cachedTree);
-    return extractScope(captures, filePath, provider);
-  } catch (err) {
-    const message = `scope extraction failed for ${filePath}: ${
-      err instanceof Error ? err.message : String(err)
-    }`;
-    if (onWarn !== undefined) onWarn(message);
-    logger.warn(message);
-    return undefined;
-  }
+	if (provider.emitScopeCaptures === undefined) return undefined;
+	if (sourceText.trim().length === 0) return undefined;
+	try {
+		const captures = provider.emitScopeCaptures(sourceText, filePath, cachedTree);
+		return extractScope(captures, filePath, provider);
+	} catch (err) {
+		const message = `scope extraction failed for ${filePath}: ${
+			err instanceof Error ? err.message : String(err)
+		}`;
+		if (onWarn !== undefined) onWarn(message);
+		logger.warn(message);
+		return undefined;
+	}
 }

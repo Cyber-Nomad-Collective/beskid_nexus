@@ -1,4 +1,4 @@
-import { resolveCImportTarget } from '../c/import-target.js';
+import { resolveCImportTarget } from "../c/import-target.js";
 
 /**
  * Resolve a C++ #include path to a file in the workspace.
@@ -10,9 +10,9 @@ import { resolveCImportTarget } from '../c/import-target.js';
  * Re-exports the C implementation since the #include semantics are shared.
  */
 export function resolveCppImportTarget(
-  targetRaw: string,
-  fromFile: string,
-  allFilePaths: ReadonlySet<string>,
+	targetRaw: string,
+	fromFile: string,
+	allFilePaths: ReadonlySet<string>,
 ): string | null {
-  return resolveCImportTarget(targetRaw, fromFile, allFilePaths);
+	return resolveCImportTarget(targetRaw, fromFile, allFilePaths);
 }

@@ -1,7 +1,7 @@
 class Repo {
-  save() {
-    return false;
-  }
+	save() {
+		return false;
+	}
 }
 
 module.exports = { Repo };

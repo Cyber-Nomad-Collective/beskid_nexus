@@ -1,4 +1,4 @@
 export class User {
-  constructor(public name: string) {}
-  save() {}
+	constructor(public name: string) {}
+	save() {}
 }

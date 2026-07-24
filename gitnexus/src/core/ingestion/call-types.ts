@@ -7,9 +7,9 @@
  * consumed by createCallExtractor() and the per-language configs.
  */
 
-import type { SupportedLanguages } from 'gitnexus-shared';
-import type { SyntaxNode } from './utils/ast-helpers.js';
-import type { MixedChainStep } from './utils/call-analysis.js';
+import type { SupportedLanguages } from "gitnexus-shared";
+import type { SyntaxNode } from "./utils/ast-helpers.js";
+import type { MixedChainStep } from "./utils/call-analysis.js";
 
 // ---------------------------------------------------------------------------
 // Extracted result
@@ -21,16 +21,16 @@ import type { MixedChainStep } from './utils/call-analysis.js';
  * produce the final `ExtractedCall` that enters the resolution pipeline.
  */
 export interface ExtractedCallSite {
-  calledName: string;
-  callForm?: 'free' | 'member' | 'constructor';
-  receiverName?: string;
-  argCount?: number;
-  /** Unified mixed chain for complex receivers (field + call chains). */
-  receiverMixedChain?: MixedChainStep[];
-  /** When true, the type-as-receiver heuristic applies: if receiverName
-   *  starts with an uppercase letter and has no TypeEnv binding, treat it
-   *  as a type name (e.g. Java `User::getName`). */
-  typeAsReceiverHeuristic?: boolean;
+	calledName: string;
+	callForm?: "free" | "member" | "constructor";
+	receiverName?: string;
+	argCount?: number;
+	/** Unified mixed chain for complex receivers (field + call chains). */
+	receiverMixedChain?: MixedChainStep[];
+	/** When true, the type-as-receiver heuristic applies: if receiverName
+	 *  starts with an uppercase letter and has no TypeEnv binding, treat it
+	 *  as a type name (e.g. Java `User::getName`). */
+	typeAsReceiverHeuristic?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -38,17 +38,20 @@ export interface ExtractedCallSite {
 // ---------------------------------------------------------------------------
 
 export interface CallExtractor {
-  readonly language: SupportedLanguages;
-  /**
-   * Extract a call site from captured AST nodes.
-   *
-   * @param callNode     The @call capture (call_expression, method_invocation, …)
-   * @param callNameNode The @call.name capture (identifier inside the call).
-   *                     May be undefined when the call shape has no name capture
-   *                     (e.g. Java method_reference via `::`).
-   * @returns Extracted call site, or null when no call can be derived.
-   */
-  extract(callNode: SyntaxNode, callNameNode: SyntaxNode | undefined): ExtractedCallSite | null;
+	readonly language: SupportedLanguages;
+	/**
+	 * Extract a call site from captured AST nodes.
+	 *
+	 * @param callNode     The @call capture (call_expression, method_invocation, …)
+	 * @param callNameNode The @call.name capture (identifier inside the call).
+	 *                     May be undefined when the call shape has no name capture
+	 *                     (e.g. Java method_reference via `::`).
+	 * @returns Extracted call site, or null when no call can be derived.
+	 */
+	extract(
+		callNode: SyntaxNode,
+		callNameNode: SyntaxNode | undefined,
+	): ExtractedCallSite | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,27 +59,27 @@ export interface CallExtractor {
 // ---------------------------------------------------------------------------
 
 export interface CallExtractionConfig {
-  language: SupportedLanguages;
+	language: SupportedLanguages;
 
-  /**
-   * Language-specific call site extraction.  Called **before** the generic
-   * path.  If it returns non-null, the generic `inferCallForm` /
-   * `extractReceiverName` path is skipped entirely.
-   *
-   * Use this for call shapes that don't follow the standard `@call` /
-   * `@call.name` pattern (e.g. Java `method_reference` via `::`).
-   */
-  extractLanguageCallSite?: (callNode: SyntaxNode) => ExtractedCallSite | null;
+	/**
+	 * Language-specific call site extraction.  Called **before** the generic
+	 * path.  If it returns non-null, the generic `inferCallForm` /
+	 * `extractReceiverName` path is skipped entirely.
+	 *
+	 * Use this for call shapes that don't follow the standard `@call` /
+	 * `@call.name` pattern (e.g. Java `method_reference` via `::`).
+	 */
+	extractLanguageCallSite?: (callNode: SyntaxNode) => ExtractedCallSite | null;
 
-  /**
-   * Whether the type-as-receiver heuristic applies for this language.
-   * When true and the receiver name starts with an uppercase letter,
-   * the receiver is treated as a type name when no TypeEnv binding exists.
-   *
-   * Applies to JVM and C# languages where `Type.method()` and `Type::method`
-   * are common patterns.
-   */
-  typeAsReceiverHeuristic?: boolean;
+	/**
+	 * Whether the type-as-receiver heuristic applies for this language.
+	 * When true and the receiver name starts with an uppercase letter,
+	 * the receiver is treated as a type name when no TypeEnv binding exists.
+	 *
+	 * Applies to JVM and C# languages where `Type.method()` and `Type::method`
+	 * are common patterns.
+	 */
+	typeAsReceiverHeuristic?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,19 +110,19 @@ export interface CallExtractionConfig {
  * @see language-provider.ts § inferImplicitReceiver, selectDispatch
  */
 export interface ReceiverEnriched {
-  readonly calledName: string;
-  readonly callForm: 'free' | 'member' | 'constructor' | undefined;
-  readonly receiverName: string | undefined;
-  readonly receiverTypeName: string | undefined;
-  readonly receiverSource:
-    | 'none'
-    | 'typed-binding'
-    | 'constructor-map'
-    | 'class-as-receiver'
-    | 'mixed-chain'
-    | 'implicit-self';
-  /** Free-form hint from the provider hook; opaque to shared stages. */
-  readonly hint?: string;
+	readonly calledName: string;
+	readonly callForm: "free" | "member" | "constructor" | undefined;
+	readonly receiverName: string | undefined;
+	readonly receiverTypeName: string | undefined;
+	readonly receiverSource:
+		| "none"
+		| "typed-binding"
+		| "constructor-map"
+		| "class-as-receiver"
+		| "mixed-chain"
+		| "implicit-self";
+	/** Free-form hint from the provider hook; opaque to shared stages. */
+	readonly hint?: string;
 }
 
 /**
@@ -136,13 +139,16 @@ export interface ReceiverEnriched {
  * - `hint` is opaque to shared stages; consumed by the same language's `selectDispatch`.
  */
 export interface ImplicitReceiverOverride {
-  readonly callForm: 'free' | 'member' | 'constructor';
-  readonly receiverName: string;
-  readonly receiverTypeName: string;
-  readonly receiverSource: Extract<ReceiverEnriched['receiverSource'], 'implicit-self'>;
-  /** Free-form language tag (e.g. Ruby sets 'singleton' for `def self.foo`
-   *  method bodies). Consumed by the same language's `selectDispatch` hook. */
-  readonly hint?: string;
+	readonly callForm: "free" | "member" | "constructor";
+	readonly receiverName: string;
+	readonly receiverTypeName: string;
+	readonly receiverSource: Extract<
+		ReceiverEnriched["receiverSource"],
+		"implicit-self"
+	>;
+	/** Free-form language tag (e.g. Ruby sets 'singleton' for `def self.foo`
+	 *  method bodies). Consumed by the same language's `selectDispatch` hook. */
+	readonly hint?: string;
 }
 
 /**
@@ -170,8 +176,8 @@ export interface ImplicitReceiverOverride {
  * @see call-processor.ts § defaultDispatchDecision, resolveCallTarget
  */
 export interface DispatchDecision {
-  readonly primary: 'owner-scoped' | 'free' | 'constructor';
-  readonly fallback?: 'free-arity-narrowed';
-  readonly ancestryView?: 'instance' | 'singleton';
-  readonly hint?: string;
+	readonly primary: "owner-scoped" | "free" | "constructor";
+	readonly fallback?: "free-arity-narrowed";
+	readonly ancestryView?: "instance" | "singleton";
+	readonly hint?: string;
 }

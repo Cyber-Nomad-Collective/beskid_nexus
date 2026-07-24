@@ -1,5 +1,5 @@
-import { getConfig } from './index';
+import { getConfig } from "./index";
 export function init() {
-  const config = getConfig();
-  config.validate();
+	const config = getConfig();
+	config.validate();
 }

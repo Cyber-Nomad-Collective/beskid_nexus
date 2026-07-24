@@ -12,46 +12,46 @@
  * filters on reason.
  */
 
-import type { ImportEdge, ScopeId } from 'gitnexus-shared';
-import type { KnowledgeGraph } from '../../../graph/types.js';
-import type { ScopeResolutionIndexes } from '../../model/scope-resolution-indexes.js';
-import { generateId } from '../../../../lib/utils.js';
+import type { ImportEdge, ScopeId } from "gitnexus-shared";
+import { generateId } from "../../../../lib/utils.js";
+import type { KnowledgeGraph } from "../../../graph/types.js";
+import type { ScopeResolutionIndexes } from "../../model/scope-resolution-indexes.js";
 
 export function emitImportEdges(
-  graph: KnowledgeGraph,
-  imports: ReadonlyMap<ScopeId, readonly ImportEdge[]>,
-  scopeTree: ScopeResolutionIndexes['scopeTree'],
-  reason = 'scope-resolution: import',
+	graph: KnowledgeGraph,
+	imports: ReadonlyMap<ScopeId, readonly ImportEdge[]>,
+	scopeTree: ScopeResolutionIndexes["scopeTree"],
+	reason = "scope-resolution: import",
 ): number {
-  const seen = new Set<string>();
-  let emitted = 0;
+	const seen = new Set<string>();
+	let emitted = 0;
 
-  for (const [scopeId, edges] of imports) {
-    const scope = scopeTree.getScope(scopeId);
-    if (scope === undefined) continue;
-    const sourceFile = scope.filePath;
+	for (const [scopeId, edges] of imports) {
+		const scope = scopeTree.getScope(scopeId);
+		if (scope === undefined) continue;
+		const sourceFile = scope.filePath;
 
-    for (const edge of edges) {
-      if (edge.targetFile === null) continue;
-      if (edge.targetFile === sourceFile) continue;
+		for (const edge of edges) {
+			if (edge.targetFile === null) continue;
+			if (edge.targetFile === sourceFile) continue;
 
-      const dedupKey = `${sourceFile}->${edge.targetFile}`;
-      if (seen.has(dedupKey)) continue;
-      seen.add(dedupKey);
+			const dedupKey = `${sourceFile}->${edge.targetFile}`;
+			if (seen.has(dedupKey)) continue;
+			seen.add(dedupKey);
 
-      const sourceId = generateId('File', sourceFile);
-      const targetId = generateId('File', edge.targetFile);
-      graph.addRelationship({
-        id: generateId('IMPORTS', dedupKey),
-        sourceId,
-        targetId,
-        type: 'IMPORTS',
-        confidence: 1.0,
-        reason,
-      });
-      emitted++;
-    }
-  }
+			const sourceId = generateId("File", sourceFile);
+			const targetId = generateId("File", edge.targetFile);
+			graph.addRelationship({
+				id: generateId("IMPORTS", dedupKey),
+				sourceId,
+				targetId,
+				type: "IMPORTS",
+				confidence: 1.0,
+				reason,
+			});
+			emitted++;
+		}
+	}
 
-  return emitted;
+	return emitted;
 }

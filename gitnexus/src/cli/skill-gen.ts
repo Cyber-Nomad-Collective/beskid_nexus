@@ -7,48 +7,51 @@
  * cross-community connections.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { PipelineResult } from '../types/pipeline.js';
-import { CommunityNode, CommunityMembership } from '../core/ingestion/community-processor.js';
-import { ProcessNode } from '../core/ingestion/process-processor.js';
-import { KnowledgeGraph } from '../core/graph/types.js';
+import fs from "fs/promises";
+import path from "path";
+import type { KnowledgeGraph } from "../core/graph/types.js";
+import type {
+	CommunityMembership,
+	CommunityNode,
+} from "../core/ingestion/community-processor.js";
+import type { ProcessNode } from "../core/ingestion/process-processor.js";
+import type { PipelineResult } from "../types/pipeline.js";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 export interface GeneratedSkillInfo {
-  name: string;
-  label: string;
-  symbolCount: number;
-  fileCount: number;
+	name: string;
+	label: string;
+	symbolCount: number;
+	fileCount: number;
 }
 
 interface AggregatedCommunity {
-  label: string;
-  rawIds: string[];
-  symbolCount: number;
-  cohesion: number;
+	label: string;
+	rawIds: string[];
+	symbolCount: number;
+	cohesion: number;
 }
 
 interface MemberSymbol {
-  id: string;
-  name: string;
-  label: string;
-  filePath: string;
-  startLine: number;
-  isExported: boolean;
+	id: string;
+	name: string;
+	label: string;
+	filePath: string;
+	startLine: number;
+	isExported: boolean;
 }
 
 interface FileInfo {
-  relativePath: string;
-  symbols: string[];
+	relativePath: string;
+	symbols: string[];
 }
 
 interface CrossConnection {
-  targetLabel: string;
-  count: number;
+	targetLabel: string;
+	count: number;
 }
 
 // ============================================================================
@@ -63,122 +66,130 @@ interface CrossConnection {
  * @returns {Promise<{ skills: GeneratedSkillInfo[], outputPath: string }>} Generated skill metadata
  */
 export const generateSkillFiles = async (
-  repoPath: string,
-  projectName: string,
-  pipelineResult: PipelineResult,
+	repoPath: string,
+	projectName: string,
+	pipelineResult: PipelineResult,
 ): Promise<{ skills: GeneratedSkillInfo[]; outputPath: string }> => {
-  const { communityResult, processResult, graph } = pipelineResult;
-  const outputDir = path.join(repoPath, '.claude', 'skills', 'generated');
+	const { communityResult, processResult, graph } = pipelineResult;
+	const outputDir = path.join(repoPath, ".claude", "skills", "generated");
 
-  if (!communityResult || !communityResult.memberships.length) {
-    console.log('\n  Skills: no communities detected, skipping skill generation');
-    return { skills: [], outputPath: outputDir };
-  }
+	if (!communityResult || !communityResult.memberships.length) {
+		console.log("\n  Skills: no communities detected, skipping skill generation");
+		return { skills: [], outputPath: outputDir };
+	}
 
-  console.log('\n  Generating repo-specific skills...');
+	console.log("\n  Generating repo-specific skills...");
 
-  // Step 1: Build communities from memberships (not the filtered communities array).
-  // The community processor skips singletons from its communities array but memberships
-  // include ALL assignments. For repos with sparse CALLS edges, the communities array
-  // can be empty while memberships still has useful groupings.
-  const communities =
-    communityResult.communities.length > 0
-      ? communityResult.communities
-      : buildCommunitiesFromMemberships(communityResult.memberships, graph, repoPath);
+	// Step 1: Build communities from memberships (not the filtered communities array).
+	// The community processor skips singletons from its communities array but memberships
+	// include ALL assignments. For repos with sparse CALLS edges, the communities array
+	// can be empty while memberships still has useful groupings.
+	const communities =
+		communityResult.communities.length > 0
+			? communityResult.communities
+			: buildCommunitiesFromMemberships(
+					communityResult.memberships,
+					graph,
+					repoPath,
+				);
 
-  const aggregated = aggregateCommunities(communities);
+	const aggregated = aggregateCommunities(communities);
 
-  // Step 2: Filter to significant communities
-  // Keep communities with >= 3 symbols after aggregation.
-  const significant = aggregated
-    .filter((c) => c.symbolCount >= 3)
-    .sort((a, b) => b.symbolCount - a.symbolCount)
-    .slice(0, 20);
+	// Step 2: Filter to significant communities
+	// Keep communities with >= 3 symbols after aggregation.
+	const significant = aggregated
+		.filter((c) => c.symbolCount >= 3)
+		.sort((a, b) => b.symbolCount - a.symbolCount)
+		.slice(0, 20);
 
-  if (significant.length === 0) {
-    console.log('\n  Skills: no significant communities found (all below 3-symbol threshold)');
-    return { skills: [], outputPath: outputDir };
-  }
+	if (significant.length === 0) {
+		console.log(
+			"\n  Skills: no significant communities found (all below 3-symbol threshold)",
+		);
+		return { skills: [], outputPath: outputDir };
+	}
 
-  // Step 3: Build lookup maps
-  const membershipsByComm = buildMembershipMap(communityResult.memberships);
-  const nodeIdToCommunityLabel = buildNodeCommunityLabelMap(
-    communityResult.memberships,
-    communities,
-  );
+	// Step 3: Build lookup maps
+	const membershipsByComm = buildMembershipMap(communityResult.memberships);
+	const nodeIdToCommunityLabel = buildNodeCommunityLabelMap(
+		communityResult.memberships,
+		communities,
+	);
 
-  // Step 4: Clear and recreate output directory
-  try {
-    await fs.rm(outputDir, { recursive: true, force: true });
-  } catch {
-    /* may not exist */
-  }
-  await fs.mkdir(outputDir, { recursive: true });
+	// Step 4: Clear and recreate output directory
+	try {
+		await fs.rm(outputDir, { recursive: true, force: true });
+	} catch {
+		/* may not exist */
+	}
+	await fs.mkdir(outputDir, { recursive: true });
 
-  // Step 5: Generate skill files
-  const skills: GeneratedSkillInfo[] = [];
-  const usedNames = new Set<string>();
+	// Step 5: Generate skill files
+	const skills: GeneratedSkillInfo[] = [];
+	const usedNames = new Set<string>();
 
-  for (const community of significant) {
-    // Gather member symbols
-    const members = gatherMembers(community.rawIds, membershipsByComm, graph);
-    if (members.length === 0) continue;
+	for (const community of significant) {
+		// Gather member symbols
+		const members = gatherMembers(community.rawIds, membershipsByComm, graph);
+		if (members.length === 0) continue;
 
-    // Gather file info
-    const files = gatherFiles(members, repoPath);
+		// Gather file info
+		const files = gatherFiles(members, repoPath);
 
-    // Gather entry points
-    const entryPoints = gatherEntryPoints(members);
+		// Gather entry points
+		const entryPoints = gatherEntryPoints(members);
 
-    // Gather execution flows
-    const flows = gatherFlows(community.rawIds, processResult?.processes || []);
+		// Gather execution flows
+		const flows = gatherFlows(community.rawIds, processResult?.processes || []);
 
-    // Gather cross-community connections
-    const connections = gatherCrossConnections(
-      community.rawIds,
-      community.label,
-      membershipsByComm,
-      nodeIdToCommunityLabel,
-      graph,
-    );
+		// Gather cross-community connections
+		const connections = gatherCrossConnections(
+			community.rawIds,
+			community.label,
+			membershipsByComm,
+			nodeIdToCommunityLabel,
+			graph,
+		);
 
-    // Generate kebab name
-    const kebabName = toKebabName(community.label, usedNames);
-    usedNames.add(kebabName);
+		// Generate kebab name
+		const kebabName = toKebabName(community.label, usedNames);
+		usedNames.add(kebabName);
 
-    // Generate SKILL.md content
-    const content = renderSkillMarkdown(
-      community,
-      projectName,
-      members,
-      files,
-      entryPoints,
-      flows,
-      connections,
-      kebabName,
-    );
+		// Generate SKILL.md content
+		const content = renderSkillMarkdown(
+			community,
+			projectName,
+			members,
+			files,
+			entryPoints,
+			flows,
+			connections,
+			kebabName,
+		);
 
-    // Write file
-    const skillDir = path.join(outputDir, kebabName);
-    await fs.mkdir(skillDir, { recursive: true });
-    await fs.writeFile(path.join(skillDir, 'SKILL.md'), content, 'utf-8');
+		// Write file
+		const skillDir = path.join(outputDir, kebabName);
+		await fs.mkdir(skillDir, { recursive: true });
+		await fs.writeFile(path.join(skillDir, "SKILL.md"), content, "utf-8");
 
-    const info: GeneratedSkillInfo = {
-      name: kebabName,
-      label: community.label,
-      symbolCount: community.symbolCount,
-      fileCount: files.length,
-    };
-    skills.push(info);
+		const info: GeneratedSkillInfo = {
+			name: kebabName,
+			label: community.label,
+			symbolCount: community.symbolCount,
+			fileCount: files.length,
+		};
+		skills.push(info);
 
-    console.log(
-      `    \u2713 ${community.label} (${community.symbolCount} symbols, ${files.length} files)`,
-    );
-  }
+		console.log(
+			`    \u2713 ${community.label} (${community.symbolCount} symbols, ${files.length} files)`,
+		);
+	}
 
-  console.log(`\n  ${skills.length} skills generated \u2192 .claude/skills/generated/`);
+	console.log(
+		`\n  ${skills.length} skills generated \u2192 .claude/skills/generated/`,
+	);
 
-  return { skills, outputPath: outputDir };
+	return { skills, outputPath: outputDir };
 };
 
 // ============================================================================
@@ -194,79 +205,80 @@ export const generateSkillFiles = async (
  * @returns {CommunityNode[]} Synthetic community nodes built from membership data
  */
 const buildCommunitiesFromMemberships = (
-  memberships: CommunityMembership[],
-  graph: KnowledgeGraph,
-  repoPath: string,
+	memberships: CommunityMembership[],
+	graph: KnowledgeGraph,
+	repoPath: string,
 ): CommunityNode[] => {
-  // Group memberships by communityId
-  const groups = new Map<string, string[]>();
-  for (const m of memberships) {
-    const arr = groups.get(m.communityId);
-    if (arr) {
-      arr.push(m.nodeId);
-    } else {
-      groups.set(m.communityId, [m.nodeId]);
-    }
-  }
+	// Group memberships by communityId
+	const groups = new Map<string, string[]>();
+	for (const m of memberships) {
+		const arr = groups.get(m.communityId);
+		if (arr) {
+			arr.push(m.nodeId);
+		} else {
+			groups.set(m.communityId, [m.nodeId]);
+		}
+	}
 
-  const communities: CommunityNode[] = [];
+	const communities: CommunityNode[] = [];
 
-  for (const [commId, nodeIds] of groups) {
-    // Derive a heuristic label from the most common parent directory
-    const folderCounts = new Map<string, number>();
-    for (const nodeId of nodeIds) {
-      const node = graph.getNode(nodeId);
-      if (!node?.properties.filePath) continue;
-      const normalized = node.properties.filePath.replace(/\\/g, '/');
-      const parts = normalized.split('/').filter(Boolean);
-      if (parts.length >= 2) {
-        const folder = parts[parts.length - 2];
-        if (
-          !['src', 'lib', 'core', 'utils', 'common', 'shared', 'helpers'].includes(
-            folder.toLowerCase(),
-          )
-        ) {
-          folderCounts.set(folder, (folderCounts.get(folder) || 0) + 1);
-        }
-      }
-    }
+	for (const [commId, nodeIds] of groups) {
+		// Derive a heuristic label from the most common parent directory
+		const folderCounts = new Map<string, number>();
+		for (const nodeId of nodeIds) {
+			const node = graph.getNode(nodeId);
+			if (!node?.properties.filePath) continue;
+			const normalized = node.properties.filePath.replace(/\\/g, "/");
+			const parts = normalized.split("/").filter(Boolean);
+			if (parts.length >= 2) {
+				const folder = parts[parts.length - 2];
+				if (
+					!["src", "lib", "core", "utils", "common", "shared", "helpers"].includes(
+						folder.toLowerCase(),
+					)
+				) {
+					folderCounts.set(folder, (folderCounts.get(folder) || 0) + 1);
+				}
+			}
+		}
 
-    let bestFolder = '';
-    let bestCount = 0;
-    for (const [folder, count] of folderCounts) {
-      if (count > bestCount) {
-        bestCount = count;
-        bestFolder = folder;
-      }
-    }
+		let bestFolder = "";
+		let bestCount = 0;
+		for (const [folder, count] of folderCounts) {
+			if (count > bestCount) {
+				bestCount = count;
+				bestFolder = folder;
+			}
+		}
 
-    const label = bestFolder
-      ? bestFolder.charAt(0).toUpperCase() + bestFolder.slice(1)
-      : `Cluster_${commId.replace('comm_', '')}`;
+		const label = bestFolder
+			? bestFolder.charAt(0).toUpperCase() + bestFolder.slice(1)
+			: `Cluster_${commId.replace("comm_", "")}`;
 
-    // Compute cohesion as internal-edge ratio (matches backend calculateCohesion).
-    // For each member node, count edges that stay inside the community vs total.
-    const nodeSet = new Set(nodeIds);
-    let internalEdges = 0;
-    let totalEdges = 0;
-    graph.forEachRelationship((rel) => {
-      if (nodeSet.has(rel.sourceId)) {
-        totalEdges++;
-        if (nodeSet.has(rel.targetId)) internalEdges++;
-      }
-    });
-    const cohesion = totalEdges > 0 ? Math.min(1.0, internalEdges / totalEdges) : 1.0;
+		// Compute cohesion as internal-edge ratio (matches backend calculateCohesion).
+		// For each member node, count edges that stay inside the community vs total.
+		const nodeSet = new Set(nodeIds);
+		let internalEdges = 0;
+		let totalEdges = 0;
+		graph.forEachRelationship((rel) => {
+			if (nodeSet.has(rel.sourceId)) {
+				totalEdges++;
+				if (nodeSet.has(rel.targetId)) internalEdges++;
+			}
+		});
+		const cohesion =
+			totalEdges > 0 ? Math.min(1.0, internalEdges / totalEdges) : 1.0;
 
-    communities.push({
-      id: commId,
-      label,
-      heuristicLabel: label,
-      cohesion,
-      symbolCount: nodeIds.length,
-    });
-  }
+		communities.push({
+			id: commId,
+			label,
+			heuristicLabel: label,
+			cohesion,
+			symbolCount: nodeIds.length,
+		});
+	}
 
-  return communities.sort((a, b) => b.symbolCount - a.symbolCount);
+	return communities.sort((a, b) => b.symbolCount - a.symbolCount);
 };
 
 // ============================================================================
@@ -278,41 +290,43 @@ const buildCommunitiesFromMemberships = (
  * @param {CommunityNode[]} communities - Raw community nodes from Leiden detection
  * @returns {AggregatedCommunity[]} Aggregated communities grouped by label
  */
-const aggregateCommunities = (communities: CommunityNode[]): AggregatedCommunity[] => {
-  const groups = new Map<
-    string,
-    {
-      rawIds: string[];
-      totalSymbols: number;
-      weightedCohesion: number;
-    }
-  >();
+const aggregateCommunities = (
+	communities: CommunityNode[],
+): AggregatedCommunity[] => {
+	const groups = new Map<
+		string,
+		{
+			rawIds: string[];
+			totalSymbols: number;
+			weightedCohesion: number;
+		}
+	>();
 
-  for (const c of communities) {
-    const label = c.heuristicLabel || c.label || 'Unknown';
-    const symbols = c.symbolCount || 0;
-    const cohesion = c.cohesion || 0;
-    const existing = groups.get(label);
+	for (const c of communities) {
+		const label = c.heuristicLabel || c.label || "Unknown";
+		const symbols = c.symbolCount || 0;
+		const cohesion = c.cohesion || 0;
+		const existing = groups.get(label);
 
-    if (!existing) {
-      groups.set(label, {
-        rawIds: [c.id],
-        totalSymbols: symbols,
-        weightedCohesion: cohesion * symbols,
-      });
-    } else {
-      existing.rawIds.push(c.id);
-      existing.totalSymbols += symbols;
-      existing.weightedCohesion += cohesion * symbols;
-    }
-  }
+		if (!existing) {
+			groups.set(label, {
+				rawIds: [c.id],
+				totalSymbols: symbols,
+				weightedCohesion: cohesion * symbols,
+			});
+		} else {
+			existing.rawIds.push(c.id);
+			existing.totalSymbols += symbols;
+			existing.weightedCohesion += cohesion * symbols;
+		}
+	}
 
-  return Array.from(groups.entries()).map(([label, g]) => ({
-    label,
-    rawIds: g.rawIds,
-    symbolCount: g.totalSymbols,
-    cohesion: g.totalSymbols > 0 ? g.weightedCohesion / g.totalSymbols : 0,
-  }));
+	return Array.from(groups.entries()).map(([label, g]) => ({
+		label,
+		rawIds: g.rawIds,
+		symbolCount: g.totalSymbols,
+		cohesion: g.totalSymbols > 0 ? g.weightedCohesion / g.totalSymbols : 0,
+	}));
 };
 
 // ============================================================================
@@ -324,17 +338,19 @@ const aggregateCommunities = (communities: CommunityNode[]): AggregatedCommunity
  * @param {CommunityMembership[]} memberships - All membership records
  * @returns {Map<string, string[]>} Map of communityId -> nodeId[]
  */
-const buildMembershipMap = (memberships: CommunityMembership[]): Map<string, string[]> => {
-  const map = new Map<string, string[]>();
-  for (const m of memberships) {
-    const arr = map.get(m.communityId);
-    if (arr) {
-      arr.push(m.nodeId);
-    } else {
-      map.set(m.communityId, [m.nodeId]);
-    }
-  }
-  return map;
+const buildMembershipMap = (
+	memberships: CommunityMembership[],
+): Map<string, string[]> => {
+	const map = new Map<string, string[]>();
+	for (const m of memberships) {
+		const arr = map.get(m.communityId);
+		if (arr) {
+			arr.push(m.nodeId);
+		} else {
+			map.set(m.communityId, [m.nodeId]);
+		}
+	}
+	return map;
 };
 
 /**
@@ -344,22 +360,22 @@ const buildMembershipMap = (memberships: CommunityMembership[]): Map<string, str
  * @returns {Map<string, string>} Map of nodeId -> community label
  */
 const buildNodeCommunityLabelMap = (
-  memberships: CommunityMembership[],
-  communities: CommunityNode[],
+	memberships: CommunityMembership[],
+	communities: CommunityNode[],
 ): Map<string, string> => {
-  const commIdToLabel = new Map<string, string>();
-  for (const c of communities) {
-    commIdToLabel.set(c.id, c.heuristicLabel || c.label || 'Unknown');
-  }
+	const commIdToLabel = new Map<string, string>();
+	for (const c of communities) {
+		commIdToLabel.set(c.id, c.heuristicLabel || c.label || "Unknown");
+	}
 
-  const map = new Map<string, string>();
-  for (const m of memberships) {
-    const label = commIdToLabel.get(m.communityId);
-    if (label) {
-      map.set(m.nodeId, label);
-    }
-  }
-  return map;
+	const map = new Map<string, string>();
+	for (const m of memberships) {
+		const label = commIdToLabel.get(m.communityId);
+		if (label) {
+			map.set(m.nodeId, label);
+		}
+	}
+	return map;
 };
 
 // ============================================================================
@@ -374,34 +390,34 @@ const buildNodeCommunityLabelMap = (
  * @returns {MemberSymbol[]} Array of member symbol information
  */
 const gatherMembers = (
-  rawIds: string[],
-  membershipsByComm: Map<string, string[]>,
-  graph: KnowledgeGraph,
+	rawIds: string[],
+	membershipsByComm: Map<string, string[]>,
+	graph: KnowledgeGraph,
 ): MemberSymbol[] => {
-  const seen = new Set<string>();
-  const members: MemberSymbol[] = [];
+	const seen = new Set<string>();
+	const members: MemberSymbol[] = [];
 
-  for (const commId of rawIds) {
-    const nodeIds = membershipsByComm.get(commId) || [];
-    for (const nodeId of nodeIds) {
-      if (seen.has(nodeId)) continue;
-      seen.add(nodeId);
+	for (const commId of rawIds) {
+		const nodeIds = membershipsByComm.get(commId) || [];
+		for (const nodeId of nodeIds) {
+			if (seen.has(nodeId)) continue;
+			seen.add(nodeId);
 
-      const node = graph.getNode(nodeId);
-      if (!node) continue;
+			const node = graph.getNode(nodeId);
+			if (!node) continue;
 
-      members.push({
-        id: node.id,
-        name: node.properties.name,
-        label: node.label,
-        filePath: node.properties.filePath || '',
-        startLine: node.properties.startLine || 0,
-        isExported: node.properties.isExported === true,
-      });
-    }
-  }
+			members.push({
+				id: node.id,
+				name: node.properties.name,
+				label: node.label,
+				filePath: node.properties.filePath || "",
+				startLine: node.properties.startLine || 0,
+				isExported: node.properties.isExported === true,
+			});
+		}
+	}
 
-  return members;
+	return members;
 };
 
 /**
@@ -411,22 +427,22 @@ const gatherMembers = (
  * @returns {FileInfo[]} Sorted by symbol count descending
  */
 const gatherFiles = (members: MemberSymbol[], repoPath: string): FileInfo[] => {
-  const fileMap = new Map<string, string[]>();
+	const fileMap = new Map<string, string[]>();
 
-  for (const m of members) {
-    if (!m.filePath) continue;
-    const rel = toRelativePath(m.filePath, repoPath);
-    const arr = fileMap.get(rel);
-    if (arr) {
-      arr.push(m.name);
-    } else {
-      fileMap.set(rel, [m.name]);
-    }
-  }
+	for (const m of members) {
+		if (!m.filePath) continue;
+		const rel = toRelativePath(m.filePath, repoPath);
+		const arr = fileMap.get(rel);
+		if (arr) {
+			arr.push(m.name);
+		} else {
+			fileMap.set(rel, [m.name]);
+		}
+	}
 
-  return Array.from(fileMap.entries())
-    .map(([relativePath, symbols]) => ({ relativePath, symbols }))
-    .sort((a, b) => b.symbols.length - a.symbols.length);
+	return Array.from(fileMap.entries())
+		.map(([relativePath, symbols]) => ({ relativePath, symbols }))
+		.sort((a, b) => b.symbols.length - a.symbols.length);
 };
 
 /**
@@ -435,20 +451,20 @@ const gatherFiles = (members: MemberSymbol[], repoPath: string): FileInfo[] => {
  * @returns {MemberSymbol[]} Exported symbols sorted by type priority
  */
 const gatherEntryPoints = (members: MemberSymbol[]): MemberSymbol[] => {
-  const typePriority: Record<string, number> = {
-    Function: 0,
-    Class: 1,
-    Method: 2,
-    Interface: 3,
-  };
+	const typePriority: Record<string, number> = {
+		Function: 0,
+		Class: 1,
+		Method: 2,
+		Interface: 3,
+	};
 
-  return members
-    .filter((m) => m.isExported)
-    .sort((a, b) => {
-      const pa = typePriority[a.label] ?? 99;
-      const pb = typePriority[b.label] ?? 99;
-      return pa - pb;
-    });
+	return members
+		.filter((m) => m.isExported)
+		.sort((a, b) => {
+			const pa = typePriority[a.label] ?? 99;
+			const pb = typePriority[b.label] ?? 99;
+			return pa - pb;
+		});
 };
 
 /**
@@ -457,12 +473,15 @@ const gatherEntryPoints = (members: MemberSymbol[]): MemberSymbol[] => {
  * @param {ProcessNode[]} processes - All detected processes
  * @returns {ProcessNode[]} Processes whose communities intersect rawIds, sorted by stepCount
  */
-const gatherFlows = (rawIds: string[], processes: ProcessNode[]): ProcessNode[] => {
-  const rawIdSet = new Set(rawIds);
+const gatherFlows = (
+	rawIds: string[],
+	processes: ProcessNode[],
+): ProcessNode[] => {
+	const rawIdSet = new Set(rawIds);
 
-  return processes
-    .filter((proc) => proc.communities.some((cid) => rawIdSet.has(cid)))
-    .sort((a, b) => b.stepCount - a.stepCount);
+	return processes
+		.filter((proc) => proc.communities.some((cid) => rawIdSet.has(cid)))
+		.sort((a, b) => b.stepCount - a.stepCount);
 };
 
 /**
@@ -475,38 +494,38 @@ const gatherFlows = (rawIds: string[], processes: ProcessNode[]): ProcessNode[] 
  * @returns {CrossConnection[]} Aggregated cross-community connections sorted by count
  */
 const gatherCrossConnections = (
-  rawIds: string[],
-  ownLabel: string,
-  membershipsByComm: Map<string, string[]>,
-  nodeIdToCommunityLabel: Map<string, string>,
-  graph: KnowledgeGraph,
+	rawIds: string[],
+	ownLabel: string,
+	membershipsByComm: Map<string, string[]>,
+	nodeIdToCommunityLabel: Map<string, string>,
+	graph: KnowledgeGraph,
 ): CrossConnection[] => {
-  // Collect all node IDs in this aggregated community
-  const ownNodeIds = new Set<string>();
-  for (const commId of rawIds) {
-    const nodeIds = membershipsByComm.get(commId) || [];
-    for (const nid of nodeIds) {
-      ownNodeIds.add(nid);
-    }
-  }
+	// Collect all node IDs in this aggregated community
+	const ownNodeIds = new Set<string>();
+	for (const commId of rawIds) {
+		const nodeIds = membershipsByComm.get(commId) || [];
+		for (const nid of nodeIds) {
+			ownNodeIds.add(nid);
+		}
+	}
 
-  // Count outgoing CALLS to nodes in different communities
-  const targetCounts = new Map<string, number>();
+	// Count outgoing CALLS to nodes in different communities
+	const targetCounts = new Map<string, number>();
 
-  graph.forEachRelationship((rel) => {
-    if (rel.type !== 'CALLS') return;
-    if (!ownNodeIds.has(rel.sourceId)) return;
-    if (ownNodeIds.has(rel.targetId)) return; // same community
+	graph.forEachRelationship((rel) => {
+		if (rel.type !== "CALLS") return;
+		if (!ownNodeIds.has(rel.sourceId)) return;
+		if (ownNodeIds.has(rel.targetId)) return; // same community
 
-    const targetLabel = nodeIdToCommunityLabel.get(rel.targetId);
-    if (!targetLabel || targetLabel === ownLabel) return;
+		const targetLabel = nodeIdToCommunityLabel.get(rel.targetId);
+		if (!targetLabel || targetLabel === ownLabel) return;
 
-    targetCounts.set(targetLabel, (targetCounts.get(targetLabel) || 0) + 1);
-  });
+		targetCounts.set(targetLabel, (targetCounts.get(targetLabel) || 0) + 1);
+	});
 
-  return Array.from(targetCounts.entries())
-    .map(([targetLabel, count]) => ({ targetLabel, count }))
-    .sort((a, b) => b.count - a.count);
+	return Array.from(targetCounts.entries())
+		.map(([targetLabel, count]) => ({ targetLabel, count }))
+		.sort((a, b) => b.count - a.count);
 };
 
 // ============================================================================
@@ -526,137 +545,147 @@ const gatherCrossConnections = (
  * @returns {string} Full SKILL.md content
  */
 const renderSkillMarkdown = (
-  community: AggregatedCommunity,
-  projectName: string,
-  members: MemberSymbol[],
-  files: FileInfo[],
-  entryPoints: MemberSymbol[],
-  flows: ProcessNode[],
-  connections: CrossConnection[],
-  kebabName: string,
+	community: AggregatedCommunity,
+	projectName: string,
+	members: MemberSymbol[],
+	files: FileInfo[],
+	entryPoints: MemberSymbol[],
+	flows: ProcessNode[],
+	connections: CrossConnection[],
+	kebabName: string,
 ): string => {
-  const cohesionPct = Math.round(community.cohesion * 100);
+	const cohesionPct = Math.round(community.cohesion * 100);
 
-  // Dominant directory: most common top-level directory
-  const dominantDir = getDominantDirectory(files);
+	// Dominant directory: most common top-level directory
+	const dominantDir = getDominantDirectory(files);
 
-  // Top symbol names for "When to Use"
-  const topNames = entryPoints.slice(0, 3).map((e) => e.name);
-  if (topNames.length === 0) {
-    // Fallback to any members
-    topNames.push(...members.slice(0, 3).map((m) => m.name));
-  }
+	// Top symbol names for "When to Use"
+	const topNames = entryPoints.slice(0, 3).map((e) => e.name);
+	if (topNames.length === 0) {
+		// Fallback to any members
+		topNames.push(...members.slice(0, 3).map((m) => m.name));
+	}
 
-  const lines: string[] = [];
+	const lines: string[] = [];
 
-  // Frontmatter
-  lines.push('---');
-  lines.push(`name: ${kebabName}`);
-  lines.push(
-    `description: "Skill for the ${community.label} area of ${projectName}. ${community.symbolCount} symbols across ${files.length} files."`,
-  );
-  lines.push('---');
-  lines.push('');
+	// Frontmatter
+	lines.push("---");
+	lines.push(`name: ${kebabName}`);
+	lines.push(
+		`description: "Skill for the ${community.label} area of ${projectName}. ${community.symbolCount} symbols across ${files.length} files."`,
+	);
+	lines.push("---");
+	lines.push("");
 
-  // Title
-  lines.push(`# ${community.label}`);
-  lines.push('');
-  lines.push(
-    `${community.symbolCount} symbols | ${files.length} files | Cohesion: ${cohesionPct}%`,
-  );
-  lines.push('');
+	// Title
+	lines.push(`# ${community.label}`);
+	lines.push("");
+	lines.push(
+		`${community.symbolCount} symbols | ${files.length} files | Cohesion: ${cohesionPct}%`,
+	);
+	lines.push("");
 
-  // When to Use
-  lines.push('## When to Use');
-  lines.push('');
-  if (dominantDir) {
-    lines.push(`- Working with code in \`${dominantDir}/\``);
-  }
-  if (topNames.length > 0) {
-    lines.push(`- Understanding how ${topNames.join(', ')} work`);
-  }
-  lines.push(`- Modifying ${community.label.toLowerCase()}-related functionality`);
-  lines.push('');
+	// When to Use
+	lines.push("## When to Use");
+	lines.push("");
+	if (dominantDir) {
+		lines.push(`- Working with code in \`${dominantDir}/\``);
+	}
+	if (topNames.length > 0) {
+		lines.push(`- Understanding how ${topNames.join(", ")} work`);
+	}
+	lines.push(
+		`- Modifying ${community.label.toLowerCase()}-related functionality`,
+	);
+	lines.push("");
 
-  // Key Files (top 10)
-  lines.push('## Key Files');
-  lines.push('');
-  lines.push('| File | Symbols |');
-  lines.push('|------|---------|');
-  for (const f of files.slice(0, 10)) {
-    const symbolList = f.symbols.slice(0, 5).join(', ');
-    const suffix = f.symbols.length > 5 ? ` (+${f.symbols.length - 5})` : '';
-    lines.push(`| \`${f.relativePath}\` | ${symbolList}${suffix} |`);
-  }
-  lines.push('');
+	// Key Files (top 10)
+	lines.push("## Key Files");
+	lines.push("");
+	lines.push("| File | Symbols |");
+	lines.push("|------|---------|");
+	for (const f of files.slice(0, 10)) {
+		const symbolList = f.symbols.slice(0, 5).join(", ");
+		const suffix = f.symbols.length > 5 ? ` (+${f.symbols.length - 5})` : "";
+		lines.push(`| \`${f.relativePath}\` | ${symbolList}${suffix} |`);
+	}
+	lines.push("");
 
-  // Entry Points (top 5)
-  if (entryPoints.length > 0) {
-    lines.push('## Entry Points');
-    lines.push('');
-    lines.push('Start here when exploring this area:');
-    lines.push('');
-    for (const ep of entryPoints.slice(0, 5)) {
-      lines.push(`- **\`${ep.name}\`** (${ep.label}) \u2014 \`${ep.filePath}:${ep.startLine}\``);
-    }
-    lines.push('');
-  }
+	// Entry Points (top 5)
+	if (entryPoints.length > 0) {
+		lines.push("## Entry Points");
+		lines.push("");
+		lines.push("Start here when exploring this area:");
+		lines.push("");
+		for (const ep of entryPoints.slice(0, 5)) {
+			lines.push(
+				`- **\`${ep.name}\`** (${ep.label}) \u2014 \`${ep.filePath}:${ep.startLine}\``,
+			);
+		}
+		lines.push("");
+	}
 
-  // Key Symbols (top 20, exported first, then by type)
-  lines.push('## Key Symbols');
-  lines.push('');
-  lines.push('| Symbol | Type | File | Line |');
-  lines.push('|--------|------|------|------|');
-  const sortedMembers = [...members].sort((a, b) => {
-    if (a.isExported !== b.isExported) return a.isExported ? -1 : 1;
-    return a.label.localeCompare(b.label);
-  });
-  for (const m of sortedMembers.slice(0, 20)) {
-    lines.push(`| \`${m.name}\` | ${m.label} | \`${m.filePath}\` | ${m.startLine} |`);
-  }
-  lines.push('');
+	// Key Symbols (top 20, exported first, then by type)
+	lines.push("## Key Symbols");
+	lines.push("");
+	lines.push("| Symbol | Type | File | Line |");
+	lines.push("|--------|------|------|------|");
+	const sortedMembers = [...members].sort((a, b) => {
+		if (a.isExported !== b.isExported) return a.isExported ? -1 : 1;
+		return a.label.localeCompare(b.label);
+	});
+	for (const m of sortedMembers.slice(0, 20)) {
+		lines.push(
+			`| \`${m.name}\` | ${m.label} | \`${m.filePath}\` | ${m.startLine} |`,
+		);
+	}
+	lines.push("");
 
-  // Execution Flows
-  if (flows.length > 0) {
-    lines.push('## Execution Flows');
-    lines.push('');
-    lines.push('| Flow | Type | Steps |');
-    lines.push('|------|------|-------|');
-    for (const f of flows.slice(0, 10)) {
-      lines.push(`| \`${f.heuristicLabel}\` | ${f.processType} | ${f.stepCount} |`);
-    }
-    lines.push('');
-  }
+	// Execution Flows
+	if (flows.length > 0) {
+		lines.push("## Execution Flows");
+		lines.push("");
+		lines.push("| Flow | Type | Steps |");
+		lines.push("|------|------|-------|");
+		for (const f of flows.slice(0, 10)) {
+			lines.push(
+				`| \`${f.heuristicLabel}\` | ${f.processType} | ${f.stepCount} |`,
+			);
+		}
+		lines.push("");
+	}
 
-  // Connected Areas
-  if (connections.length > 0) {
-    lines.push('## Connected Areas');
-    lines.push('');
-    lines.push('| Area | Connections |');
-    lines.push('|------|-------------|');
-    for (const c of connections.slice(0, 8)) {
-      lines.push(`| ${c.targetLabel} | ${c.count} calls |`);
-    }
-    lines.push('');
-  }
+	// Connected Areas
+	if (connections.length > 0) {
+		lines.push("## Connected Areas");
+		lines.push("");
+		lines.push("| Area | Connections |");
+		lines.push("|------|-------------|");
+		for (const c of connections.slice(0, 8)) {
+			lines.push(`| ${c.targetLabel} | ${c.count} calls |`);
+		}
+		lines.push("");
+	}
 
-  // How to Explore
-  const firstEntry =
-    entryPoints.length > 0
-      ? entryPoints[0].name
-      : members.length > 0
-        ? members[0].name
-        : community.label;
-  lines.push('## How to Explore');
-  lines.push('');
-  lines.push(`1. \`gitnexus_context({name: "${firstEntry}"})\` \u2014 see callers and callees`);
-  lines.push(
-    `2. \`gitnexus_query({query: "${community.label.toLowerCase()}"})\` \u2014 find related execution flows`,
-  );
-  lines.push('3. Read key files listed above for implementation details');
-  lines.push('');
+	// How to Explore
+	const firstEntry =
+		entryPoints.length > 0
+			? entryPoints[0].name
+			: members.length > 0
+				? members[0].name
+				: community.label;
+	lines.push("## How to Explore");
+	lines.push("");
+	lines.push(
+		`1. \`gitnexus_context({name: "${firstEntry}"})\` \u2014 see callers and callees`,
+	);
+	lines.push(
+		`2. \`gitnexus_query({query: "${community.label.toLowerCase()}"})\` \u2014 find related execution flows`,
+	);
+	lines.push("3. Read key files listed above for implementation details");
+	lines.push("");
 
-  return lines.join('\n');
+	return lines.join("\n");
 };
 
 // ============================================================================
@@ -670,22 +699,22 @@ const renderSkillMarkdown = (
  * @returns {string} Unique kebab-case name capped at 50 characters
  */
 const toKebabName = (label: string, usedNames: Set<string>): string => {
-  let name = label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 50);
+	let name = label
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "")
+		.slice(0, 50);
 
-  if (!name) name = 'skill';
+	if (!name) name = "skill";
 
-  let candidate = name;
-  let counter = 2;
-  while (usedNames.has(candidate)) {
-    candidate = `${name}-${counter}`;
-    counter++;
-  }
+	let candidate = name;
+	let counter = 2;
+	while (usedNames.has(candidate)) {
+		candidate = `${name}-${counter}`;
+		counter++;
+	}
 
-  return candidate;
+	return candidate;
 };
 
 /**
@@ -695,15 +724,15 @@ const toKebabName = (label: string, usedNames: Set<string>): string => {
  * @returns {string} Relative path using forward slashes
  */
 const toRelativePath = (filePath: string, repoPath: string): string => {
-  // Normalize to forward slashes for cross-platform consistency
-  const normalizedFile = filePath.replace(/\\/g, '/');
-  const normalizedRepo = repoPath.replace(/\\/g, '/');
+	// Normalize to forward slashes for cross-platform consistency
+	const normalizedFile = filePath.replace(/\\/g, "/");
+	const normalizedRepo = repoPath.replace(/\\/g, "/");
 
-  if (normalizedFile.startsWith(normalizedRepo)) {
-    return normalizedFile.slice(normalizedRepo.length).replace(/^\//, '');
-  }
-  // Already relative or different root
-  return normalizedFile.replace(/^\//, '');
+	if (normalizedFile.startsWith(normalizedRepo)) {
+		return normalizedFile.slice(normalizedRepo.length).replace(/^\//, "");
+	}
+	// Already relative or different root
+	return normalizedFile.replace(/^\//, "");
 };
 
 /**
@@ -712,24 +741,24 @@ const toRelativePath = (filePath: string, repoPath: string): string => {
  * @returns {string | null} Most common directory or null
  */
 const getDominantDirectory = (files: FileInfo[]): string | null => {
-  const dirCounts = new Map<string, number>();
+	const dirCounts = new Map<string, number>();
 
-  for (const f of files) {
-    const parts = f.relativePath.split('/');
-    if (parts.length >= 2) {
-      const dir = parts[0];
-      dirCounts.set(dir, (dirCounts.get(dir) || 0) + f.symbols.length);
-    }
-  }
+	for (const f of files) {
+		const parts = f.relativePath.split("/");
+		if (parts.length >= 2) {
+			const dir = parts[0];
+			dirCounts.set(dir, (dirCounts.get(dir) || 0) + f.symbols.length);
+		}
+	}
 
-  let best: string | null = null;
-  let bestCount = 0;
-  for (const [dir, count] of dirCounts) {
-    if (count > bestCount) {
-      bestCount = count;
-      best = dir;
-    }
-  }
+	let best: string | null = null;
+	let bestCount = 0;
+	for (const [dir, count] of dirCounts) {
+		if (count > bestCount) {
+			bestCount = count;
+			best = dir;
+		}
+	}
 
-  return best;
+	return best;
 };

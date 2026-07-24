@@ -1,11 +1,11 @@
 class Repo {
-  constructor(path) {
-    this.path = path;
-  }
+	constructor(path) {
+		this.path = path;
+	}
 
-  save() {
-    return true;
-  }
+	save() {
+		return true;
+	}
 }
 
 module.exports = { Repo };

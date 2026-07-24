@@ -1,1 +1,4 @@
-{ "name": "@monorepo/auth", "version": "1.0.0" }
+{
+	"name": "@monorepo/auth",
+	"version": "1.0.0"
+}

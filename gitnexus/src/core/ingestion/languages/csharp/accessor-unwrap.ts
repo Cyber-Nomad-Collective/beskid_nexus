@@ -18,26 +18,31 @@
  *  `ConcurrentDictionary<K, V>` / `ImmutableDictionary<K, V>`.
  *  Returns undefined if the type name doesn't match or the argument
  *  list isn't exactly two top-level args. */
-function extractDictionaryArgs(rawName: string): { key: string; value: string } | undefined {
-  const match = rawName.match(
-    /^(?:[A-Za-z_][A-Za-z0-9_.]*\.)?(?:Dictionary|IDictionary|IReadOnlyDictionary|SortedDictionary|ConcurrentDictionary|ImmutableDictionary)<(.+)>$/,
-  );
-  if (match === null) return undefined;
-  const inner = match[1]!;
-  // Split on the top-level comma (tolerate nested `<...>`).
-  let depth = 0;
-  let commaIdx = -1;
-  for (let i = 0; i < inner.length; i++) {
-    const ch = inner[i];
-    if (ch === '<') depth++;
-    else if (ch === '>') depth--;
-    else if (ch === ',' && depth === 0) {
-      commaIdx = i;
-      break;
-    }
-  }
-  if (commaIdx === -1) return undefined;
-  return { key: inner.slice(0, commaIdx).trim(), value: inner.slice(commaIdx + 1).trim() };
+function extractDictionaryArgs(
+	rawName: string,
+): { key: string; value: string } | undefined {
+	const match = rawName.match(
+		/^(?:[A-Za-z_][A-Za-z0-9_.]*\.)?(?:Dictionary|IDictionary|IReadOnlyDictionary|SortedDictionary|ConcurrentDictionary|ImmutableDictionary)<(.+)>$/,
+	);
+	if (match === null) return undefined;
+	const inner = match[1]!;
+	// Split on the top-level comma (tolerate nested `<...>`).
+	let depth = 0;
+	let commaIdx = -1;
+	for (let i = 0; i < inner.length; i++) {
+		const ch = inner[i];
+		if (ch === "<") depth++;
+		else if (ch === ">") depth--;
+		else if (ch === "," && depth === 0) {
+			commaIdx = i;
+			break;
+		}
+	}
+	if (commaIdx === -1) return undefined;
+	return {
+		key: inner.slice(0, commaIdx).trim(),
+		value: inner.slice(commaIdx + 1).trim(),
+	};
 }
 
 /**
@@ -47,11 +52,11 @@ function extractDictionaryArgs(rawName: string): { key: string; value: string } 
  * compound-receiver pass fall through to the regular field walk.
  */
 export function unwrapCsharpCollectionAccessor(
-  receiverType: string,
-  accessor: string,
+	receiverType: string,
+	accessor: string,
 ): string | undefined {
-  if (accessor !== 'Values' && accessor !== 'Keys') return undefined;
-  const args = extractDictionaryArgs(receiverType);
-  if (args === undefined) return undefined;
-  return accessor === 'Values' ? args.value : args.key;
+	if (accessor !== "Values" && accessor !== "Keys") return undefined;
+	const args = extractDictionaryArgs(receiverType);
+	if (args === undefined) return undefined;
+	return accessor === "Values" ? args.value : args.key;
 }

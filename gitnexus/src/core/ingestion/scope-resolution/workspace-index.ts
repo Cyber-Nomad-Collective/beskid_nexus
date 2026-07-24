@@ -39,42 +39,43 @@
  * Build cost is O(totalScopes). Read-only after construction.
  */
 
-import type { ParsedFile, Scope, ScopeId } from 'gitnexus-shared';
-import { isClassLike } from './scope/walkers.js';
+import type { ParsedFile, Scope, ScopeId } from "gitnexus-shared";
+import { isClassLike } from "./scope/walkers.js";
 
 export interface WorkspaceResolutionIndex {
-  /** Class def `nodeId` → that class's `Scope`. */
-  readonly classScopeByDefId: ReadonlyMap<string, Scope>;
+	/** Class def `nodeId` → that class's `Scope`. */
+	readonly classScopeByDefId: ReadonlyMap<string, Scope>;
 
-  /** Inverse of `classScopeByDefId`: class `Scope.id` → class def `nodeId`.
-   *  Built in the same pass; used by the implicit-`this` overload picker
-   *  in `free-call-fallback.ts` to skip an O(C) reverse scan. */
-  readonly classScopeIdToDefId: ReadonlyMap<ScopeId, string>;
+	/** Inverse of `classScopeByDefId`: class `Scope.id` → class def `nodeId`.
+	 *  Built in the same pass; used by the implicit-`this` overload picker
+	 *  in `free-call-fallback.ts` to skip an O(C) reverse scan. */
+	readonly classScopeIdToDefId: ReadonlyMap<ScopeId, string>;
 
-  /** Module scope by file path. */
-  readonly moduleScopeByFile: ReadonlyMap<string, Scope>;
+	/** Module scope by file path. */
+	readonly moduleScopeByFile: ReadonlyMap<string, Scope>;
 }
 
 export function buildWorkspaceResolutionIndex(
-  parsedFiles: readonly ParsedFile[],
+	parsedFiles: readonly ParsedFile[],
 ): WorkspaceResolutionIndex {
-  const classScopeByDefId = new Map<string, Scope>();
-  const classScopeIdToDefId = new Map<ScopeId, string>();
-  const moduleScopeByFile = new Map<string, Scope>();
+	const classScopeByDefId = new Map<string, Scope>();
+	const classScopeIdToDefId = new Map<ScopeId, string>();
+	const moduleScopeByFile = new Map<string, Scope>();
 
-  for (const parsed of parsedFiles) {
-    const moduleScope = parsed.scopes.find((s) => s.kind === 'Module');
-    if (moduleScope !== undefined) moduleScopeByFile.set(parsed.filePath, moduleScope);
+	for (const parsed of parsedFiles) {
+		const moduleScope = parsed.scopes.find((s) => s.kind === "Module");
+		if (moduleScope !== undefined)
+			moduleScopeByFile.set(parsed.filePath, moduleScope);
 
-    for (const scope of parsed.scopes) {
-      if (scope.kind !== 'Class') continue;
-      const cd = scope.ownedDefs.find((d) => isClassLike(d.type));
-      if (cd !== undefined) {
-        classScopeByDefId.set(cd.nodeId, scope);
-        classScopeIdToDefId.set(scope.id, cd.nodeId);
-      }
-    }
-  }
+		for (const scope of parsed.scopes) {
+			if (scope.kind !== "Class") continue;
+			const cd = scope.ownedDefs.find((d) => isClassLike(d.type));
+			if (cd !== undefined) {
+				classScopeByDefId.set(cd.nodeId, scope);
+				classScopeIdToDefId.set(scope.id, cd.nodeId);
+			}
+		}
+	}
 
-  return { classScopeByDefId, classScopeIdToDefId, moduleScopeByFile };
+	return { classScopeByDefId, classScopeIdToDefId, moduleScopeByFile };
 }

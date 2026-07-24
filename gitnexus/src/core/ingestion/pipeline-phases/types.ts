@@ -14,36 +14,36 @@
  *  - Each phase is independently testable with mocked inputs
  */
 
-import type { KnowledgeGraph } from '../../graph/types.js';
-import type { PipelineProgress } from 'gitnexus-shared';
-import type { PipelineOptions } from '../pipeline.js';
+import type { PipelineProgress } from "gitnexus-shared";
+import type { KnowledgeGraph } from "../../graph/types.js";
+import type { PipelineOptions } from "../pipeline.js";
 
 // ── Shared context ─────────────────────────────────────────────────────────
 
 /** Immutable context available to every phase. */
 export interface PipelineContext {
-  /** Absolute path to the repository root. */
-  readonly repoPath: string;
-  /** Mutable knowledge graph — the single shared accumulator. */
-  readonly graph: KnowledgeGraph;
-  /** Progress callback for UI updates. */
-  readonly onProgress: (progress: PipelineProgress) => void;
-  /** Pipeline options (skipGraphPhases, skipWorkers, etc.). */
-  readonly options?: PipelineOptions;
-  /** Pipeline start timestamp (for elapsed-time logging). */
-  readonly pipelineStart: number;
+	/** Absolute path to the repository root. */
+	readonly repoPath: string;
+	/** Mutable knowledge graph — the single shared accumulator. */
+	readonly graph: KnowledgeGraph;
+	/** Progress callback for UI updates. */
+	readonly onProgress: (progress: PipelineProgress) => void;
+	/** Pipeline options (skipGraphPhases, skipWorkers, etc.). */
+	readonly options?: PipelineOptions;
+	/** Pipeline start timestamp (for elapsed-time logging). */
+	readonly pipelineStart: number;
 }
 
 // ── Phase result wrapper ───────────────────────────────────────────────────
 
 /** Wraps a phase's output with timing metadata. */
 export interface PhaseResult<T> {
-  /** Phase name (matches the phase's `name` field). */
-  readonly phaseName: string;
-  /** The typed output of the phase. */
-  readonly output: T;
-  /** Wall-clock duration in milliseconds. */
-  readonly durationMs: number;
+	/** Phase name (matches the phase's `name` field). */
+	readonly phaseName: string;
+	/** The typed output of the phase. */
+	readonly output: T;
+	/** Wall-clock duration in milliseconds. */
+	readonly durationMs: number;
 }
 
 // ── Phase definition ───────────────────────────────────────────────────────
@@ -55,23 +55,26 @@ export interface PhaseResult<T> {
  * @typeParam TOutput - This phase's output type
  */
 export interface PipelinePhase<TOutput = unknown> {
-  /** Unique name for logging and result lookup. */
-  readonly name: string;
+	/** Unique name for logging and result lookup. */
+	readonly name: string;
 
-  /**
-   * Names of phases this phase depends on.
-   * The runner guarantees these have completed before execute() is called.
-   */
-  readonly deps: readonly string[];
+	/**
+	 * Names of phases this phase depends on.
+	 * The runner guarantees these have completed before execute() is called.
+	 */
+	readonly deps: readonly string[];
 
-  /**
-   * Execute the phase.
-   *
-   * @param ctx    Shared pipeline context (graph, repoPath, progress, options)
-   * @param deps   Map of dependency name → PhaseResult (typed outputs from upstream phases)
-   * @returns      The phase's typed output
-   */
-  execute(ctx: PipelineContext, deps: ReadonlyMap<string, PhaseResult<unknown>>): Promise<TOutput>;
+	/**
+	 * Execute the phase.
+	 *
+	 * @param ctx    Shared pipeline context (graph, repoPath, progress, options)
+	 * @param deps   Map of dependency name → PhaseResult (typed outputs from upstream phases)
+	 * @returns      The phase's typed output
+	 */
+	execute(
+		ctx: PipelineContext,
+		deps: ReadonlyMap<string, PhaseResult<unknown>>,
+	): Promise<TOutput>;
 }
 
 /**
@@ -90,12 +93,12 @@ export interface PipelinePhase<TOutput = unknown> {
  * @throws           If the phase is not found in the dependency map
  */
 export function getPhaseOutput<T>(
-  deps: ReadonlyMap<string, PhaseResult<unknown>>,
-  phaseName: string,
+	deps: ReadonlyMap<string, PhaseResult<unknown>>,
+	phaseName: string,
 ): T {
-  const result = deps.get(phaseName);
-  if (!result) {
-    throw new Error(`Phase '${phaseName}' not found in resolved dependencies`);
-  }
-  return result.output as T;
+	const result = deps.get(phaseName);
+	if (!result) {
+		throw new Error(`Phase '${phaseName}' not found in resolved dependencies`);
+	}
+	return result.output as T;
 }

@@ -1,45 +1,49 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as os from 'node:os';
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { parseSourceSafeSpy } = vi.hoisted(() => ({ parseSourceSafeSpy: vi.fn() }));
+const { parseSourceSafeSpy } = vi.hoisted(() => ({
+	parseSourceSafeSpy: vi.fn(),
+}));
 
-vi.mock('../../../src/core/tree-sitter/safe-parse.js', async () => {
-  const { buildSafeParseMock } = await import('../../helpers/parse-source-safe-mock.js');
-  return buildSafeParseMock(parseSourceSafeSpy);
+vi.mock("../../../src/core/tree-sitter/safe-parse.js", async () => {
+	const { buildSafeParseMock } = await import(
+		"../../helpers/parse-source-safe-mock.js"
+	);
+	return buildSafeParseMock(parseSourceSafeSpy);
 });
 
-import { HttpRouteExtractor } from '../../../src/core/group/extractors/http-route-extractor.js';
-import type { RepoHandle } from '../../../src/core/group/types.js';
+import { HttpRouteExtractor } from "../../../src/core/group/extractors/http-route-extractor.js";
+import type { RepoHandle } from "../../../src/core/group/types.js";
 
-describe('HttpRouteExtractor', () => {
-  let tmpDir: string;
-  let extractor: HttpRouteExtractor;
+describe("HttpRouteExtractor", () => {
+	let tmpDir: string;
+	let extractor: HttpRouteExtractor;
 
-  beforeEach(() => {
-    extractor = new HttpRouteExtractor();
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitnexus-http-extract-'));
-  });
+	beforeEach(() => {
+		extractor = new HttpRouteExtractor();
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "gitnexus-http-extract-"));
+	});
 
-  afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  });
+	afterEach(() => {
+		fs.rmSync(tmpDir, { recursive: true, force: true });
+	});
 
-  const makeRepo = (repoPath: string): RepoHandle => ({
-    id: 'test-repo',
-    path: 'test/backend',
-    repoPath,
-    storagePath: path.join(repoPath, '.gitnexus'),
-  });
+	const makeRepo = (repoPath: string): RepoHandle => ({
+		id: "test-repo",
+		path: "test/backend",
+		repoPath,
+		storagePath: path.join(repoPath, ".gitnexus"),
+	});
 
-  describe('provider extraction — graph-first (Strategy A)', () => {
-    it('extracts routes from Route/HANDLES_ROUTE graph + source scan for method', async () => {
-      const dir = path.join(tmpDir, 'graph-first');
-      fs.mkdirSync(path.join(dir, 'src/controller'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/controller/UserController.java'),
-        `
+	describe("provider extraction — graph-first (Strategy A)", () => {
+		it("extracts routes from Route/HANDLES_ROUTE graph + source scan for method", async () => {
+			const dir = path.join(tmpDir, "graph-first");
+			fs.mkdirSync(path.join(dir, "src/controller"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/controller/UserController.java"),
+				`
 @RestController
 @RequestMapping("/api/v2")
 public class UserController {
@@ -50,57 +54,63 @@ public class UserController {
     public User create(@RequestBody User user) { return service.save(user); }
 }
 `,
-      );
+			);
 
-      const mockDbExecutor = async (query: string) => {
-        if (query.includes('HANDLES_ROUTE')) {
-          return [
-            {
-              fileId: 'file-uid-ctrl',
-              filePath: 'src/controller/UserController.java',
-              routePath: '/api/v2/users',
-              routeId: 'route-uid-users',
-              responseKeys: null,
-              routeSource: 'decorator-GetMapping',
-            },
-          ];
-        }
-        if (query.includes('CONTAINS')) {
-          return [
-            {
-              uid: 'uid-ctrl-list',
-              name: 'list',
-              filePath: 'src/controller/UserController.java',
-              labels: ['Method'],
-            },
-            {
-              uid: 'uid-ctrl-create',
-              name: 'create',
-              filePath: 'src/controller/UserController.java',
-              labels: ['Method'],
-            },
-          ];
-        }
-        return [];
-      };
+			const mockDbExecutor = async (query: string) => {
+				if (query.includes("HANDLES_ROUTE")) {
+					return [
+						{
+							fileId: "file-uid-ctrl",
+							filePath: "src/controller/UserController.java",
+							routePath: "/api/v2/users",
+							routeId: "route-uid-users",
+							responseKeys: null,
+							routeSource: "decorator-GetMapping",
+						},
+					];
+				}
+				if (query.includes("CONTAINS")) {
+					return [
+						{
+							uid: "uid-ctrl-list",
+							name: "list",
+							filePath: "src/controller/UserController.java",
+							labels: ["Method"],
+						},
+						{
+							uid: "uid-ctrl-create",
+							name: "create",
+							filePath: "src/controller/UserController.java",
+							labels: ["Method"],
+						},
+					];
+				}
+				return [];
+			};
 
-      const contracts = await extractor.extract(mockDbExecutor, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(
+				mockDbExecutor,
+				dir,
+				makeRepo(dir),
+			);
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      const getRoute = providers.find((c) => c.contractId === 'http::GET::/api/v2/users');
-      expect(getRoute).toBeDefined();
-      expect(getRoute!.confidence).toBe(0.9);
-      expect(getRoute!.symbolUid).not.toBe('file-uid-ctrl');
-    });
-  });
+			const getRoute = providers.find(
+				(c) => c.contractId === "http::GET::/api/v2/users",
+			);
+			expect(getRoute).toBeDefined();
+			expect(getRoute!.confidence).toBe(0.9);
+			expect(getRoute!.symbolUid).not.toBe("file-uid-ctrl");
+		});
+	});
 
-  describe('provider extraction — source-scan fallback (Strategy B)', () => {
-    it('extracts Spring @GetMapping annotation', async () => {
-      const dir = path.join(tmpDir, 'spring');
-      fs.mkdirSync(path.join(dir, 'src/controller'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/controller/UserController.java'),
-        `
+	describe("provider extraction — source-scan fallback (Strategy B)", () => {
+		it("extracts Spring @GetMapping annotation", async () => {
+			const dir = path.join(tmpDir, "spring");
+			fs.mkdirSync(path.join(dir, "src/controller"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/controller/UserController.java"),
+				`
 package com.example;
 import org.springframework.web.bind.annotation.*;
 
@@ -117,33 +127,37 @@ public class UserController {
     public User getById(@PathVariable Long id) { return service.findById(id); }
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      expect(providers.length).toBeGreaterThanOrEqual(3);
+			expect(providers.length).toBeGreaterThanOrEqual(3);
 
-      const listRoute = providers.find((c) => c.contractId === 'http::GET::/api/v2/users');
-      expect(listRoute).toBeDefined();
-      expect(listRoute!.meta.method).toBe('GET');
-      expect(listRoute!.meta.path).toBe('/api/v2/users');
+			const listRoute = providers.find(
+				(c) => c.contractId === "http::GET::/api/v2/users",
+			);
+			expect(listRoute).toBeDefined();
+			expect(listRoute!.meta.method).toBe("GET");
+			expect(listRoute!.meta.path).toBe("/api/v2/users");
 
-      const createRoute = providers.find((c) => c.contractId === 'http::POST::/api/v2/users');
-      expect(createRoute).toBeDefined();
+			const createRoute = providers.find(
+				(c) => c.contractId === "http::POST::/api/v2/users",
+			);
+			expect(createRoute).toBeDefined();
 
-      const getByIdRoute = providers.find(
-        (c) => c.contractId === 'http::GET::/api/v2/users/{param}',
-      );
-      expect(getByIdRoute).toBeDefined();
-    });
+			const getByIdRoute = providers.find(
+				(c) => c.contractId === "http::GET::/api/v2/users/{param}",
+			);
+			expect(getByIdRoute).toBeDefined();
+		});
 
-    it('extracts Express router.get patterns', async () => {
-      const dir = path.join(tmpDir, 'express');
-      fs.mkdirSync(path.join(dir, 'src/routes'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/routes/users.ts'),
-        `
+		it("extracts Express router.get patterns", async () => {
+			const dir = path.join(tmpDir, "express");
+			fs.mkdirSync(path.join(dir, "src/routes"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/routes/users.ts"),
+				`
 import { Router } from 'express';
 const router = Router();
 
@@ -153,25 +167,29 @@ router.delete('/api/users/:id', async (req, res) => { res.sendStatus(204); });
 
 export default router;
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      expect(providers.length).toBeGreaterThanOrEqual(3);
-      expect(providers.find((c) => c.contractId === 'http::GET::/api/users')).toBeDefined();
-      expect(providers.find((c) => c.contractId === 'http::POST::/api/users')).toBeDefined();
-      expect(
-        providers.find((c) => c.contractId === 'http::DELETE::/api/users/{param}'),
-      ).toBeDefined();
-    });
+			expect(providers.length).toBeGreaterThanOrEqual(3);
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/api/users"),
+			).toBeDefined();
+			expect(
+				providers.find((c) => c.contractId === "http::POST::/api/users"),
+			).toBeDefined();
+			expect(
+				providers.find((c) => c.contractId === "http::DELETE::/api/users/{param}"),
+			).toBeDefined();
+		});
 
-    it('extracts Go Gin and Echo route registrations', async () => {
-      const dir = path.join(tmpDir, 'go-frameworks');
-      fs.mkdirSync(path.join(dir, 'cmd'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'cmd', 'server.go'),
-        `
+		it("extracts Go Gin and Echo route registrations", async () => {
+			const dir = path.join(tmpDir, "go-frameworks");
+			fs.mkdirSync(path.join(dir, "cmd"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "cmd", "server.go"),
+				`
 package main
 
 func createOrder(c *gin.Context) {}
@@ -185,26 +203,30 @@ func main() {
   e.GET("/api/orders", listOrders)
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      const ginRoute = providers.find((c) => c.contractId === 'http::POST::/api/orders/{param}');
-      expect(ginRoute).toBeDefined();
-      expect(ginRoute?.symbolName).toBe('createOrder');
+			const ginRoute = providers.find(
+				(c) => c.contractId === "http::POST::/api/orders/{param}",
+			);
+			expect(ginRoute).toBeDefined();
+			expect(ginRoute?.symbolName).toBe("createOrder");
 
-      const echoRoute = providers.find((c) => c.contractId === 'http::GET::/api/orders');
-      expect(echoRoute).toBeDefined();
-      expect(echoRoute?.symbolName).toBe('listOrders');
-    });
+			const echoRoute = providers.find(
+				(c) => c.contractId === "http::GET::/api/orders",
+			);
+			expect(echoRoute).toBeDefined();
+			expect(echoRoute?.symbolName).toBe("listOrders");
+		});
 
-    it('extracts stdlib HandleFunc providers', async () => {
-      const dir = path.join(tmpDir, 'go-stdlib-provider');
-      fs.mkdirSync(path.join(dir, 'cmd'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'cmd', 'server.go'),
-        `
+		it("extracts stdlib HandleFunc providers", async () => {
+			const dir = path.join(tmpDir, "go-stdlib-provider");
+			fs.mkdirSync(path.join(dir, "cmd"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "cmd", "server.go"),
+				`
 package main
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {}
@@ -213,22 +235,24 @@ func main() {
   http.HandleFunc("/api/health", healthHandler)
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      const healthRoute = providers.find((c) => c.contractId === 'http::GET::/api/health');
-      expect(healthRoute).toBeDefined();
-      expect(healthRoute?.symbolName).toBe('healthHandler');
-    });
+			const healthRoute = providers.find(
+				(c) => c.contractId === "http::GET::/api/health",
+			);
+			expect(healthRoute).toBeDefined();
+			expect(healthRoute?.symbolName).toBe("healthHandler");
+		});
 
-    it('extracts NestJS controller decorators', async () => {
-      const dir = path.join(tmpDir, 'nestjs');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src', 'orders.controller.ts'),
-        `
+		it("extracts NestJS controller decorators", async () => {
+			const dir = path.join(tmpDir, "nestjs");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src", "orders.controller.ts"),
+				`
 import { Controller, Patch } from '@nestjs/common';
 
 @Controller('orders')
@@ -239,24 +263,26 @@ export class OrdersController {
   }
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      const patchRoute = providers.find((c) => c.contractId === 'http::PATCH::/orders/{param}');
-      expect(patchRoute).toBeDefined();
-      expect(patchRoute?.symbolName).toBe('updateOrder');
-    });
-  });
+			const patchRoute = providers.find(
+				(c) => c.contractId === "http::PATCH::/orders/{param}",
+			);
+			expect(patchRoute).toBeDefined();
+			expect(patchRoute?.symbolName).toBe("updateOrder");
+		});
+	});
 
-  describe('consumer extraction — fetch patterns', () => {
-    it('extracts fetch() calls', async () => {
-      const dir = path.join(tmpDir, 'frontend');
-      fs.mkdirSync(path.join(dir, 'src/api'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/api/users.ts'),
-        `
+	describe("consumer extraction — fetch patterns", () => {
+		it("extracts fetch() calls", async () => {
+			const dir = path.join(tmpDir, "frontend");
+			fs.mkdirSync(path.join(dir, "src/api"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/api/users.ts"),
+				`
 export async function fetchUsers() {
   const res = await fetch('/api/users');
   return res.json();
@@ -267,43 +293,49 @@ export async function createUser(data: any) {
   return res.json();
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.length).toBeGreaterThanOrEqual(2);
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/users')).toBeDefined();
-      expect(consumers.find((c) => c.contractId === 'http::POST::/api/users')).toBeDefined();
-    });
+			expect(consumers.length).toBeGreaterThanOrEqual(2);
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/users"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::POST::/api/users"),
+			).toBeDefined();
+		});
 
-    it('extracts axios calls', async () => {
-      const dir = path.join(tmpDir, 'axios-fe');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/api.ts'),
-        `
+		it("extracts axios calls", async () => {
+			const dir = path.join(tmpDir, "axios-fe");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/api.ts"),
+				`
 import axios from 'axios';
 export const getUsers = () => axios.get('/api/users');
 export const deleteUser = (id: string) => axios.delete(\`/api/users/\${id}\`);
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/users')).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::DELETE::/api/users/{param}'),
-      ).toBeDefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/users"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::DELETE::/api/users/{param}"),
+			).toBeDefined();
+		});
 
-    it('extracts jQuery $.get and $.post shorthand', async () => {
-      const dir = path.join(tmpDir, 'jquery-shorthand');
-      fs.mkdirSync(path.join(dir, 'public/js'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'public/js/users.js'),
-        `
+		it("extracts jQuery $.get and $.post shorthand", async () => {
+			const dir = path.join(tmpDir, "jquery-shorthand");
+			fs.mkdirSync(path.join(dir, "public/js"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "public/js/users.js"),
+				`
 function loadUsers() {
   $.get('/api/users', function (data) { console.log(data); });
 }
@@ -312,26 +344,30 @@ function createUser(payload) {
   $.post('/api/users', payload);
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      const getRoute = consumers.find((c) => c.contractId === 'http::GET::/api/users');
-      expect(getRoute).toBeDefined();
-      expect(getRoute?.meta.framework).toBe('jquery');
+			const getRoute = consumers.find(
+				(c) => c.contractId === "http::GET::/api/users",
+			);
+			expect(getRoute).toBeDefined();
+			expect(getRoute?.meta.framework).toBe("jquery");
 
-      const postRoute = consumers.find((c) => c.contractId === 'http::POST::/api/users');
-      expect(postRoute).toBeDefined();
-      expect(postRoute?.meta.framework).toBe('jquery');
-    });
+			const postRoute = consumers.find(
+				(c) => c.contractId === "http::POST::/api/users",
+			);
+			expect(postRoute).toBeDefined();
+			expect(postRoute?.meta.framework).toBe("jquery");
+		});
 
-    it('extracts jQuery $.ajax with method: and type: keys and default GET', async () => {
-      const dir = path.join(tmpDir, 'jquery-ajax');
-      fs.mkdirSync(path.join(dir, 'public/js'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'public/js/orders.js'),
-        `
+		it("extracts jQuery $.ajax with method: and type: keys and default GET", async () => {
+			const dir = path.join(tmpDir, "jquery-ajax");
+			fs.mkdirSync(path.join(dir, "public/js"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "public/js/orders.js"),
+				`
 $.ajax({ url: '/api/orders', method: 'PUT', data: {} });
 $.ajax({ url: '/api/items',  type:   'DELETE' });
 $.ajax({ url: '/api/default' });
@@ -340,28 +376,34 @@ function reloadOrder(id) {
   return $.ajax({ url: \`/api/orders/\${id}\`, method: 'GET' });
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::PUT::/api/orders')).toBeDefined();
-      expect(consumers.find((c) => c.contractId === 'http::DELETE::/api/items')).toBeDefined();
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/default')).toBeDefined();
-      // Template-literal URL inside $.ajax is normalized to {param} the same
-      // way the fetch/axios paths do — confirms readStringProp accepts
-      // template_string values for jQuery ajax, not just for axios object form.
-      expect(
-        consumers.find((c) => c.contractId === 'http::GET::/api/orders/{param}'),
-      ).toBeDefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::PUT::/api/orders"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::DELETE::/api/items"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/default"),
+			).toBeDefined();
+			// Template-literal URL inside $.ajax is normalized to {param} the same
+			// way the fetch/axios paths do — confirms readStringProp accepts
+			// template_string values for jQuery ajax, not just for axios object form.
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/orders/{param}"),
+			).toBeDefined();
+		});
 
-    it('extracts axios({ method, url }) object form regardless of key order', async () => {
-      const dir = path.join(tmpDir, 'axios-object');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/orders.ts'),
-        `
+		it("extracts axios({ method, url }) object form regardless of key order", async () => {
+			const dir = path.join(tmpDir, "axios-object");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/orders.ts"),
+				`
 import axios from 'axios';
 
 export function createOrder(data: unknown) {
@@ -376,22 +418,28 @@ export function listDefaults() {
   return axios({ url: '/api/defaults' });
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::POST::/api/orders')).toBeDefined();
-      expect(consumers.find((c) => c.contractId === 'http::PUT::/api/users/{param}')).toBeDefined();
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/defaults')).toBeDefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::POST::/api/orders"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::PUT::/api/users/{param}"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/defaults"),
+			).toBeDefined();
+		});
 
-    it('does not emit consumers for unrelated object-literal calls (negative control)', async () => {
-      const dir = path.join(tmpDir, 'jquery-axios-negative');
-      fs.mkdirSync(path.join(dir, 'public/js'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'public/js/misc.js'),
-        `
+		it("does not emit consumers for unrelated object-literal calls (negative control)", async () => {
+			const dir = path.join(tmpDir, "jquery-axios-negative");
+			fs.mkdirSync(path.join(dir, "public/js"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "public/js/misc.js"),
+				`
 // jQuery but not an ajax/get/post call
 $.fn.extend({ url: '/nope', method: 'POST' });
 $.each([1, 2, 3], function (i, v) { return v; });
@@ -404,44 +452,44 @@ myHelper({ url: '/nope', method: 'POST' });
 const cfg = { url: '/nope', method: 'POST' };
 console.log(cfg);
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      // None of the above should have produced any HTTP consumer contracts.
-      const nopeConsumers = consumers.filter(
-        (c) => typeof c.meta.path === 'string' && c.meta.path.includes('/nope'),
-      );
-      expect(nopeConsumers).toHaveLength(0);
-    });
+			// None of the above should have produced any HTTP consumer contracts.
+			const nopeConsumers = consumers.filter(
+				(c) => typeof c.meta.path === "string" && c.meta.path.includes("/nope"),
+			);
+			expect(nopeConsumers).toHaveLength(0);
+		});
 
-    it('extracts Python requests calls', async () => {
-      const dir = path.join(tmpDir, 'python-consumer');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src', 'client.py'),
-        `
+		it("extracts Python requests calls", async () => {
+			const dir = path.join(tmpDir, "python-consumer");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src", "client.py"),
+				`
 import requests
 
 def create_order():
     return requests.post("https://svc.local/api/orders/42", json={"id": 42})
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(
-        consumers.find((c) => c.contractId === 'http::POST::/api/orders/{param}'),
-      ).toBeDefined();
-    });
-    it('extracts Python httpx.AsyncClient calls assigned to attributes or aliases', async () => {
-      const dir = path.join(tmpDir, 'python-httpx-consumer');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src', 'client.py'),
-        `
+			expect(
+				consumers.find((c) => c.contractId === "http::POST::/api/orders/{param}"),
+			).toBeDefined();
+		});
+		it("extracts Python httpx.AsyncClient calls assigned to attributes or aliases", async () => {
+			const dir = path.join(tmpDir, "python-httpx-consumer");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src", "client.py"),
+				`
 import httpx
 
 module_client = httpx.AsyncClient(base_url="https://svc.local")
@@ -476,41 +524,47 @@ def module_scope_shadow_collision():
 
 module_client.get("/module-topic")
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      const expected = [
-        'http::GET::/topic',
-        'http::POST::/questions/import',
-        'http::DELETE::/topic',
-        'http::POST::/questions/duplicate-check',
-        'http::GET::/module-topic',
-      ];
+			const expected = [
+				"http::GET::/topic",
+				"http::POST::/questions/import",
+				"http::DELETE::/topic",
+				"http::POST::/questions/duplicate-check",
+				"http::GET::/module-topic",
+			];
 
-      for (const contractId of expected) {
-        const consumer = consumers.find((c) => c.contractId === contractId);
-        expect(consumer).toBeDefined();
-        expect(consumer?.meta.framework).toBe('python-httpx');
-      }
+			for (const contractId of expected) {
+				const consumer = consumers.find((c) => c.contractId === contractId);
+				expect(consumer).toBeDefined();
+				expect(consumer?.meta.framework).toBe("python-httpx");
+			}
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/nope')).toBeUndefined();
-      expect(consumers.find((c) => c.contractId === 'http::POST::/nope')).toBeUndefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::GET::/ignored-same-name'),
-      ).toBeUndefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::GET::/ignored-module-same-name'),
-      ).toBeUndefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/nope"),
+			).toBeUndefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::POST::/nope"),
+			).toBeUndefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/ignored-same-name"),
+			).toBeUndefined();
+			expect(
+				consumers.find(
+					(c) => c.contractId === "http::GET::/ignored-module-same-name",
+				),
+			).toBeUndefined();
+		});
 
-    it('extracts Java RestTemplate, WebClient and OkHttp calls', async () => {
-      const dir = path.join(tmpDir, 'java-consumer');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src', 'ApiClient.java'),
-        `
+		it("extracts Java RestTemplate, WebClient and OkHttp calls", async () => {
+			const dir = path.join(tmpDir, "java-consumer");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src", "ApiClient.java"),
+				`
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -524,26 +578,28 @@ class ApiClient {
   }
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/users/{param}')).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::PATCH::/api/users/{param}'),
-      ).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::GET::/api/orders/{param}'),
-      ).toBeDefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/users/{param}"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::PATCH::/api/users/{param}"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/orders/{param}"),
+			).toBeDefined();
+		});
 
-    it('extracts Go stdlib and resty calls', async () => {
-      const dir = path.join(tmpDir, 'go-consumer');
-      fs.mkdirSync(path.join(dir, 'cmd'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'cmd', 'client.go'),
-        `
+		it("extracts Go stdlib and resty calls", async () => {
+			const dir = path.join(tmpDir, "go-consumer");
+			fs.mkdirSync(path.join(dir, "cmd"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "cmd", "client.go"),
+				`
 package main
 
 import (
@@ -558,48 +614,56 @@ func main() {
   client.R().Delete("/api/orders/42")
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/health')).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::DELETE::/api/orders/{param}'),
-      ).toBeDefined();
-    });
-  });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/health"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::DELETE::/api/orders/{param}"),
+			).toBeDefined();
+		});
+	});
 
-  describe('provider extraction — Laravel', () => {
-    it('extracts Laravel Route::get patterns', async () => {
-      const dir = path.join(tmpDir, 'laravel');
-      fs.mkdirSync(path.join(dir, 'routes'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'routes/api.php'),
-        `<?php
+	describe("provider extraction — Laravel", () => {
+		it("extracts Laravel Route::get patterns", async () => {
+			const dir = path.join(tmpDir, "laravel");
+			fs.mkdirSync(path.join(dir, "routes"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "routes/api.php"),
+				`<?php
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users', [UserController::class, 'store']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      expect(providers.length).toBeGreaterThanOrEqual(3);
-      expect(providers.find((c) => c.contractId === 'http::GET::/users')).toBeDefined();
-      expect(providers.find((c) => c.contractId === 'http::POST::/users')).toBeDefined();
-      expect(providers.find((c) => c.contractId === 'http::DELETE::/users/{param}')).toBeDefined();
-    });
-  });
+			expect(providers.length).toBeGreaterThanOrEqual(3);
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/users"),
+			).toBeDefined();
+			expect(
+				providers.find((c) => c.contractId === "http::POST::/users"),
+			).toBeDefined();
+			expect(
+				providers.find((c) => c.contractId === "http::DELETE::/users/{param}"),
+			).toBeDefined();
+		});
+	});
 
-  describe('consumer extraction — PHP', () => {
-    it('extracts Laravel Http facade calls', async () => {
-      const dir = path.join(tmpDir, 'php-http-facade');
-      fs.mkdirSync(path.join(dir, 'app'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'app/Client.php'),
-        `<?php
+	describe("consumer extraction — PHP", () => {
+		it("extracts Laravel Http facade calls", async () => {
+			const dir = path.join(tmpDir, "php-http-facade");
+			fs.mkdirSync(path.join(dir, "app"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "app/Client.php"),
+				`<?php
 use Illuminate\\Support\\Facades\\Http;
 
 class Client {
@@ -610,26 +674,28 @@ class Client {
     }
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/users')).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::POST::/api/orders/{param}'),
-      ).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::DELETE::/api/users/{param}'),
-      ).toBeDefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/users"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::POST::/api/orders/{param}"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::DELETE::/api/users/{param}"),
+			).toBeDefined();
+		});
 
-    it('extracts Guzzle $client->method() calls', async () => {
-      const dir = path.join(tmpDir, 'php-guzzle');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/ApiClient.php'),
-        `<?php
+		it("extracts Guzzle $client->method() calls", async () => {
+			const dir = path.join(tmpDir, "php-guzzle");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/ApiClient.php"),
+				`<?php
 use GuzzleHttp\\Client;
 
 class ApiClient {
@@ -639,47 +705,53 @@ class ApiClient {
     }
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/health')).toBeDefined();
-      expect(
-        consumers.find((c) => c.contractId === 'http::POST::/api/orders/{param}'),
-      ).toBeDefined();
-    });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/health"),
+			).toBeDefined();
+			expect(
+				consumers.find((c) => c.contractId === "http::POST::/api/orders/{param}"),
+			).toBeDefined();
+		});
 
-    it('extracts file_get_contents HTTP calls', async () => {
-      const dir = path.join(tmpDir, 'php-fgc');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/fetch.php'),
-        `<?php
+		it("extracts file_get_contents HTTP calls", async () => {
+			const dir = path.join(tmpDir, "php-fgc");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/fetch.php"),
+				`<?php
 function fetchRemote() {
     $data = file_get_contents('https://example.test/api/items/1');
     $local = file_get_contents('/tmp/local-file.txt');
     return $data;
 }
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.find((c) => c.contractId === 'http::GET::/api/items/{param}')).toBeDefined();
-      // file paths and stream wrappers must not emit consumer contracts
-      expect(consumers.find((c) => c.meta.path === '/tmp/local-file.txt')).toBeUndefined();
-    });
-  });
+			expect(
+				consumers.find((c) => c.contractId === "http::GET::/api/items/{param}"),
+			).toBeDefined();
+			// file paths and stream wrappers must not emit consumer contracts
+			expect(
+				consumers.find((c) => c.meta.path === "/tmp/local-file.txt"),
+			).toBeUndefined();
+		});
+	});
 
-  describe('provider extraction — FastAPI', () => {
-    it('extracts FastAPI @app.get decorator patterns', async () => {
-      const dir = path.join(tmpDir, 'fastapi');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/main.py'),
-        `from fastapi import FastAPI
+	describe("provider extraction — FastAPI", () => {
+		it("extracts FastAPI @app.get decorator patterns", async () => {
+			const dir = path.join(tmpDir, "fastapi");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/main.py"),
+				`from fastapi import FastAPI
 app = FastAPI()
 
 @app.get("/users")
@@ -690,235 +762,266 @@ async def list_users():
 async def create_user(user: UserCreate):
     return user
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
 
-      expect(providers.length).toBeGreaterThanOrEqual(2);
-      expect(providers.find((c) => c.contractId === 'http::GET::/users')).toBeDefined();
-      expect(providers.find((c) => c.contractId === 'http::POST::/users')).toBeDefined();
-    });
-  });
+			expect(providers.length).toBeGreaterThanOrEqual(2);
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/users"),
+			).toBeDefined();
+			expect(
+				providers.find((c) => c.contractId === "http::POST::/users"),
+			).toBeDefined();
+		});
+	});
 
-  describe('consumer extraction — graph-first (Strategy A)', () => {
-    it('extracts consumers from FETCHES graph edges', async () => {
-      const dir = path.join(tmpDir, 'graph-consumers');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(path.join(dir, 'src/api.ts'), 'export const api = {};');
+	describe("consumer extraction — graph-first (Strategy A)", () => {
+		it("extracts consumers from FETCHES graph edges", async () => {
+			const dir = path.join(tmpDir, "graph-consumers");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(path.join(dir, "src/api.ts"), "export const api = {};");
 
-      const mockDbExecutor = async (query: string) => {
-        if (query.includes('HANDLES_ROUTE')) return [];
-        if (query.includes('FETCHES')) {
-          return [
-            {
-              fileId: 'file-uid-api',
-              filePath: 'src/api.ts',
-              routePath: '/api/users',
-              routeId: 'route-uid-users',
-              fetchReason: 'fetch-url-match',
-            },
-          ];
-        }
-        if (query.includes('CONTAINS')) {
-          return [
-            {
-              uid: 'uid-fn-fetch',
-              name: 'fetchUsers',
-              filePath: 'src/api.ts',
-              labels: ['Function'],
-            },
-          ];
-        }
-        return [];
-      };
+			const mockDbExecutor = async (query: string) => {
+				if (query.includes("HANDLES_ROUTE")) return [];
+				if (query.includes("FETCHES")) {
+					return [
+						{
+							fileId: "file-uid-api",
+							filePath: "src/api.ts",
+							routePath: "/api/users",
+							routeId: "route-uid-users",
+							fetchReason: "fetch-url-match",
+						},
+					];
+				}
+				if (query.includes("CONTAINS")) {
+					return [
+						{
+							uid: "uid-fn-fetch",
+							name: "fetchUsers",
+							filePath: "src/api.ts",
+							labels: ["Function"],
+						},
+					];
+				}
+				return [];
+			};
 
-      const contracts = await extractor.extract(mockDbExecutor, dir, makeRepo(dir));
-      const consumers = contracts.filter((c) => c.role === 'consumer');
+			const contracts = await extractor.extract(
+				mockDbExecutor,
+				dir,
+				makeRepo(dir),
+			);
+			const consumers = contracts.filter((c) => c.role === "consumer");
 
-      expect(consumers.length).toBeGreaterThanOrEqual(1);
-      expect(consumers[0].confidence).toBe(0.9);
-      expect(consumers[0].symbolName).toBe('fetchUsers');
-    });
-  });
+			expect(consumers.length).toBeGreaterThanOrEqual(1);
+			expect(consumers[0].confidence).toBe(0.9);
+			expect(consumers[0].symbolName).toBe("fetchUsers");
+		});
+	});
 
-  describe('edge cases', () => {
-    it('returns empty for repo with no matching files', async () => {
-      const dir = path.join(tmpDir, 'empty-repo');
-      fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(path.join(dir, 'README.md'), '# Hello');
+	describe("edge cases", () => {
+		it("returns empty for repo with no matching files", async () => {
+			const dir = path.join(tmpDir, "empty-repo");
+			fs.mkdirSync(dir, { recursive: true });
+			fs.writeFileSync(path.join(dir, "README.md"), "# Hello");
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      expect(contracts).toHaveLength(0);
-    });
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			expect(contracts).toHaveLength(0);
+		});
 
-    it('handles graph queries that throw gracefully', async () => {
-      const dir = path.join(tmpDir, 'graph-error');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(path.join(dir, 'src/routes.ts'), `router.get('/api/health', handler);`);
+		it("handles graph queries that throw gracefully", async () => {
+			const dir = path.join(tmpDir, "graph-error");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/routes.ts"),
+				`router.get('/api/health', handler);`,
+			);
 
-      const throwingExecutor = async () => {
-        throw new Error('DB unavailable');
-      };
+			const throwingExecutor = async () => {
+				throw new Error("DB unavailable");
+			};
 
-      const contracts = await extractor.extract(throwingExecutor, dir, makeRepo(dir));
-      // Should fall back to source scan
-      const providers = contracts.filter((c) => c.role === 'provider');
-      expect(providers.length).toBeGreaterThanOrEqual(1);
-    });
-  });
+			const contracts = await extractor.extract(
+				throwingExecutor,
+				dir,
+				makeRepo(dir),
+			);
+			// Should fall back to source scan
+			const providers = contracts.filter((c) => c.role === "provider");
+			expect(providers.length).toBeGreaterThanOrEqual(1);
+		});
+	});
 
-  describe('path normalization', () => {
-    it('strips trailing slash', async () => {
-      const dir = path.join(tmpDir, 'trailing');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/router.ts'),
-        `
+	describe("path normalization", () => {
+		it("strips trailing slash", async () => {
+			const dir = path.join(tmpDir, "trailing");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/router.ts"),
+				`
 router.get('/api/users/', handler);
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const provider = contracts.find((c) => c.role === 'provider');
-      expect(provider?.meta.path).toBe('/api/users');
-    });
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const provider = contracts.find((c) => c.role === "provider");
+			expect(provider?.meta.path).toBe("/api/users");
+		});
 
-    it('normalizes path params from multiple syntaxes', async () => {
-      const dir = path.join(tmpDir, 'params');
-      fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'src/router.ts'),
-        `
+		it("normalizes path params from multiple syntaxes", async () => {
+			const dir = path.join(tmpDir, "params");
+			fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/router.ts"),
+				`
 router.get('/api/users/:id', handler1);
 router.get('/api/posts/{postId}', handler2);
 `,
-      );
+			);
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      contracts.forEach((c) => {
-        expect(c.meta.path).not.toContain(':id');
-        expect(c.meta.path).not.toContain('{postId}');
-        if (typeof c.meta.path === 'string' && c.meta.path.includes('users/')) {
-          expect(c.meta.path).toContain('{param}');
-        }
-      });
-    });
-  });
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			contracts.forEach((c) => {
+				expect(c.meta.path).not.toContain(":id");
+				expect(c.meta.path).not.toContain("{postId}");
+				if (typeof c.meta.path === "string" && c.meta.path.includes("users/")) {
+					expect(c.meta.path).toContain("{param}");
+				}
+			});
+		});
+	});
 
-  // ─── #1185: contract extractors must honour .gitnexusignore ─────────
-  //
-  // Pre-#1185 the source-scan path used a hardcoded
-  // `[node_modules, .git, dist, build, vendor]` glob ignore array, so a
-  // user's `.gitnexusignore` pattern (e.g. a Python venv `mentor_env/`,
-  // a generated stubs dir, a noisy fixture tree) was silently scanned
-  // anyway. Since #1185 the source-scan path consumes the shared
-  // `IgnoreService` (mirrors `filesystem-walker.ts`), so any pattern in
-  // `.gitnexusignore` (or `.gitignore`) prunes the glob.
-  describe('respects .gitnexusignore (#1185)', () => {
-    it('source-scan glob skips files matched by .gitnexusignore', async () => {
-      const dir = path.join(tmpDir, 'gitnexusignore-honoured');
-      fs.mkdirSync(path.join(dir, 'src/routes'), { recursive: true });
-      fs.mkdirSync(path.join(dir, 'mentor_env/lib'), { recursive: true });
-      // Control: a normal route file that SHOULD be discovered.
-      fs.writeFileSync(
-        path.join(dir, 'src/routes/users.ts'),
-        `import { Router } from 'express';
+	// ─── #1185: contract extractors must honour .gitnexusignore ─────────
+	//
+	// Pre-#1185 the source-scan path used a hardcoded
+	// `[node_modules, .git, dist, build, vendor]` glob ignore array, so a
+	// user's `.gitnexusignore` pattern (e.g. a Python venv `mentor_env/`,
+	// a generated stubs dir, a noisy fixture tree) was silently scanned
+	// anyway. Since #1185 the source-scan path consumes the shared
+	// `IgnoreService` (mirrors `filesystem-walker.ts`), so any pattern in
+	// `.gitnexusignore` (or `.gitignore`) prunes the glob.
+	describe("respects .gitnexusignore (#1185)", () => {
+		it("source-scan glob skips files matched by .gitnexusignore", async () => {
+			const dir = path.join(tmpDir, "gitnexusignore-honoured");
+			fs.mkdirSync(path.join(dir, "src/routes"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "mentor_env/lib"), { recursive: true });
+			// Control: a normal route file that SHOULD be discovered.
+			fs.writeFileSync(
+				path.join(dir, "src/routes/users.ts"),
+				`import { Router } from 'express';
 const router = Router();
 router.get('/api/users', (req, res) => res.json([]));
 export default router;
 `,
-      );
-      // Vendored source under a venv-style dir: the same Express
-      // pattern, but inside a directory the user wants excluded.
-      fs.writeFileSync(
-        path.join(dir, 'mentor_env/lib/leaked.ts'),
-        `import { Router } from 'express';
+			);
+			// Vendored source under a venv-style dir: the same Express
+			// pattern, but inside a directory the user wants excluded.
+			fs.writeFileSync(
+				path.join(dir, "mentor_env/lib/leaked.ts"),
+				`import { Router } from 'express';
 const r = Router();
 r.get('/api/leaked', (req, res) => res.json([]));
 export default r;
 `,
-      );
-      fs.writeFileSync(path.join(dir, '.gitnexusignore'), 'mentor_env/\n');
+			);
+			fs.writeFileSync(path.join(dir, ".gitnexusignore"), "mentor_env/\n");
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
-      // Control survives.
-      expect(providers.find((c) => c.contractId === 'http::GET::/api/users')).toBeDefined();
-      // Excluded path is pruned at the glob level — nothing emitted.
-      expect(providers.find((c) => c.contractId === 'http::GET::/api/leaked')).toBeUndefined();
-      // Defence-in-depth: no contract whose symbolRef is under mentor_env/.
-      expect(contracts.some((c) => c.symbolRef?.filePath?.startsWith('mentor_env/'))).toBe(false);
-    });
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
+			// Control survives.
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/api/users"),
+			).toBeDefined();
+			// Excluded path is pruned at the glob level — nothing emitted.
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/api/leaked"),
+			).toBeUndefined();
+			// Defence-in-depth: no contract whose symbolRef is under mentor_env/.
+			expect(
+				contracts.some((c) => c.symbolRef?.filePath?.startsWith("mentor_env/")),
+			).toBe(false);
+		});
 
-    // Pinned by the @claude review on PR #1247: above, only `.gitnexusignore`
-    // is exercised. `createIgnoreFilter` reads `.gitignore` too via
-    // `loadIgnoreRules`, but that integration is only proven at the
-    // `IgnoreService` level — no extractor-level test for the
-    // `.gitignore`-only code path. Adding one minimal extractor-level
-    // assertion here closes the gap (one shared test is sufficient
-    // because all three extractors consume the same filter object).
-    it('source-scan glob also skips files matched by `.gitignore` (no `.gitnexusignore`)', async () => {
-      const dir = path.join(tmpDir, 'gitignore-honoured');
-      fs.mkdirSync(path.join(dir, 'src/routes'), { recursive: true });
-      fs.mkdirSync(path.join(dir, 'mentor_env/lib'), { recursive: true });
-      // Same Express pattern as above so detection logic is identical.
-      fs.writeFileSync(
-        path.join(dir, 'src/routes/users.ts'),
-        `import { Router } from 'express';
+		// Pinned by the @claude review on PR #1247: above, only `.gitnexusignore`
+		// is exercised. `createIgnoreFilter` reads `.gitignore` too via
+		// `loadIgnoreRules`, but that integration is only proven at the
+		// `IgnoreService` level — no extractor-level test for the
+		// `.gitignore`-only code path. Adding one minimal extractor-level
+		// assertion here closes the gap (one shared test is sufficient
+		// because all three extractors consume the same filter object).
+		it("source-scan glob also skips files matched by `.gitignore` (no `.gitnexusignore`)", async () => {
+			const dir = path.join(tmpDir, "gitignore-honoured");
+			fs.mkdirSync(path.join(dir, "src/routes"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "mentor_env/lib"), { recursive: true });
+			// Same Express pattern as above so detection logic is identical.
+			fs.writeFileSync(
+				path.join(dir, "src/routes/users.ts"),
+				`import { Router } from 'express';
 const router = Router();
 router.get('/api/users', (req, res) => res.json([]));
 export default router;
 `,
-      );
-      fs.writeFileSync(
-        path.join(dir, 'mentor_env/lib/leaked.ts'),
-        `import { Router } from 'express';
+			);
+			fs.writeFileSync(
+				path.join(dir, "mentor_env/lib/leaked.ts"),
+				`import { Router } from 'express';
 const r = Router();
 r.get('/api/leaked', (req, res) => res.json([]));
 export default r;
 `,
-      );
-      // Note: NO .gitnexusignore — only `.gitignore`. This proves the
-      // `.gitignore` code path inside `createIgnoreFilter` is wired to
-      // the extractors' globs.
-      fs.writeFileSync(path.join(dir, '.gitignore'), 'mentor_env/\n');
+			);
+			// Note: NO .gitnexusignore — only `.gitignore`. This proves the
+			// `.gitignore` code path inside `createIgnoreFilter` is wired to
+			// the extractors' globs.
+			fs.writeFileSync(path.join(dir, ".gitignore"), "mentor_env/\n");
 
-      const contracts = await extractor.extract(null, dir, makeRepo(dir));
-      const providers = contracts.filter((c) => c.role === 'provider');
-      expect(providers.find((c) => c.contractId === 'http::GET::/api/users')).toBeDefined();
-      expect(providers.find((c) => c.contractId === 'http::GET::/api/leaked')).toBeUndefined();
-      expect(contracts.some((c) => c.symbolRef?.filePath?.startsWith('mentor_env/'))).toBe(false);
-    });
-  });
+			const contracts = await extractor.extract(null, dir, makeRepo(dir));
+			const providers = contracts.filter((c) => c.role === "provider");
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/api/users"),
+			).toBeDefined();
+			expect(
+				providers.find((c) => c.contractId === "http::GET::/api/leaked"),
+			).toBeUndefined();
+			expect(
+				contracts.some((c) => c.symbolRef?.filePath?.startsWith("mentor_env/")),
+			).toBe(false);
+		});
+	});
 
-  describe('Windows SIGSEGV regression — large input must route through parseSourceSafe', () => {
-    it('routes >32 767-char source file through parseSourceSafe (not direct parser.parse)', async () => {
-      parseSourceSafeSpy.mockClear();
+	describe("Windows SIGSEGV regression — large input must route through parseSourceSafe", () => {
+		it("routes >32 767-char source file through parseSourceSafe (not direct parser.parse)", async () => {
+			parseSourceSafeSpy.mockClear();
 
-      // >40 000-char Java controller file. Direct parser.parse(content) on
-      // an input this size SIGSEGVs the process on Windows. The spy assertion
-      // is what catches the regression — a "no throw" assertion alone is
-      // satisfied by the bypass on Linux/macOS where parser.parse(40 000 chars)
-      // succeeds.
-      const padding = Array.from(
-        { length: 600 },
-        (_, i) => `    public String helper${i}() { return "padding-${i}-aaaaaaaaaaaaaaaaaaa"; }\n`,
-      ).join('');
-      const largeJava = `package com.example;\n\n@RestController\npublic class BigController {\n${padding}}\n`;
-      expect(largeJava.length).toBeGreaterThan(40_000);
+			// >40 000-char Java controller file. Direct parser.parse(content) on
+			// an input this size SIGSEGVs the process on Windows. The spy assertion
+			// is what catches the regression — a "no throw" assertion alone is
+			// satisfied by the bypass on Linux/macOS where parser.parse(40 000 chars)
+			// succeeds.
+			const padding = Array.from(
+				{ length: 600 },
+				(_, i) =>
+					`    public String helper${i}() { return "padding-${i}-aaaaaaaaaaaaaaaaaaa"; }\n`,
+			).join("");
+			const largeJava = `package com.example;\n\n@RestController\npublic class BigController {\n${padding}}\n`;
+			expect(largeJava.length).toBeGreaterThan(40_000);
 
-      // Use mkdtempSync rather than a fixed subdir name: satisfies CodeQL's
-      // js/insecure-temporary-file rule by generating a unique random suffix
-      // instead of relying on the parent tmpDir's predictable Date.now() name.
-      const dir = fs.mkdtempSync(path.join(tmpDir, 'large-input-'));
-      fs.mkdirSync(path.join(dir, 'src/controller'), { recursive: true });
-      fs.writeFileSync(path.join(dir, 'src/controller/BigController.java'), largeJava);
+			// Use mkdtempSync rather than a fixed subdir name: satisfies CodeQL's
+			// js/insecure-temporary-file rule by generating a unique random suffix
+			// instead of relying on the parent tmpDir's predictable Date.now() name.
+			const dir = fs.mkdtempSync(path.join(tmpDir, "large-input-"));
+			fs.mkdirSync(path.join(dir, "src/controller"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "src/controller/BigController.java"),
+				largeJava,
+			);
 
-      const mockDbExecutor = async (_query: string) => [];
-      await extractor.extract(mockDbExecutor, dir, makeRepo(dir));
+			const mockDbExecutor = async (_query: string) => [];
+			await extractor.extract(mockDbExecutor, dir, makeRepo(dir));
 
-      expect(parseSourceSafeSpy).toHaveBeenCalled();
-    });
-  });
+			expect(parseSourceSafeSpy).toHaveBeenCalled();
+		});
+	});
 });

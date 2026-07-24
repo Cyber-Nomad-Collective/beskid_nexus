@@ -19,35 +19,39 @@
  *   - **Anonymous classes**: skipped (no stable enclosing class name).
  */
 
-import type { Capture, CaptureMatch } from 'gitnexus-shared';
-import { nodeToCapture, syntheticCapture, type SyntaxNode } from '../../utils/ast-helpers.js';
+import type { Capture, CaptureMatch } from "gitnexus-shared";
+import {
+	nodeToCapture,
+	type SyntaxNode,
+	syntheticCapture,
+} from "../../utils/ast-helpers.js";
 
 const TYPE_DECL_NODE_TYPES = new Set([
-  'class_declaration',
-  'interface_declaration',
-  'trait_declaration',
-  'enum_declaration',
+	"class_declaration",
+	"interface_declaration",
+	"trait_declaration",
+	"enum_declaration",
 ]);
 
 const FUNCTION_NODE_TYPES = new Set([
-  'method_declaration',
-  'function_definition',
-  'anonymous_function',
-  'arrow_function',
+	"method_declaration",
+	"function_definition",
+	"anonymous_function",
+	"arrow_function",
 ]);
 
 /** Walk up to find the enclosing type declaration. */
 function findEnclosingTypeDeclaration(node: SyntaxNode): SyntaxNode | null {
-  let cur: SyntaxNode | null = node.parent;
-  while (cur !== null) {
-    if (TYPE_DECL_NODE_TYPES.has(cur.type)) return cur;
-    cur = cur.parent;
-  }
-  return null;
+	let cur: SyntaxNode | null = node.parent;
+	while (cur !== null) {
+		if (TYPE_DECL_NODE_TYPES.has(cur.type)) return cur;
+		cur = cur.parent;
+	}
+	return null;
 }
 
 function typeName(typeNode: SyntaxNode): string | null {
-  return typeNode.childForFieldName('name')?.text ?? null;
+	return typeNode.childForFieldName("name")?.text ?? null;
 }
 
 /**
@@ -55,26 +59,26 @@ function typeName(typeNode: SyntaxNode): string | null {
  * `base_clause` contains a `qualified_name` or `name` child.
  */
 function baseClauseText(typeNode: SyntaxNode): string | null {
-  for (let i = 0; i < typeNode.namedChildCount; i++) {
-    const child = typeNode.namedChild(i);
-    if (child === null || child.type !== 'base_clause') continue;
-    const nameNode = child.firstNamedChild;
-    if (nameNode === null) return null;
-    // Take last segment of qualified name (e.g. \App\Models\BaseModel → BaseModel)
-    const text = nameNode.text.trim();
-    const segments = text.split('\\').filter(Boolean);
-    return segments[segments.length - 1] ?? text;
-  }
-  return null;
+	for (let i = 0; i < typeNode.namedChildCount; i++) {
+		const child = typeNode.namedChild(i);
+		if (child === null || child.type !== "base_clause") continue;
+		const nameNode = child.firstNamedChild;
+		if (nameNode === null) return null;
+		// Take last segment of qualified name (e.g. \App\Models\BaseModel → BaseModel)
+		const text = nameNode.text.trim();
+		const segments = text.split("\\").filter(Boolean);
+		return segments[segments.length - 1] ?? text;
+	}
+	return null;
 }
 
 /** Check whether this method has a `static_modifier` child. */
 function isStaticMethod(fnNode: SyntaxNode): boolean {
-  for (let i = 0; i < fnNode.namedChildCount; i++) {
-    const child = fnNode.namedChild(i);
-    if (child !== null && child.type === 'static_modifier') return true;
-  }
-  return false;
+	for (let i = 0; i < fnNode.namedChildCount; i++) {
+		const child = fnNode.namedChild(i);
+		if (child !== null && child.type === "static_modifier") return true;
+	}
+	return false;
 }
 
 /**
@@ -90,47 +94,61 @@ function isStaticMethod(fnNode: SyntaxNode): boolean {
  * The caller is responsible for guaranteeing
  * `FUNCTION_NODE_TYPES.has(fnNode.type)`.
  */
-export function synthesizePhpReceiverBinding(fnNode: SyntaxNode): CaptureMatch[] {
-  if (!FUNCTION_NODE_TYPES.has(fnNode.type)) return [];
-  if (isStaticMethod(fnNode)) return [];
+export function synthesizePhpReceiverBinding(
+	fnNode: SyntaxNode,
+): CaptureMatch[] {
+	if (!FUNCTION_NODE_TYPES.has(fnNode.type)) return [];
+	if (isStaticMethod(fnNode)) return [];
 
-  const enclosingType = findEnclosingTypeDeclaration(fnNode);
-  if (enclosingType === null) return [];
+	const enclosingType = findEnclosingTypeDeclaration(fnNode);
+	if (enclosingType === null) return [];
 
-  // Anonymous class — skip (no stable name).
-  if (enclosingType.type === 'anonymous_class_declaration') return [];
+	// Anonymous class — skip (no stable name).
+	if (enclosingType.type === "anonymous_class_declaration") return [];
 
-  const enclosingName = typeName(enclosingType);
-  if (enclosingName === null) return [];
+	const enclosingName = typeName(enclosingType);
+	if (enclosingName === null) return [];
 
-  // Anchor the synthesized captures to the method body (compound_statement)
-  // so they land inside the function scope, not at the class scope.
-  // For interface/abstract methods that have no body, skip.
-  const bodyNode =
-    fnNode.childForFieldName('body') ??
-    // arrow_function: body is the expression after `=>`
-    fnNode.childForFieldName('return_value');
-  if (bodyNode === null) return [];
+	// Anchor the synthesized captures to the method body (compound_statement)
+	// so they land inside the function scope, not at the class scope.
+	// For interface/abstract methods that have no body, skip.
+	const bodyNode =
+		fnNode.childForFieldName("body") ??
+		// arrow_function: body is the expression after `=>`
+		fnNode.childForFieldName("return_value");
+	if (bodyNode === null) return [];
 
-  const out: CaptureMatch[] = [];
-  out.push(buildReceiverMatch(bodyNode, '$this', enclosingName));
+	const out: CaptureMatch[] = [];
+	out.push(buildReceiverMatch(bodyNode, "$this", enclosingName));
 
-  // `parent` applies only to class methods with an explicit base_clause.
-  if (enclosingType.type === 'class_declaration') {
-    const baseText = baseClauseText(enclosingType);
-    if (baseText !== null) {
-      out.push(buildReceiverMatch(bodyNode, 'parent', baseText));
-    }
-  }
+	// `parent` applies only to class methods with an explicit base_clause.
+	if (enclosingType.type === "class_declaration") {
+		const baseText = baseClauseText(enclosingType);
+		if (baseText !== null) {
+			out.push(buildReceiverMatch(bodyNode, "parent", baseText));
+		}
+	}
 
-  return out;
+	return out;
 }
 
-function buildReceiverMatch(anchorNode: SyntaxNode, name: string, typeText: string): CaptureMatch {
-  const m: Record<string, Capture> = {
-    '@type-binding.self': nodeToCapture('@type-binding.self', anchorNode),
-    '@type-binding.name': syntheticCapture('@type-binding.name', anchorNode, name),
-    '@type-binding.type': syntheticCapture('@type-binding.type', anchorNode, typeText),
-  };
-  return m;
+function buildReceiverMatch(
+	anchorNode: SyntaxNode,
+	name: string,
+	typeText: string,
+): CaptureMatch {
+	const m: Record<string, Capture> = {
+		"@type-binding.self": nodeToCapture("@type-binding.self", anchorNode),
+		"@type-binding.name": syntheticCapture(
+			"@type-binding.name",
+			anchorNode,
+			name,
+		),
+		"@type-binding.type": syntheticCapture(
+			"@type-binding.type",
+			anchorNode,
+			typeText,
+		),
+	};
+	return m;
 }

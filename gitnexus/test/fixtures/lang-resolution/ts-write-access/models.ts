@@ -1,8 +1,8 @@
 export class Address {
-  city: string;
+	city: string;
 }
 
 export class User {
-  name: string;
-  address: Address;
+	name: string;
+	address: Address;
 }

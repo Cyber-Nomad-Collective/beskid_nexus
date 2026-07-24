@@ -34,7 +34,7 @@
  * logic up the dependency chain instead.
  */
 
-import type { NodeLabel, SymbolDefinition } from 'gitnexus-shared';
+import type { NodeLabel, SymbolDefinition } from "gitnexus-shared";
 
 /**
  * Class-like NodeLabels — used for qualifiedName fallback inside
@@ -55,12 +55,12 @@ import type { NodeLabel, SymbolDefinition } from 'gitnexus-shared';
  * hierarchy of their using/implementing type.
  */
 export const CLASS_TYPES_TUPLE = [
-  'Class',
-  'Struct',
-  'Interface',
-  'Enum',
-  'Record',
-  'Trait',
+	"Class",
+	"Struct",
+	"Interface",
+	"Enum",
+	"Record",
+	"Trait",
 ] as const satisfies readonly NodeLabel[];
 
 export type ClassLikeLabel = (typeof CLASS_TYPES_TUPLE)[number];
@@ -87,14 +87,16 @@ export const CLASS_TYPES: ReadonlySet<NodeLabel> = new Set(CLASS_TYPES_TUPLE);
  *  `Method` label is pending a `def.type` preservation decision.
  */
 export const FREE_CALLABLE_TUPLE = [
-  'Function',
-  'Macro', // C/C++
-  'Delegate', // C#
+	"Function",
+	"Macro", // C/C++
+	"Delegate", // C#
 ] as const satisfies readonly NodeLabel[];
 
 export type FreeCallableLabel = (typeof FREE_CALLABLE_TUPLE)[number];
 
-export const FREE_CALLABLE_TYPES: ReadonlySet<NodeLabel> = new Set(FREE_CALLABLE_TUPLE);
+export const FREE_CALLABLE_TYPES: ReadonlySet<NodeLabel> = new Set(
+	FREE_CALLABLE_TUPLE,
+);
 
 /** Symbol types that can be the TARGET of a call in the resolver's kind
  *  filter — superset of {@link FREE_CALLABLE_TYPES} that also admits
@@ -108,9 +110,9 @@ export const FREE_CALLABLE_TYPES: ReadonlySet<NodeLabel> = new Set(FREE_CALLABLE
  *  `filterCallableCandidates` / `countCallableCandidates`.
  */
 export const CALL_TARGET_TYPES: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
-  ...FREE_CALLABLE_TYPES,
-  'Method',
-  'Constructor',
+	...FREE_CALLABLE_TYPES,
+	"Method",
+	"Constructor",
 ]);
 
 // `SymbolDefinition` moved to `gitnexus-shared` as part of RFC #909 Ring 1
@@ -123,14 +125,14 @@ export const CALL_TARGET_TYPES: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
  * type alias so callers and wrappers can share the same shape.
  */
 export interface AddMetadata {
-  parameterCount?: number;
-  requiredParameterCount?: number;
-  parameterTypes?: string[];
-  returnType?: string;
-  declaredType?: string;
-  templateArguments?: string[];
-  ownerId?: string;
-  qualifiedName?: string;
+	parameterCount?: number;
+	requiredParameterCount?: number;
+	parameterTypes?: string[];
+	returnType?: string;
+	declaredType?: string;
+	templateArguments?: string[];
+	ownerId?: string;
+	qualifiedName?: string;
 }
 
 /**
@@ -151,46 +153,52 @@ export interface AddMetadata {
  * callers holding only a Reader can never desync the model.
  */
 export interface SymbolTableReader {
-  /**
-   * High Confidence: Look for a symbol specifically inside a file.
-   * Returns the Node ID if found.
-   */
-  lookupExact: (filePath: string, name: string) => string | undefined;
+	/**
+	 * High Confidence: Look for a symbol specifically inside a file.
+	 * Returns the Node ID if found.
+	 */
+	lookupExact: (filePath: string, name: string) => string | undefined;
 
-  /**
-   * High Confidence: Look for a symbol in a specific file, returning full definition.
-   * Returns first matching definition — use lookupExactAll for overloaded methods.
-   */
-  lookupExactFull: (filePath: string, name: string) => SymbolDefinition | undefined;
+	/**
+	 * High Confidence: Look for a symbol in a specific file, returning full definition.
+	 * Returns first matching definition — use lookupExactAll for overloaded methods.
+	 */
+	lookupExactFull: (
+		filePath: string,
+		name: string,
+	) => SymbolDefinition | undefined;
 
-  /**
-   * High Confidence: Look for ALL symbols with this name in a specific file.
-   * Returns all definitions, including overloaded methods with the same name.
-   * The returned array is a view into the live internal index — callers
-   * MUST NOT mutate it. Use `readonly` to enforce this at the type level.
-   */
-  lookupExactAll: (filePath: string, name: string) => readonly SymbolDefinition[];
+	/**
+	 * High Confidence: Look for ALL symbols with this name in a specific file.
+	 * Returns all definitions, including overloaded methods with the same name.
+	 * The returned array is a view into the live internal index — callers
+	 * MUST NOT mutate it. Use `readonly` to enforce this at the type level.
+	 */
+	lookupExactAll: (
+		filePath: string,
+		name: string,
+	) => readonly SymbolDefinition[];
 
-  /**
-   * Look up callable symbols (Function, Macro, Delegate) by name.
-   * O(1) via dedicated eagerly-populated index keyed by symbol name.
-   * Returned array is a view into the live index — do not mutate.
-   */
-  lookupCallableByName: (name: string) => readonly SymbolDefinition[];
+	/**
+	 * Look up callable symbols (Function, Macro, Delegate) by name.
+	 * O(1) via dedicated eagerly-populated index keyed by symbol name.
+	 * Returned array is a view into the live index — do not mutate.
+	 */
+	lookupCallableByName: (name: string) => readonly SymbolDefinition[];
 
-  /**
-   * Iterate all indexed file paths.
-   * Used by Tier 2b (package-scoped) resolution to walk files matching a
-   * package directory suffix without a global name scan.
-   */
-  getFiles: () => IterableIterator<string>;
+	/**
+	 * Iterate all indexed file paths.
+	 * Used by Tier 2b (package-scoped) resolution to walk files matching a
+	 * package directory suffix without a global name scan.
+	 */
+	getFiles: () => IterableIterator<string>;
 
-  /**
-   * Debugging: See how many files are tracked.
-   */
-  getStats: () => {
-    fileCount: number;
-  };
+	/**
+	 * Debugging: See how many files are tracked.
+	 */
+	getStats: () => {
+		fileCount: number;
+	};
 }
 
 /**
@@ -205,20 +213,20 @@ export interface SymbolTableReader {
  * held only by `SemanticModel` via `rawSymbols`.
  */
 export interface SymbolTableWriter extends SymbolTableReader {
-  /**
-   * Register a symbol in the file and (if callable) name-keyed indexes.
-   *
-   * Returns the constructed {@link SymbolDefinition} so higher-layer
-   * wrappers (e.g. `createSemanticModel`) can reuse it without rebuilding
-   * the def. This keeps the fan-out in one allocation.
-   */
-  add: (
-    filePath: string,
-    name: string,
-    nodeId: string,
-    type: NodeLabel,
-    metadata?: AddMetadata,
-  ) => SymbolDefinition;
+	/**
+	 * Register a symbol in the file and (if callable) name-keyed indexes.
+	 *
+	 * Returns the constructed {@link SymbolDefinition} so higher-layer
+	 * wrappers (e.g. `createSemanticModel`) can reuse it without rebuilding
+	 * the def. This keeps the fan-out in one allocation.
+	 */
+	add: (
+		filePath: string,
+		name: string,
+		nodeId: string,
+		type: NodeLabel,
+		metadata?: AddMetadata,
+	) => SymbolDefinition;
 }
 
 /**
@@ -233,135 +241,146 @@ export interface SymbolTableWriter extends SymbolTableReader {
  * receives the narrower `SymbolTableWriter` facade on `model.symbols`.
  */
 interface InternalSymbolTable extends SymbolTableWriter {
-  /**
-   * Cleanup memory. Clears only the file and callable indexes owned here —
-   * owner-scoped registries are cleared by their respective owners via
-   * `model.clear()`.
-   */
-  clear: () => void;
+	/**
+	 * Cleanup memory. Clears only the file and callable indexes owned here —
+	 * owner-scoped registries are cleared by their respective owners via
+	 * `model.clear()`.
+	 */
+	clear: () => void;
 }
 
 export const createSymbolTable = (): InternalSymbolTable => {
-  // 1. File-Specific Index — stores full SymbolDefinition(s) for O(1) lookup.
-  // Structure: FilePath -> (SymbolName -> SymbolDefinition[])
-  // Array allows overloaded methods (same name, different signatures) to coexist.
-  const fileIndex = new Map<string, Map<string, SymbolDefinition[]>>();
+	// 1. File-Specific Index — stores full SymbolDefinition(s) for O(1) lookup.
+	// Structure: FilePath -> (SymbolName -> SymbolDefinition[])
+	// Array allows overloaded methods (same name, different signatures) to coexist.
+	const fileIndex = new Map<string, Map<string, SymbolDefinition[]>>();
 
-  // 2. Eagerly-populated Callable Index — maintained on add().
-  // Structure: SymbolName -> [Callable Definitions]
-  // Only Function, Method, Constructor, Macro, Delegate symbols are indexed.
-  const callableByName = new Map<string, SymbolDefinition[]>();
+	// 2. Eagerly-populated Callable Index — maintained on add().
+	// Structure: SymbolName -> [Callable Definitions]
+	// Only Function, Method, Constructor, Macro, Delegate symbols are indexed.
+	const callableByName = new Map<string, SymbolDefinition[]>();
 
-  const add = (
-    filePath: string,
-    name: string,
-    nodeId: string,
-    type: NodeLabel,
-    metadata?: AddMetadata,
-  ): SymbolDefinition => {
-    const qualifiedName = CLASS_TYPES.has(type)
-      ? (metadata?.qualifiedName ?? name)
-      : metadata?.qualifiedName;
-    const def: SymbolDefinition = {
-      nodeId,
-      filePath,
-      type,
-      ...(qualifiedName !== undefined ? { qualifiedName } : {}),
-      ...(metadata?.parameterCount !== undefined
-        ? { parameterCount: metadata.parameterCount }
-        : {}),
-      ...(metadata?.requiredParameterCount !== undefined
-        ? { requiredParameterCount: metadata.requiredParameterCount }
-        : {}),
-      ...(metadata?.parameterTypes !== undefined
-        ? { parameterTypes: metadata.parameterTypes }
-        : {}),
-      ...(metadata?.returnType !== undefined ? { returnType: metadata.returnType } : {}),
-      ...(metadata?.declaredType !== undefined ? { declaredType: metadata.declaredType } : {}),
-      ...(metadata?.templateArguments !== undefined
-        ? { templateArguments: metadata.templateArguments }
-        : {}),
-      ...(metadata?.ownerId !== undefined ? { ownerId: metadata.ownerId } : {}),
-    };
+	const add = (
+		filePath: string,
+		name: string,
+		nodeId: string,
+		type: NodeLabel,
+		metadata?: AddMetadata,
+	): SymbolDefinition => {
+		const qualifiedName = CLASS_TYPES.has(type)
+			? (metadata?.qualifiedName ?? name)
+			: metadata?.qualifiedName;
+		const def: SymbolDefinition = {
+			nodeId,
+			filePath,
+			type,
+			...(qualifiedName !== undefined ? { qualifiedName } : {}),
+			...(metadata?.parameterCount !== undefined
+				? { parameterCount: metadata.parameterCount }
+				: {}),
+			...(metadata?.requiredParameterCount !== undefined
+				? { requiredParameterCount: metadata.requiredParameterCount }
+				: {}),
+			...(metadata?.parameterTypes !== undefined
+				? { parameterTypes: metadata.parameterTypes }
+				: {}),
+			...(metadata?.returnType !== undefined
+				? { returnType: metadata.returnType }
+				: {}),
+			...(metadata?.declaredType !== undefined
+				? { declaredType: metadata.declaredType }
+				: {}),
+			...(metadata?.templateArguments !== undefined
+				? { templateArguments: metadata.templateArguments }
+				: {}),
+			...(metadata?.ownerId !== undefined ? { ownerId: metadata.ownerId } : {}),
+		};
 
-    // A. File Index — unconditional.
-    if (!fileIndex.has(filePath)) {
-      fileIndex.set(filePath, new Map());
-    }
-    const fileMap = fileIndex.get(filePath)!;
-    if (!fileMap.has(name)) {
-      fileMap.set(name, [def]);
-    } else {
-      fileMap.get(name)!.push(def);
-    }
+		// A. File Index — unconditional.
+		if (!fileIndex.has(filePath)) {
+			fileIndex.set(filePath, new Map());
+		}
+		const fileMap = fileIndex.get(filePath)!;
+		if (!fileMap.has(name)) {
+			fileMap.set(name, [def]);
+		} else {
+			fileMap.get(name)!.push(def);
+		}
 
-    // B. Callable Index — gated by FREE_CALLABLE_TYPES.
-    //    Note: Property is NOT in FREE_CALLABLE_TYPES, so it never lands here.
-    //    This is the single source of truth for callable-index membership;
-    //    the higher-layer dispatch table only decides owner-scoped routing.
-    //
-    //    Fallback: `Method` or `Constructor` without an `ownerId` is an
-    //    extractor contract violation (AST-degraded parse, or a buggy
-    //    language extractor). The owner-scoped dispatch hook silently
-    //    skips such defs because it has no owner to key them under, so
-    //    without this fallback they would be invisible at Tier 3 global
-    //    resolution. Route them through `callableByName` so they remain
-    //    reachable by name — matching pre-dispatch-table behavior.
-    const isOrphanedOwnerScoped =
-      (type === 'Method' || type === 'Constructor') && metadata?.ownerId === undefined;
-    if (FREE_CALLABLE_TYPES.has(type) || isOrphanedOwnerScoped) {
-      const existing = callableByName.get(name);
-      if (existing) {
-        existing.push(def);
-      } else {
-        callableByName.set(name, [def]);
-      }
-    }
+		// B. Callable Index — gated by FREE_CALLABLE_TYPES.
+		//    Note: Property is NOT in FREE_CALLABLE_TYPES, so it never lands here.
+		//    This is the single source of truth for callable-index membership;
+		//    the higher-layer dispatch table only decides owner-scoped routing.
+		//
+		//    Fallback: `Method` or `Constructor` without an `ownerId` is an
+		//    extractor contract violation (AST-degraded parse, or a buggy
+		//    language extractor). The owner-scoped dispatch hook silently
+		//    skips such defs because it has no owner to key them under, so
+		//    without this fallback they would be invisible at Tier 3 global
+		//    resolution. Route them through `callableByName` so they remain
+		//    reachable by name — matching pre-dispatch-table behavior.
+		const isOrphanedOwnerScoped =
+			(type === "Method" || type === "Constructor") &&
+			metadata?.ownerId === undefined;
+		if (FREE_CALLABLE_TYPES.has(type) || isOrphanedOwnerScoped) {
+			const existing = callableByName.get(name);
+			if (existing) {
+				existing.push(def);
+			} else {
+				callableByName.set(name, [def]);
+			}
+		}
 
-    return def;
-  };
+		return def;
+	};
 
-  const lookupExact = (filePath: string, name: string): string | undefined => {
-    const defs = fileIndex.get(filePath)?.get(name);
-    return defs?.[0]?.nodeId;
-  };
+	const lookupExact = (filePath: string, name: string): string | undefined => {
+		const defs = fileIndex.get(filePath)?.get(name);
+		return defs?.[0]?.nodeId;
+	};
 
-  const lookupExactFull = (filePath: string, name: string): SymbolDefinition | undefined => {
-    const defs = fileIndex.get(filePath)?.get(name);
-    return defs?.[0];
-  };
+	const lookupExactFull = (
+		filePath: string,
+		name: string,
+	): SymbolDefinition | undefined => {
+		const defs = fileIndex.get(filePath)?.get(name);
+		return defs?.[0];
+	};
 
-  const lookupExactAll = (filePath: string, name: string): SymbolDefinition[] => {
-    return fileIndex.get(filePath)?.get(name) ?? [];
-  };
+	const lookupExactAll = (
+		filePath: string,
+		name: string,
+	): SymbolDefinition[] => {
+		return fileIndex.get(filePath)?.get(name) ?? [];
+	};
 
-  const lookupCallableByName = (name: string): SymbolDefinition[] => {
-    return callableByName.get(name) ?? [];
-  };
+	const lookupCallableByName = (name: string): SymbolDefinition[] => {
+		return callableByName.get(name) ?? [];
+	};
 
-  /** Returns a live iterator over all indexed file paths (fileIndex.keys()).
-   *  The iterator is invalidated if add() changes fileIndex.size during
-   *  iteration (ES2015 Map spec). Safe in the current pipeline because all
-   *  symbols are added before resolution begins. */
-  const getFiles = (): IterableIterator<string> => fileIndex.keys();
+	/** Returns a live iterator over all indexed file paths (fileIndex.keys()).
+	 *  The iterator is invalidated if add() changes fileIndex.size during
+	 *  iteration (ES2015 Map spec). Safe in the current pipeline because all
+	 *  symbols are added before resolution begins. */
+	const getFiles = (): IterableIterator<string> => fileIndex.keys();
 
-  const getStats = () => ({
-    fileCount: fileIndex.size,
-  });
+	const getStats = () => ({
+		fileCount: fileIndex.size,
+	});
 
-  const clear = () => {
-    fileIndex.clear();
-    callableByName.clear();
-  };
+	const clear = () => {
+		fileIndex.clear();
+		callableByName.clear();
+	};
 
-  return {
-    add,
-    lookupExact,
-    lookupExactFull,
-    lookupExactAll,
-    lookupCallableByName,
-    getFiles,
-    getStats,
-    clear,
-  };
+	return {
+		add,
+		lookupExact,
+		lookupExactFull,
+		lookupExactAll,
+		lookupCallableByName,
+		getFiles,
+		getStats,
+		clear,
+	};
 };

@@ -1,7 +1,4 @@
-import {
-	buildLoginUrl,
-	verifyHandoffToken,
-} from "@beskid/auth-client";
+import { buildLoginUrl, verifyHandoffToken } from "@beskid/auth-client";
 
 import { loadNexusConfigFile } from "./nexus-config.js";
 import type { NexusSessionPayload } from "./types.js";

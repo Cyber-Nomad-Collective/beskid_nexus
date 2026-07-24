@@ -15,14 +15,17 @@
  * disambiguates.
  */
 
-import type { NodeLabel } from '../../graph/types.js';
-import type { Resolution } from '../types.js';
-import { composeEvidence, confidenceFromEvidence } from './evidence.js';
-import { compareByConfidenceWithTiebreaks, type TieBreakKey } from './tie-breaks.js';
-import type { RegistryContext } from './context.js';
+import type { NodeLabel } from "../../graph/types.js";
+import type { Resolution } from "../types.js";
+import type { RegistryContext } from "./context.js";
+import { composeEvidence, confidenceFromEvidence } from "./evidence.js";
+import {
+	compareByConfidenceWithTiebreaks,
+	type TieBreakKey,
+} from "./tie-breaks.js";
 
 export interface LookupQualifiedParams {
-  readonly acceptedKinds: readonly NodeLabel[];
+	readonly acceptedKinds: readonly NodeLabel[];
 }
 
 /**
@@ -35,37 +38,40 @@ export interface LookupQualifiedParams {
  * cross-kind hits) ordered by the tie-break cascade.
  */
 export function lookupQualified(
-  qualifiedName: string,
-  params: LookupQualifiedParams,
-  ctx: RegistryContext,
+	qualifiedName: string,
+	params: LookupQualifiedParams,
+	ctx: RegistryContext,
 ): readonly Resolution[] {
-  const defIds = ctx.qualifiedNames.get(qualifiedName);
-  if (defIds.length === 0) return EMPTY;
+	const defIds = ctx.qualifiedNames.get(qualifiedName);
+	if (defIds.length === 0) return EMPTY;
 
-  const acceptedKinds = new Set<NodeLabel>(params.acceptedKinds);
+	const acceptedKinds = new Set<NodeLabel>(params.acceptedKinds);
 
-  const resolutions: Resolution[] = [];
-  const tieKeys = new Map<string, TieBreakKey>();
+	const resolutions: Resolution[] = [];
+	const tieKeys = new Map<string, TieBreakKey>();
 
-  for (const defId of defIds) {
-    const def = ctx.defs.get(defId);
-    if (def === undefined) continue;
-    if (!acceptedKinds.has(def.type)) continue;
+	for (const defId of defIds) {
+		const def = ctx.defs.get(defId);
+		if (def === undefined) continue;
+		if (!acceptedKinds.has(def.type)) continue;
 
-    const evidence = composeEvidence({ origin: 'global-qualified', kindMatch: true });
-    const confidence = confidenceFromEvidence(evidence);
-    resolutions.push({ def, confidence, evidence });
-    tieKeys.set(def.nodeId, {
-      scopeDepth: 0,
-      mroDepth: 0,
-      origin: 'global-qualified',
-    });
-  }
+		const evidence = composeEvidence({
+			origin: "global-qualified",
+			kindMatch: true,
+		});
+		const confidence = confidenceFromEvidence(evidence);
+		resolutions.push({ def, confidence, evidence });
+		tieKeys.set(def.nodeId, {
+			scopeDepth: 0,
+			mroDepth: 0,
+			origin: "global-qualified",
+		});
+	}
 
-  if (resolutions.length === 0) return EMPTY;
+	if (resolutions.length === 0) return EMPTY;
 
-  resolutions.sort((a, b) => compareByConfidenceWithTiebreaks(a, b, tieKeys));
-  return Object.freeze(resolutions);
+	resolutions.sort((a, b) => compareByConfidenceWithTiebreaks(a, b, tieKeys));
+	return Object.freeze(resolutions);
 }
 
 const EMPTY: readonly Resolution[] = Object.freeze([]);

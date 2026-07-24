@@ -1,5 +1,5 @@
-import Parser from 'tree-sitter';
-import { parseSourceSafe } from '../../tree-sitter/safe-parse.js';
+import Parser from "tree-sitter";
+import { parseSourceSafe } from "../../tree-sitter/safe-parse.js";
 
 /**
  * Shared, language-agnostic tree-sitter scanning utilities used by group
@@ -25,10 +25,10 @@ import { parseSourceSafe } from '../../tree-sitter/safe-parse.js';
  * broker name, role, confidence, symbol name.
  */
 export interface PatternSpec<TMeta> {
-  /** Tree-sitter S-expression. */
-  query: string;
-  /** Plugin-specific payload returned on every match. */
-  meta: TMeta;
+	/** Tree-sitter S-expression. */
+	query: string;
+	/** Plugin-specific payload returned on every match. */
+	meta: TMeta;
 }
 
 /**
@@ -42,12 +42,12 @@ export interface PatternSpec<TMeta> {
  * module forwards it to `parser.setLanguage` / `new Parser.Query`.
  */
 export interface LanguagePatterns<TMeta> {
-  /** Human-readable plugin name for diagnostics. */
-  name: string;
-  /** tree-sitter grammar object. */
-  language: unknown;
-  /** Patterns authored against `language`. */
-  patterns: PatternSpec<TMeta>[];
+	/** Human-readable plugin name for diagnostics. */
+	name: string;
+	/** tree-sitter grammar object. */
+	language: unknown;
+	/** Patterns authored against `language`. */
+	patterns: PatternSpec<TMeta>[];
 }
 
 /**
@@ -57,14 +57,14 @@ export interface LanguagePatterns<TMeta> {
  * at scan time when no contract is produced.
  */
 export interface CompiledPatterns<TMeta> {
-  name: string;
-  language: unknown;
-  patterns: CompiledPattern<TMeta>[];
+	name: string;
+	language: unknown;
+	patterns: CompiledPattern<TMeta>[];
 }
 
 export interface CompiledPattern<TMeta> {
-  query: Parser.Query;
-  meta: TMeta;
+	query: Parser.Query;
+	meta: TMeta;
 }
 
 /**
@@ -83,8 +83,8 @@ export type CaptureMap = Record<string, Parser.SyntaxNode>;
  * responsible for turning it into a domain object.
  */
 export interface ScanMatch<TMeta> {
-  meta: TMeta;
-  captures: CaptureMap;
+	meta: TMeta;
+	captures: CaptureMap;
 }
 
 /**
@@ -93,21 +93,23 @@ export interface ScanMatch<TMeta> {
  * fails to compile against the grammar — that's a bug in the plugin
  * author's query, not a runtime condition.
  */
-export function compilePatterns<TMeta>(bundle: LanguagePatterns<TMeta>): CompiledPatterns<TMeta> {
-  const compiled: CompiledPattern<TMeta>[] = [];
-  for (const spec of bundle.patterns) {
-    try {
-      const query = new Parser.Query(bundle.language, spec.query);
-      compiled.push({ query, meta: spec.meta });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      throw new Error(
-        `[tree-sitter-scanner] Failed to compile pattern in ${bundle.name}: ${message}\n` +
-          `Query source:\n${spec.query}`,
-      );
-    }
-  }
-  return { name: bundle.name, language: bundle.language, patterns: compiled };
+export function compilePatterns<TMeta>(
+	bundle: LanguagePatterns<TMeta>,
+): CompiledPatterns<TMeta> {
+	const compiled: CompiledPattern<TMeta>[] = [];
+	for (const spec of bundle.patterns) {
+		try {
+			const query = new Parser.Query(bundle.language, spec.query);
+			compiled.push({ query, meta: spec.meta });
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			throw new Error(
+				`[tree-sitter-scanner] Failed to compile pattern in ${bundle.name}: ${message}\n` +
+					`Query source:\n${spec.query}`,
+			);
+		}
+	}
+	return { name: bundle.name, language: bundle.language, patterns: compiled };
 }
 
 /**
@@ -117,26 +119,26 @@ export function compilePatterns<TMeta>(bundle: LanguagePatterns<TMeta>): Compile
  * for method-level annotations) and wants to avoid re-parsing.
  */
 export function runCompiledPatterns<TMeta>(
-  plugin: CompiledPatterns<TMeta>,
-  tree: Parser.Tree,
+	plugin: CompiledPatterns<TMeta>,
+	tree: Parser.Tree,
 ): ScanMatch<TMeta>[] {
-  const out: ScanMatch<TMeta>[] = [];
-  for (const compiled of plugin.patterns) {
-    let matches: Parser.QueryMatch[];
-    try {
-      matches = compiled.query.matches(tree.rootNode);
-    } catch {
-      continue;
-    }
-    for (const match of matches) {
-      const captures: CaptureMap = {};
-      for (const cap of match.captures) {
-        if (!(cap.name in captures)) captures[cap.name] = cap.node;
-      }
-      out.push({ meta: compiled.meta, captures });
-    }
-  }
-  return out;
+	const out: ScanMatch<TMeta>[] = [];
+	for (const compiled of plugin.patterns) {
+		let matches: Parser.QueryMatch[];
+		try {
+			matches = compiled.query.matches(tree.rootNode);
+		} catch {
+			continue;
+		}
+		for (const match of matches) {
+			const captures: CaptureMap = {};
+			for (const cap of match.captures) {
+				if (!(cap.name in captures)) captures[cap.name] = cap.node;
+			}
+			out.push({ meta: compiled.meta, captures });
+		}
+	}
+	return out;
 }
 
 /**
@@ -149,18 +151,18 @@ export function runCompiledPatterns<TMeta>(
  * a single unusable query doesn't block the rest of the plugin.
  */
 export function scanFile<TMeta>(
-  parser: Parser,
-  plugin: CompiledPatterns<TMeta>,
-  content: string,
+	parser: Parser,
+	plugin: CompiledPatterns<TMeta>,
+	content: string,
 ): ScanMatch<TMeta>[] {
-  let tree: Parser.Tree;
-  try {
-    parser.setLanguage(plugin.language);
-    tree = parseSourceSafe(parser, content);
-  } catch {
-    return [];
-  }
-  return runCompiledPatterns(plugin, tree);
+	let tree: Parser.Tree;
+	try {
+		parser.setLanguage(plugin.language);
+		tree = parseSourceSafe(parser, content);
+	} catch {
+		return [];
+	}
+	return runCompiledPatterns(plugin, tree);
 }
 
 /**
@@ -172,23 +174,27 @@ export function scanFile<TMeta>(
  * captures whose value is missing.
  */
 export function unquoteLiteral(raw: string): string | null {
-  if (!raw) return null;
+	if (!raw) return null;
 
-  // Python triple-quoted
-  if (
-    (raw.startsWith('"""') && raw.endsWith('"""')) ||
-    (raw.startsWith("'''") && raw.endsWith("'''"))
-  ) {
-    return raw.slice(3, -3);
-  }
+	// Python triple-quoted
+	if (
+		(raw.startsWith('"""') && raw.endsWith('"""')) ||
+		(raw.startsWith("'''") && raw.endsWith("'''"))
+	) {
+		return raw.slice(3, -3);
+	}
 
-  const first = raw[0];
-  const last = raw[raw.length - 1];
-  if ((first === '"' || first === "'" || first === '`') && last === first && raw.length >= 2) {
-    return raw.slice(1, -1);
-  }
+	const first = raw[0];
+	const last = raw[raw.length - 1];
+	if (
+		(first === '"' || first === "'" || first === "`") &&
+		last === first &&
+		raw.length >= 2
+	) {
+		return raw.slice(1, -1);
+	}
 
-  // Some grammars expose the string content without quotes already (e.g.
-  // Python `string_content` child). Return as-is.
-  return raw;
+	// Some grammars expose the string content without quotes already (e.g.
+	// Python `string_content` child). Return as-is.
+	return raw;
 }

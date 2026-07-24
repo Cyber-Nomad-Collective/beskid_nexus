@@ -21,7 +21,7 @@
  * (defined in `./types.ts`).
  */
 
-import type { Range, ScopeId } from './types.js';
+import type { Range, ScopeId } from "./types.js";
 
 /**
  * What kind of usage this reference represents — the graph-edge kind
@@ -31,12 +31,12 @@ import type { Range, ScopeId } from './types.js';
  * resolution phase can pass it through without re-classification.
  */
 export type ReferenceKind =
-  | 'call'
-  | 'read'
-  | 'write'
-  | 'type-reference'
-  | 'inherits'
-  | 'import-use';
+	| "call"
+	| "read"
+	| "write"
+	| "type-reference"
+	| "inherits"
+	| "import-use";
 
 /**
  * How a call site binds its target. Informs `Registry.lookup` Step 2
@@ -48,35 +48,35 @@ export type ReferenceKind =
  *
  * Only meaningful for `kind === 'call'`; ignored for reads/writes.
  */
-export type CallForm = 'free' | 'member' | 'constructor' | 'index';
+export type CallForm = "free" | "member" | "constructor" | "index";
 
 export interface ReferenceSite {
-  /** The name being referenced (e.g., `'save'`, `'User'`, `'count'`). */
-  readonly name: string;
-  /** Source-text range of this reference. */
-  readonly atRange: Range;
-  /**
-   * Innermost lexical scope that contains `atRange`. Resolved by the
-   * extractor via position lookup and frozen here so the resolution
-   * phase doesn't re-compute it per call.
-   */
-  readonly inScope: ScopeId;
-  readonly kind: ReferenceKind;
-  /** Set when `kind === 'call'`. */
-  readonly callForm?: CallForm;
-  /**
-   * Explicit receiver for dotted calls (`user.save()` → `{ name: 'user' }`).
-   * Passed through to `Registry.lookup.explicitReceiver`.
-   */
-  readonly explicitReceiver?: { readonly name: string };
-  /** Argument count at the call site; used by `provider.arityCompatibility`. */
-  readonly arity?: number;
-  /**
-   * Inferred argument types at the call site, one per argument. An
-   * empty-string entry means "unknown" — consumers narrowing overload
-   * candidates treat unknown as any-match. Populated by languages
-   * that can derive types from literals / constructor expressions
-   * (C#: `42` → `'int'`, `"alice"` → `'string'`).
-   */
-  readonly argumentTypes?: readonly string[];
+	/** The name being referenced (e.g., `'save'`, `'User'`, `'count'`). */
+	readonly name: string;
+	/** Source-text range of this reference. */
+	readonly atRange: Range;
+	/**
+	 * Innermost lexical scope that contains `atRange`. Resolved by the
+	 * extractor via position lookup and frozen here so the resolution
+	 * phase doesn't re-compute it per call.
+	 */
+	readonly inScope: ScopeId;
+	readonly kind: ReferenceKind;
+	/** Set when `kind === 'call'`. */
+	readonly callForm?: CallForm;
+	/**
+	 * Explicit receiver for dotted calls (`user.save()` → `{ name: 'user' }`).
+	 * Passed through to `Registry.lookup.explicitReceiver`.
+	 */
+	readonly explicitReceiver?: { readonly name: string };
+	/** Argument count at the call site; used by `provider.arityCompatibility`. */
+	readonly arity?: number;
+	/**
+	 * Inferred argument types at the call site, one per argument. An
+	 * empty-string entry means "unknown" — consumers narrowing overload
+	 * candidates treat unknown as any-match. Populated by languages
+	 * that can derive types from literals / constructor expressions
+	 * (C#: `42` → `'int'`, `"alice"` → `'string'`).
+	 */
+	readonly argumentTypes?: readonly string[];
 }

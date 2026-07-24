@@ -14,28 +14,28 @@
  *     argument counts at lookup time).
  */
 
-import type { Resolution, ScopeId } from '../types.js';
-import { lookupCore, type CoreLookupParams } from './lookup-core.js';
-import { CLASS_KINDS, type RegistryContext } from './context.js';
+import type { Resolution, ScopeId } from "../types.js";
+import { CLASS_KINDS, type RegistryContext } from "./context.js";
+import { type CoreLookupParams, lookupCore } from "./lookup-core.js";
 
 export interface ClassRegistry {
-  /**
-   * Look up a class-like symbol by simple or dotted name anchored at
-   * `scope`. Returns a confidence-ranked `Resolution[]`; consume `[0]`
-   * for the best answer.
-   */
-  lookup(name: string, scope: ScopeId): readonly Resolution[];
+	/**
+	 * Look up a class-like symbol by simple or dotted name anchored at
+	 * `scope`. Returns a confidence-ranked `Resolution[]`; consume `[0]`
+	 * for the best answer.
+	 */
+	lookup(name: string, scope: ScopeId): readonly Resolution[];
 }
 
 export function buildClassRegistry(ctx: RegistryContext): ClassRegistry {
-  const params: CoreLookupParams = {
-    acceptedKinds: CLASS_KINDS,
-    useReceiverTypeBinding: false,
-    ownerScopedContributor: null,
-  };
-  return {
-    lookup(name: string, scope: ScopeId) {
-      return lookupCore(name, scope, params, ctx);
-    },
-  };
+	const params: CoreLookupParams = {
+		acceptedKinds: CLASS_KINDS,
+		useReceiverTypeBinding: false,
+		ownerScopedContributor: null,
+	};
+	return {
+		lookup(name: string, scope: ScopeId) {
+			return lookupCore(name, scope, params, ctx);
+		},
+	};
 }

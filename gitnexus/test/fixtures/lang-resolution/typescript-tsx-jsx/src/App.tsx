@@ -1,9 +1,9 @@
-import { Button } from './Button';
+import { Button } from "./Button";
 
 export function App() {
-  return (
-    <div>
-      <Button label="hello" />
-    </div>
-  );
+	return (
+		<div>
+			<Button label="hello" />
+		</div>
+	);
 }

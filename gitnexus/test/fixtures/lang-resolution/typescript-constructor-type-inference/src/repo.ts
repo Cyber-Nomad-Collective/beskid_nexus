@@ -1,7 +1,7 @@
 export class Repo {
-  constructor(private readonly path: string) {}
+	constructor(private readonly path: string) {}
 
-  save(): boolean {
-    return this.path.length > 0;
-  }
+	save(): boolean {
+		return this.path.length > 0;
+	}
 }

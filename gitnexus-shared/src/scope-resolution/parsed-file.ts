@@ -51,27 +51,26 @@
  * for the full list of invariants downstream consumers rely on.
  */
 
-import type { Scope, ScopeId } from './types.js';
-import type { ParsedImport } from './types.js';
-import type { SymbolDefinition } from './symbol-definition.js';
-import type { ReferenceSite } from './reference-site.js';
+import type { ReferenceSite } from "./reference-site.js";
+import type { SymbolDefinition } from "./symbol-definition.js";
+import type { ParsedImport, Scope, ScopeId } from "./types.js";
 
 export interface ParsedFile {
-  readonly filePath: string;
-  /** `Scope.id` of the file's root `Module` scope. */
-  readonly moduleScope: ScopeId;
-  /**
-   * All scopes in this file, typically emitted in tree-topological order.
-   * Caller reconstructs a `ScopeTree` via `buildScopeTree(scopes)` when
-   * navigation or invariant re-validation is needed.
-   */
-  readonly scopes: readonly Scope[];
-  readonly parsedImports: readonly ParsedImport[];
-  /**
-   * All defs structurally declared in this file (classes, methods, fields,
-   * variables). Mirrors the union of `Scope.ownedDefs` across `scopes`,
-   * pre-flattened for O(N) consumption by finalize.
-   */
-  readonly localDefs: readonly SymbolDefinition[];
-  readonly referenceSites: readonly ReferenceSite[];
+	readonly filePath: string;
+	/** `Scope.id` of the file's root `Module` scope. */
+	readonly moduleScope: ScopeId;
+	/**
+	 * All scopes in this file, typically emitted in tree-topological order.
+	 * Caller reconstructs a `ScopeTree` via `buildScopeTree(scopes)` when
+	 * navigation or invariant re-validation is needed.
+	 */
+	readonly scopes: readonly Scope[];
+	readonly parsedImports: readonly ParsedImport[];
+	/**
+	 * All defs structurally declared in this file (classes, methods, fields,
+	 * variables). Mirrors the union of `Scope.ownedDefs` across `scopes`,
+	 * pre-flattened for O(N) consumption by finalize.
+	 */
+	readonly localDefs: readonly SymbolDefinition[];
+	readonly referenceSites: readonly ReferenceSite[];
 }

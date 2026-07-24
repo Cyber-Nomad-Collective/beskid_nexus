@@ -5,11 +5,15 @@
  * Used in embedding text to enrich metadata with microservice context.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import os from 'os';
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
 
-const MAPPING_FILE = path.join(os.homedir(), '.gitnexus', 'server-mapping.json');
+const MAPPING_FILE = path.join(
+	os.homedir(),
+	".gitnexus",
+	"server-mapping.json",
+);
 
 let cachedMapping: Record<string, string> | null = null;
 
@@ -17,21 +21,23 @@ let cachedMapping: Record<string, string> | null = null;
  * Read the server mapping file and return the serverName for a given repoName.
  * Returns undefined if no mapping exists.
  */
-export const readServerMapping = async (repoName: string): Promise<string | undefined> => {
-  try {
-    if (!cachedMapping) {
-      const raw = await fs.readFile(MAPPING_FILE, 'utf-8');
-      cachedMapping = JSON.parse(raw);
-    }
-    return cachedMapping[repoName];
-  } catch {
-    return undefined;
-  }
+export const readServerMapping = async (
+	repoName: string,
+): Promise<string | undefined> => {
+	try {
+		if (!cachedMapping) {
+			const raw = await fs.readFile(MAPPING_FILE, "utf-8");
+			cachedMapping = JSON.parse(raw);
+		}
+		return cachedMapping[repoName];
+	} catch {
+		return undefined;
+	}
 };
 
 /**
  * Clear the cached mapping (useful for testing or after file changes)
  */
 export const clearServerMappingCache = (): void => {
-  cachedMapping = null;
+	cachedMapping = null;
 };

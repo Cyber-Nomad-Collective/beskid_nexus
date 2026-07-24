@@ -28,29 +28,29 @@
  * included) and how closed PR #902's `enclosingFunctions` behaved.
  */
 
-import type { Range, Scope, ScopeId } from './types.js';
+import type { Range, Scope, ScopeId } from "./types.js";
 
 export interface PositionIndex {
-  /** Total scope entries indexed across all files. */
-  readonly size: number;
-  /**
-   * Innermost scope containing `(line, col)` in `filePath`, or `undefined`
-   * when nothing contains it (position before file start, after file end,
-   * or filePath not indexed).
-   *
-   * **Touching-boundary semantics.** Ranges are inclusive on both ends.
-   * When two sibling scopes share a boundary point — e.g.
-   * `[5:0, 10:0]` and `[10:0, 15:0]`, which is legal under `ScopeTree`'s
-   * non-overlap invariant — a query at the shared point `(10, 0)` is
-   * contained by **both**. The innermost-wins tie-break rule applies as
-   * usual: since neither is nested inside the other, the one that
-   * **starts latest** wins, i.e. the **right** sibling. The mechanism
-   * is the backward scan through the start-position-sorted array (see
-   * `findLastStartLteIndex` below) — both siblings land before the
-   * upper-bound cursor, and the right sibling is scanned first. Queries at non-boundary positions between them naturally
-   * fall to the unique containing scope.
-   */
-  atPosition(filePath: string, line: number, col: number): ScopeId | undefined;
+	/** Total scope entries indexed across all files. */
+	readonly size: number;
+	/**
+	 * Innermost scope containing `(line, col)` in `filePath`, or `undefined`
+	 * when nothing contains it (position before file start, after file end,
+	 * or filePath not indexed).
+	 *
+	 * **Touching-boundary semantics.** Ranges are inclusive on both ends.
+	 * When two sibling scopes share a boundary point — e.g.
+	 * `[5:0, 10:0]` and `[10:0, 15:0]`, which is legal under `ScopeTree`'s
+	 * non-overlap invariant — a query at the shared point `(10, 0)` is
+	 * contained by **both**. The innermost-wins tie-break rule applies as
+	 * usual: since neither is nested inside the other, the one that
+	 * **starts latest** wins, i.e. the **right** sibling. The mechanism
+	 * is the backward scan through the start-position-sorted array (see
+	 * `findLastStartLteIndex` below) — both siblings land before the
+	 * upper-bound cursor, and the right sibling is scanned first. Queries at non-boundary positions between them naturally
+	 * fall to the unique containing scope.
+	 */
+	atPosition(filePath: string, line: number, col: number): ScopeId | undefined;
 }
 
 /**
@@ -62,33 +62,33 @@ export interface PositionIndex {
  * invariant.
  */
 export function buildPositionIndex(scopes: readonly Scope[]): PositionIndex {
-  const entriesByFile = new Map<string, Entry[]>();
-  const seen = new Set<ScopeId>();
+	const entriesByFile = new Map<string, Entry[]>();
+	const seen = new Set<ScopeId>();
 
-  for (const scope of scopes) {
-    if (seen.has(scope.id)) continue;
-    seen.add(scope.id);
+	for (const scope of scopes) {
+		if (seen.has(scope.id)) continue;
+		seen.add(scope.id);
 
-    let bucket = entriesByFile.get(scope.filePath);
-    if (bucket === undefined) {
-      bucket = [];
-      entriesByFile.set(scope.filePath, bucket);
-    }
-    bucket.push({ id: scope.id, range: scope.range });
-  }
+		let bucket = entriesByFile.get(scope.filePath);
+		if (bucket === undefined) {
+			bucket = [];
+			entriesByFile.set(scope.filePath, bucket);
+		}
+		bucket.push({ id: scope.id, range: scope.range });
+	}
 
-  for (const bucket of entriesByFile.values()) {
-    bucket.sort(compareEntry);
-  }
+	for (const bucket of entriesByFile.values()) {
+		bucket.sort(compareEntry);
+	}
 
-  return wrapIndex(entriesByFile, seen.size);
+	return wrapIndex(entriesByFile, seen.size);
 }
 
 // ─── Internals ──────────────────────────────────────────────────────────────
 
 interface Entry {
-  readonly id: ScopeId;
-  readonly range: Range;
+	readonly id: ScopeId;
+	readonly range: Range;
 }
 
 /**
@@ -99,24 +99,27 @@ interface Entry {
  * innermost scope.
  */
 function compareEntry(a: Entry, b: Entry): number {
-  if (a.range.startLine !== b.range.startLine) return a.range.startLine - b.range.startLine;
-  if (a.range.startCol !== b.range.startCol) return a.range.startCol - b.range.startCol;
-  if (a.range.endLine !== b.range.endLine) return b.range.endLine - a.range.endLine;
-  return b.range.endCol - a.range.endCol;
+	if (a.range.startLine !== b.range.startLine)
+		return a.range.startLine - b.range.startLine;
+	if (a.range.startCol !== b.range.startCol)
+		return a.range.startCol - b.range.startCol;
+	if (a.range.endLine !== b.range.endLine)
+		return b.range.endLine - a.range.endLine;
+	return b.range.endCol - a.range.endCol;
 }
 
 /** Whether `(line, col)` is at or after `range`'s start. */
 function startIsAtOrBefore(range: Range, line: number, col: number): boolean {
-  if (range.startLine < line) return true;
-  if (range.startLine > line) return false;
-  return range.startCol <= col;
+	if (range.startLine < line) return true;
+	if (range.startLine > line) return false;
+	return range.startCol <= col;
 }
 
 /** Whether `(line, col)` is at or before `range`'s end (inclusive). */
 function endIsAtOrAfter(range: Range, line: number, col: number): boolean {
-  if (range.endLine > line) return true;
-  if (range.endLine < line) return false;
-  return range.endCol >= col;
+	if (range.endLine > line) return true;
+	if (range.endLine < line) return false;
+	return range.endCol >= col;
 }
 
 /**
@@ -126,41 +129,48 @@ function endIsAtOrAfter(range: Range, line: number, col: number): boolean {
  * Classic "upper bound - 1" binary search: find the first entry that
  * starts *after* the query, then step back one.
  */
-function findLastStartLteIndex(arr: readonly Entry[], line: number, col: number): number {
-  let lo = 0;
-  let hi = arr.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1;
-    if (startIsAtOrBefore(arr[mid]!.range, line, col)) {
-      lo = mid + 1;
-    } else {
-      hi = mid;
-    }
-  }
-  return lo - 1;
+function findLastStartLteIndex(
+	arr: readonly Entry[],
+	line: number,
+	col: number,
+): number {
+	let lo = 0;
+	let hi = arr.length;
+	while (lo < hi) {
+		const mid = (lo + hi) >>> 1;
+		if (startIsAtOrBefore(arr[mid]!.range, line, col)) {
+			lo = mid + 1;
+		} else {
+			hi = mid;
+		}
+	}
+	return lo - 1;
 }
 
-function wrapIndex(entriesByFile: Map<string, Entry[]>, size: number): PositionIndex {
-  return {
-    get size() {
-      return size;
-    },
-    atPosition(filePath: string, line: number, col: number): ScopeId | undefined {
-      const bucket = entriesByFile.get(filePath);
-      if (bucket === undefined || bucket.length === 0) return undefined;
+function wrapIndex(
+	entriesByFile: Map<string, Entry[]>,
+	size: number,
+): PositionIndex {
+	return {
+		get size() {
+			return size;
+		},
+		atPosition(filePath: string, line: number, col: number): ScopeId | undefined {
+			const bucket = entriesByFile.get(filePath);
+			if (bucket === undefined || bucket.length === 0) return undefined;
 
-      const endIdx = findLastStartLteIndex(bucket, line, col);
-      if (endIdx < 0) return undefined;
+			const endIdx = findLastStartLteIndex(bucket, line, col);
+			if (endIdx < 0) return undefined;
 
-      // Scan backward; first containing hit is innermost (see file header).
-      for (let i = endIdx; i >= 0; i--) {
-        const entry = bucket[i]!;
-        if (endIsAtOrAfter(entry.range, line, col)) {
-          // `startIsAtOrBefore` is guaranteed true by the binary search.
-          return entry.id;
-        }
-      }
-      return undefined;
-    },
-  };
+			// Scan backward; first containing hit is innermost (see file header).
+			for (let i = endIdx; i >= 0; i--) {
+				const entry = bucket[i]!;
+				if (endIsAtOrAfter(entry.range, line, col)) {
+					// `startIsAtOrBefore` is guaranteed true by the binary search.
+					return entry.id;
+				}
+			}
+			return undefined;
+		},
+	};
 }

@@ -72,15 +72,24 @@
  * `test/integration/resolvers/python.test.ts`.
  */
 
-export { emitPythonScopeCaptures } from './captures.js';
-export { getPythonCaptureCacheStats, resetPythonCaptureCacheStats } from './cache-stats.js';
-export { interpretPythonImport, interpretPythonTypeBinding } from './interpret.js';
-export { pythonMergeBindings } from './merge-bindings.js';
-export { pythonArityCompatibility } from './arity.js';
-export { resolvePythonImportTarget, type PythonResolveContext } from './import-target.js';
+export { pythonArityCompatibility } from "./arity.js";
 export {
-  pythonBindingScopeFor,
-  pythonFunctionDefinitionLabel,
-  pythonImportOwningScope,
-  pythonReceiverBinding,
-} from './simple-hooks.js';
+	getPythonCaptureCacheStats,
+	resetPythonCaptureCacheStats,
+} from "./cache-stats.js";
+export { emitPythonScopeCaptures } from "./captures.js";
+export {
+	type PythonResolveContext,
+	resolvePythonImportTarget,
+} from "./import-target.js";
+export {
+	interpretPythonImport,
+	interpretPythonTypeBinding,
+} from "./interpret.js";
+export { pythonMergeBindings } from "./merge-bindings.js";
+export {
+	pythonBindingScopeFor,
+	pythonFunctionDefinitionLabel,
+	pythonImportOwningScope,
+	pythonReceiverBinding,
+} from "./simple-hooks.js";

@@ -1,20 +1,20 @@
-import type Parser from 'tree-sitter';
+import type Parser from "tree-sitter";
 
-export type ThriftRole = 'provider' | 'consumer';
+export type ThriftRole = "provider" | "consumer";
 
 export interface ThriftDetection {
-  role: ThriftRole;
-  serviceName: string;
-  methodName: string;
-  symbolName: string;
-  source: string;
-  confidenceWithIdl: number;
-  confidenceWithoutIdl: number;
-  usesGeneratedServiceMember?: boolean;
+	role: ThriftRole;
+	serviceName: string;
+	methodName: string;
+	symbolName: string;
+	source: string;
+	confidenceWithIdl: number;
+	confidenceWithoutIdl: number;
+	usesGeneratedServiceMember?: boolean;
 }
 
 export interface ThriftLanguagePlugin {
-  name: string;
-  language: unknown;
-  scan(tree: Parser.Tree): ThriftDetection[];
+	name: string;
+	language: unknown;
+	scan(tree: Parser.Tree): ThriftDetection[];
 }

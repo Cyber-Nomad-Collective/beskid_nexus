@@ -36,11 +36,11 @@
  * Pure function — safe to call repeatedly; no side effects.
  */
 
-import type { NodeLabel } from '../graph/types.js';
-import type { SymbolDefinition } from './symbol-definition.js';
-import type { BindingRef, ScopeId, ScopeLookup, TypeRef } from './types.js';
-import type { DefIndex } from './def-index.js';
-import type { QualifiedNameIndex } from './qualified-name-index.js';
+import type { NodeLabel } from "../graph/types.js";
+import type { DefIndex } from "./def-index.js";
+import type { QualifiedNameIndex } from "./qualified-name-index.js";
+import type { SymbolDefinition } from "./symbol-definition.js";
+import type { BindingRef, ScopeId, ScopeLookup, TypeRef } from "./types.js";
 
 // ─── Public contracts ───────────────────────────────────────────────────────
 
@@ -50,20 +50,17 @@ import type { QualifiedNameIndex } from './qualified-name-index.js';
  * additional indexes get threaded through in later rings.
  */
 export interface ResolveTypeRefContext {
-  readonly scopes: ScopeLookup;
-  readonly defIndex: DefIndex;
-  readonly qualifiedNameIndex: QualifiedNameIndex;
+	readonly scopes: ScopeLookup;
+	readonly defIndex: DefIndex;
+	readonly qualifiedNameIndex: QualifiedNameIndex;
 }
 
 // ─── Strict policy constants ────────────────────────────────────────────────
 
 /** `'wildcard'` is deliberately absent. See file header. */
-const STRICT_ORIGINS: ReadonlySet<BindingRef['origin']> = new Set<BindingRef['origin']>([
-  'local',
-  'import',
-  'namespace',
-  'reexport',
-]);
+const STRICT_ORIGINS: ReadonlySet<BindingRef["origin"]> = new Set<
+	BindingRef["origin"]
+>(["local", "import", "namespace", "reexport"]);
 
 /**
  * `NodeLabel` values that may appear on the RHS of a type annotation.
@@ -81,68 +78,71 @@ const STRICT_ORIGINS: ReadonlySet<BindingRef['origin']> = new Set<BindingRef['or
  * here and add a test asserting the new path.
  */
 const TYPE_KINDS: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
-  'Class',
-  'Interface',
-  'Enum',
-  'Struct',
-  'Union',
-  'Trait',
-  'TypeAlias',
-  'Typedef',
-  'Record',
-  'Delegate',
-  'Annotation',
-  'Template',
+	"Class",
+	"Interface",
+	"Enum",
+	"Struct",
+	"Union",
+	"Trait",
+	"TypeAlias",
+	"Typedef",
+	"Record",
+	"Delegate",
+	"Annotation",
+	"Template",
 ]);
 
 // ─── Main entry point ──────────────────────────────────────────────────────
 
-export function resolveTypeRef(ref: TypeRef, ctx: ResolveTypeRefContext): SymbolDefinition | null {
-  // Phase 1: scope-chain walk anchored at the declaration site.
-  let currentId: ScopeId | null = ref.declaredAtScope;
-  const visited = new Set<ScopeId>();
+export function resolveTypeRef(
+	ref: TypeRef,
+	ctx: ResolveTypeRefContext,
+): SymbolDefinition | null {
+	// Phase 1: scope-chain walk anchored at the declaration site.
+	let currentId: ScopeId | null = ref.declaredAtScope;
+	const visited = new Set<ScopeId>();
 
-  while (currentId !== null) {
-    // Cycle guard — a well-formed scope tree never loops, but a bug in the
-    // construction path should fail fast here rather than hanging.
-    if (visited.has(currentId)) return null;
-    visited.add(currentId);
+	while (currentId !== null) {
+		// Cycle guard — a well-formed scope tree never loops, but a bug in the
+		// construction path should fail fast here rather than hanging.
+		if (visited.has(currentId)) return null;
+		visited.add(currentId);
 
-    const scope = ctx.scopes.getScope(currentId);
-    if (scope === undefined) return null; // broken chain = unresolvable
+		const scope = ctx.scopes.getScope(currentId);
+		if (scope === undefined) return null; // broken chain = unresolvable
 
-    const bindings = scope.bindings.get(ref.rawName);
-    if (bindings !== undefined && bindings.length > 0) {
-      // At least one binding exists at this scope → it is the shadowing site.
-      // Either one of them qualifies, or the name is shadowed by a non-type.
-      for (const binding of bindings) {
-        if (!STRICT_ORIGINS.has(binding.origin)) continue;
-        if (TYPE_KINDS.has(binding.def.type)) {
-          return binding.def;
-        }
-      }
-      // Shadowed by a non-type / non-strict-origin binding. Fail fast — no
-      // global fallback, no walk to the parent.
-      return null;
-    }
+		const bindings = scope.bindings.get(ref.rawName);
+		if (bindings !== undefined && bindings.length > 0) {
+			// At least one binding exists at this scope → it is the shadowing site.
+			// Either one of them qualifies, or the name is shadowed by a non-type.
+			for (const binding of bindings) {
+				if (!STRICT_ORIGINS.has(binding.origin)) continue;
+				if (TYPE_KINDS.has(binding.def.type)) {
+					return binding.def;
+				}
+			}
+			// Shadowed by a non-type / non-strict-origin binding. Fail fast — no
+			// global fallback, no walk to the parent.
+			return null;
+		}
 
-    currentId = scope.parent;
-  }
+		currentId = scope.parent;
+	}
 
-  // Phase 2: dotted fallback via `QualifiedNameIndex`. Only accept a unique
-  // type-kind hit; anything ambiguous returns null (strict: no guesses).
-  if (ref.rawName.includes('.')) {
-    const candidates = ctx.qualifiedNameIndex.get(ref.rawName);
-    let onlyTypeDef: SymbolDefinition | null = null;
-    for (const defId of candidates) {
-      const def = ctx.defIndex.get(defId);
-      if (def === undefined) continue;
-      if (!TYPE_KINDS.has(def.type)) continue;
-      if (onlyTypeDef !== null) return null; // ambiguous
-      onlyTypeDef = def;
-    }
-    if (onlyTypeDef !== null) return onlyTypeDef;
-  }
+	// Phase 2: dotted fallback via `QualifiedNameIndex`. Only accept a unique
+	// type-kind hit; anything ambiguous returns null (strict: no guesses).
+	if (ref.rawName.includes(".")) {
+		const candidates = ctx.qualifiedNameIndex.get(ref.rawName);
+		let onlyTypeDef: SymbolDefinition | null = null;
+		for (const defId of candidates) {
+			const def = ctx.defIndex.get(defId);
+			if (def === undefined) continue;
+			if (!TYPE_KINDS.has(def.type)) continue;
+			if (onlyTypeDef !== null) return null; // ambiguous
+			onlyTypeDef = def;
+		}
+		if (onlyTypeDef !== null) return onlyTypeDef;
+	}
 
-  return null;
+	return null;
 }

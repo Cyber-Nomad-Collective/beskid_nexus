@@ -1,11 +1,11 @@
 class User {
-  constructor(name) {
-    this.name = name;
-  }
+	constructor(name) {
+		this.name = name;
+	}
 
-  save() {
-    return true;
-  }
+	save() {
+		return true;
+	}
 }
 
 module.exports = { User };

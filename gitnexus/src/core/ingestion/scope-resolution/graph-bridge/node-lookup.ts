@@ -18,8 +18,8 @@
  * format that downstream consumers (queries, edges, MCP) expect.
  */
 
-import type { NodeLabel } from 'gitnexus-shared';
-import type { KnowledgeGraph } from '../../../graph/types.js';
+import type { NodeLabel } from "gitnexus-shared";
+import type { KnowledgeGraph } from "../../../graph/types.js";
 
 export type GraphNodeLookup = ReadonlyMap<string, string>;
 
@@ -32,13 +32,17 @@ export type GraphNodeLookup = ReadonlyMap<string, string>;
  * `C:\...`) don't break the parse. Returns `undefined` when the id
  * doesn't match the expected shape.
  */
-function parseQualifiedFromId(id: string, label: NodeLabel, filePath: string): string | undefined {
-  const prefix = `${label}:${filePath}:`;
-  if (!id.startsWith(prefix)) return undefined;
-  const suffix = id.slice(prefix.length);
-  if (suffix.length === 0) return undefined;
-  const hash = suffix.indexOf('#');
-  return hash === -1 ? suffix : suffix.slice(0, hash);
+function parseQualifiedFromId(
+	id: string,
+	label: NodeLabel,
+	filePath: string,
+): string | undefined {
+	const prefix = `${label}:${filePath}:`;
+	if (!id.startsWith(prefix)) return undefined;
+	const suffix = id.slice(prefix.length);
+	if (suffix.length === 0) return undefined;
+	const hash = suffix.indexOf("#");
+	return hash === -1 ? suffix : suffix.slice(0, hash);
 }
 
 /**
@@ -51,98 +55,108 @@ function parseQualifiedFromId(id: string, label: NodeLabel, filePath: string): s
  * simple name = `save`) whose Function-typed qualifier would collapse
  * to the same simple-key slot in a single map.
  */
-export function qualifiedKey(filePath: string, label: NodeLabel, qualifiedName: string): string {
-  return `<q>:${filePath}::${label}::${qualifiedName}`;
+export function qualifiedKey(
+	filePath: string,
+	label: NodeLabel,
+	qualifiedName: string,
+): string {
+	return `<q>:${filePath}::${label}::${qualifiedName}`;
 }
 
 /** Simple-name key (legacy fallback keyspace — no `<q>` prefix). */
 export function simpleKey(filePath: string, name: string): string {
-  return `${filePath}::${name}`;
+	return `${filePath}::${name}`;
 }
 
 export function buildGraphNodeLookup(graph: KnowledgeGraph): GraphNodeLookup {
-  const lookup = new Map<string, string>();
-  for (const node of graph.iterNodes()) {
-    const props = node.properties as {
-      filePath?: string;
-      name?: string;
-      qualifiedName?: string;
-      templateArguments?: readonly string[];
-    };
-    if (props.filePath === undefined || props.name === undefined) continue;
-    if (!isLinkableLabel(node.label)) continue;
+	const lookup = new Map<string, string>();
+	for (const node of graph.iterNodes()) {
+		const props = node.properties as {
+			filePath?: string;
+			name?: string;
+			qualifiedName?: string;
+			templateArguments?: readonly string[];
+		};
+		if (props.filePath === undefined || props.name === undefined) continue;
+		if (!isLinkableLabel(node.label)) continue;
 
-    // Primary key: fully-qualified name + label, in a separate
-    // keyspace from simple names. Class nodes carry `qualifiedName`
-    // in their properties (set by the parsing processor).
-    // Method/Function nodes do not, so derive the qualifier from the
-    // node id — that's where the parse-phase encoded it. Including
-    // the label avoids a collision when a free Function's qualifier
-    // happens to equal a Method's simple name (e.g. top-level
-    // `def save` vs `class User: def save`).
-    const qualified =
-      props.qualifiedName ?? parseQualifiedFromId(node.id, node.label, props.filePath);
-    if (qualified !== undefined && qualified.length > 0) {
-      const qKey = qualifiedKey(props.filePath, node.label, qualified);
-      if (!lookup.has(qKey)) lookup.set(qKey, node.id);
-      // Overload-disambiguating key: include parameter types so two
-      // same-arity overloads (e.g. `Lookup(int)` vs `Lookup(string)`)
-      // map to distinct graph nodes. Legacy parse-phase encodes the
-      // type tag into the node id; we register both that node id and
-      // a parameter-types-suffixed key so resolveDefGraphId can find
-      // the right overload by matching its def's parameterTypes.
-      const pTypes = (props as { parameterTypes?: readonly string[] }).parameterTypes;
-      if (pTypes !== undefined && pTypes.length > 0 && node.label === 'Method') {
-        const pKey = qualifiedKey(props.filePath, node.label, `${qualified}~${pTypes.join(',')}`);
-        // Each overload is unique — set unconditionally.
-        lookup.set(pKey, node.id);
-      }
-      if (
-        (node.label === 'Class' ||
-          node.label === 'Struct' ||
-          node.label === 'Interface' ||
-          node.label === 'Enum' ||
-          node.label === 'Record') &&
-        props.templateArguments !== undefined &&
-        props.templateArguments.length > 0
-      ) {
-        const tKey = qualifiedKey(
-          props.filePath,
-          node.label,
-          `${qualified}~${props.templateArguments.join(',')}`,
-        );
-        if (!lookup.has(tKey)) lookup.set(tKey, node.id);
-      }
-    }
+		// Primary key: fully-qualified name + label, in a separate
+		// keyspace from simple names. Class nodes carry `qualifiedName`
+		// in their properties (set by the parsing processor).
+		// Method/Function nodes do not, so derive the qualifier from the
+		// node id — that's where the parse-phase encoded it. Including
+		// the label avoids a collision when a free Function's qualifier
+		// happens to equal a Method's simple name (e.g. top-level
+		// `def save` vs `class User: def save`).
+		const qualified =
+			props.qualifiedName ??
+			parseQualifiedFromId(node.id, node.label, props.filePath);
+		if (qualified !== undefined && qualified.length > 0) {
+			const qKey = qualifiedKey(props.filePath, node.label, qualified);
+			if (!lookup.has(qKey)) lookup.set(qKey, node.id);
+			// Overload-disambiguating key: include parameter types so two
+			// same-arity overloads (e.g. `Lookup(int)` vs `Lookup(string)`)
+			// map to distinct graph nodes. Legacy parse-phase encodes the
+			// type tag into the node id; we register both that node id and
+			// a parameter-types-suffixed key so resolveDefGraphId can find
+			// the right overload by matching its def's parameterTypes.
+			const pTypes = (props as { parameterTypes?: readonly string[] })
+				.parameterTypes;
+			if (pTypes !== undefined && pTypes.length > 0 && node.label === "Method") {
+				const pKey = qualifiedKey(
+					props.filePath,
+					node.label,
+					`${qualified}~${pTypes.join(",")}`,
+				);
+				// Each overload is unique — set unconditionally.
+				lookup.set(pKey, node.id);
+			}
+			if (
+				(node.label === "Class" ||
+					node.label === "Struct" ||
+					node.label === "Interface" ||
+					node.label === "Enum" ||
+					node.label === "Record") &&
+				props.templateArguments !== undefined &&
+				props.templateArguments.length > 0
+			) {
+				const tKey = qualifiedKey(
+					props.filePath,
+					node.label,
+					`${qualified}~${props.templateArguments.join(",")}`,
+				);
+				if (!lookup.has(tKey)) lookup.set(tKey, node.id);
+			}
+		}
 
-    // Fallback key: simple name. First-wins within a file — used when
-    // the caller doesn't know the qualifier (unqualified free-call
-    // fallback, cross-file resolution where MethodRegistry already
-    // disambiguated the owner).
-    const sKey = simpleKey(props.filePath, props.name);
-    if (!lookup.has(sKey)) lookup.set(sKey, node.id);
-  }
-  return lookup;
+		// Fallback key: simple name. First-wins within a file — used when
+		// the caller doesn't know the qualifier (unqualified free-call
+		// fallback, cross-file resolution where MethodRegistry already
+		// disambiguated the owner).
+		const sKey = simpleKey(props.filePath, props.name);
+		if (!lookup.has(sKey)) lookup.set(sKey, node.id);
+	}
+	return lookup;
 }
 
 export function isLinkableLabel(label: NodeLabel): boolean {
-  return (
-    label === 'Function' ||
-    label === 'Method' ||
-    label === 'Constructor' ||
-    label === 'Class' ||
-    label === 'Interface' ||
-    label === 'Struct' ||
-    label === 'Enum' ||
-    // Trait nodes are linkable so MRO builders can bridge PHP/Rust trait
-    // defs between scope-resolution DefIds and the graph's node ids.
-    // IMPLEMENTS edges from classes to traits are otherwise invisible to
-    // the scope-resolution MRO pass.
-    label === 'Trait' ||
-    // Variable / Property are linkable too — receiver-bound write/read
-    // ACCESSES edges target field nodes (e.g. `user.name = "x"` →
-    // ACCESSES edge to User's `name` Variable/Property node).
-    label === 'Variable' ||
-    label === 'Property'
-  );
+	return (
+		label === "Function" ||
+		label === "Method" ||
+		label === "Constructor" ||
+		label === "Class" ||
+		label === "Interface" ||
+		label === "Struct" ||
+		label === "Enum" ||
+		// Trait nodes are linkable so MRO builders can bridge PHP/Rust trait
+		// defs between scope-resolution DefIds and the graph's node ids.
+		// IMPLEMENTS edges from classes to traits are otherwise invisible to
+		// the scope-resolution MRO pass.
+		label === "Trait" ||
+		// Variable / Property are linkable too — receiver-bound write/read
+		// ACCESSES edges target field nodes (e.g. `user.name = "x"` →
+		// ACCESSES edge to User's `name` Variable/Property node).
+		label === "Variable" ||
+		label === "Property"
+	);
 }

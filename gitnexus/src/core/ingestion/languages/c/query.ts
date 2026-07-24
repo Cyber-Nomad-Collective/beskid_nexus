@@ -1,5 +1,5 @@
-import Parser from 'tree-sitter';
-import C from 'tree-sitter-c';
+import Parser from "tree-sitter";
+import C from "tree-sitter-c";
 
 const C_SCOPE_QUERY = `
 ;; Scopes
@@ -150,16 +150,19 @@ let _parser: Parser | null = null;
 let _query: Parser.Query | null = null;
 
 export function getCParser(): Parser {
-  if (_parser === null) {
-    _parser = new Parser();
-    _parser.setLanguage(C as Parameters<Parser['setLanguage']>[0]);
-  }
-  return _parser;
+	if (_parser === null) {
+		_parser = new Parser();
+		_parser.setLanguage(C as Parameters<Parser["setLanguage"]>[0]);
+	}
+	return _parser;
 }
 
 export function getCScopeQuery(): Parser.Query {
-  if (_query === null) {
-    _query = new Parser.Query(C as Parameters<Parser['setLanguage']>[0], C_SCOPE_QUERY);
-  }
-  return _query;
+	if (_query === null) {
+		_query = new Parser.Query(
+			C as Parameters<Parser["setLanguage"]>[0],
+			C_SCOPE_QUERY,
+		);
+	}
+	return _query;
 }

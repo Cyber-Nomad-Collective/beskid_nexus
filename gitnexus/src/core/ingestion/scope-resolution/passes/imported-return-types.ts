@@ -39,10 +39,10 @@
  * scope-resolution generalization plan.
  */
 
-import type { ParsedFile, ScopeId, TypeRef } from 'gitnexus-shared';
-import type { ScopeResolutionIndexes } from '../../model/scope-resolution-indexes.js';
-import type { WorkspaceResolutionIndex } from '../workspace-index.js';
-import { lookupBindingsAt, namesAtScope } from '../scope/walkers.js';
+import type { ParsedFile, ScopeId, TypeRef } from "gitnexus-shared";
+import type { ScopeResolutionIndexes } from "../../model/scope-resolution-indexes.js";
+import { lookupBindingsAt, namesAtScope } from "../scope/walkers.js";
+import type { WorkspaceResolutionIndex } from "../workspace-index.js";
 
 /**
  * Max chain depth for the post-finalize re-follow. Effective end-to-end
@@ -60,30 +60,30 @@ const RECHAIN_MAX_DEPTH = 8;
  *  it can see imported return-types propagated by
  *  `propagateImportedReturnTypes`. */
 export function followChainPostFinalize(
-  start: TypeRef,
-  fromScopeId: ScopeId,
-  scopes: ScopeResolutionIndexes,
+	start: TypeRef,
+	fromScopeId: ScopeId,
+	scopes: ScopeResolutionIndexes,
 ): TypeRef {
-  let current = start;
-  const visited = new Set<string>();
-  for (let depth = 0; depth < RECHAIN_MAX_DEPTH; depth++) {
-    if (current.rawName.includes('.')) return current;
-    let scopeId: ScopeId | null = fromScopeId;
-    let next: TypeRef | undefined;
-    while (scopeId !== null) {
-      const scope = scopes.scopeTree.getScope(scopeId);
-      if (scope === undefined) break;
-      next = scope.typeBindings.get(current.rawName);
-      if (next !== undefined && next !== current) break;
-      next = undefined;
-      scopeId = scope.parent;
-    }
-    if (next === undefined) return current;
-    if (visited.has(next.rawName)) return current;
-    visited.add(next.rawName);
-    current = next;
-  }
-  return current;
+	let current = start;
+	const visited = new Set<string>();
+	for (let depth = 0; depth < RECHAIN_MAX_DEPTH; depth++) {
+		if (current.rawName.includes(".")) return current;
+		let scopeId: ScopeId | null = fromScopeId;
+		let next: TypeRef | undefined;
+		while (scopeId !== null) {
+			const scope = scopes.scopeTree.getScope(scopeId);
+			if (scope === undefined) break;
+			next = scope.typeBindings.get(current.rawName);
+			if (next !== undefined && next !== current) break;
+			next = undefined;
+			scopeId = scope.parent;
+		}
+		if (next === undefined) return current;
+		if (visited.has(next.rawName)) return current;
+		visited.add(next.rawName);
+		current = next;
+	}
+	return current;
 }
 
 /**
@@ -112,104 +112,115 @@ export function followChainPostFinalize(
  * binding-owning scope's `typeBindings`, not just the module's.
  */
 export function propagateImportedReturnTypes(
-  parsedFiles: readonly ParsedFile[],
-  indexes: ScopeResolutionIndexes,
-  index: WorkspaceResolutionIndex,
+	parsedFiles: readonly ParsedFile[],
+	indexes: ScopeResolutionIndexes,
+	index: WorkspaceResolutionIndex,
 ): void {
-  const moduleScopeByFile = index.moduleScopeByFile;
+	const moduleScopeByFile = index.moduleScopeByFile;
 
-  // Walk SCCs in reverse-topological order (`indexes.sccs` is leaves-
-  // first per `tarjanSccs`). For each file we mirror import bindings
-  // AFTER chain-following the source module's typeBindings, so a
-  // multi-hop alias chain like
-  //   models.ts: function getUser(): User
-  //   service.ts: export const user = getUser()        // user → getUser
-  //   app.ts: import { user } from './service'         // user → ?
-  // collapses to `app.user → User` instead of stopping at the
-  // intermediate `getUser` ref. Without topological ordering, app.ts
-  // could be processed before service.ts had its own typeBindings
-  // chain-followed, leaving the importer with an unresolvable interim
-  // ref. Cyclic SCCs reach a partial fixpoint via the same mirror
-  // step but are not guaranteed to fully resolve — see the
-  // ts-circular cross-file-binding fixture which only asserts that
-  // the pipeline does not throw.
-  for (const scc of indexes.sccs) {
-    for (const filePath of scc.files) {
-      const importerModule = moduleScopeByFile.get(filePath);
-      if (importerModule === undefined) continue;
+	// Walk SCCs in reverse-topological order (`indexes.sccs` is leaves-
+	// first per `tarjanSccs`). For each file we mirror import bindings
+	// AFTER chain-following the source module's typeBindings, so a
+	// multi-hop alias chain like
+	//   models.ts: function getUser(): User
+	//   service.ts: export const user = getUser()        // user → getUser
+	//   app.ts: import { user } from './service'         // user → ?
+	// collapses to `app.user → User` instead of stopping at the
+	// intermediate `getUser` ref. Without topological ordering, app.ts
+	// could be processed before service.ts had its own typeBindings
+	// chain-followed, leaving the importer with an unresolvable interim
+	// ref. Cyclic SCCs reach a partial fixpoint via the same mirror
+	// step but are not guaranteed to fully resolve — see the
+	// ts-circular cross-file-binding fixture which only asserts that
+	// the pipeline does not throw.
+	for (const scc of indexes.sccs) {
+		for (const filePath of scc.files) {
+			const importerModule = moduleScopeByFile.get(filePath);
+			if (importerModule === undefined) continue;
 
-      // Iterate finalized + augmented binding names at this scope so
-      // post-finalize hooks (e.g. `using static` augmentations from
-      // `populateCsharpNamespaceSiblings`) are visible to the
-      // import-derived typeBinding mirror. Both helpers fast-path when
-      // no augmentations exist for the scope, so the common case is
-      // allocation-free. See I8.
-      for (const localName of namesAtScope(importerModule.id, indexes)) {
-        // Skip if importer already has a typeBinding for this name —
-        // an explicit local annotation must win over import-derived.
-        if (importerModule.typeBindings.has(localName)) continue;
+			// Iterate finalized + augmented binding names at this scope so
+			// post-finalize hooks (e.g. `using static` augmentations from
+			// `populateCsharpNamespaceSiblings`) are visible to the
+			// import-derived typeBinding mirror. Both helpers fast-path when
+			// no augmentations exist for the scope, so the common case is
+			// allocation-free. See I8.
+			for (const localName of namesAtScope(importerModule.id, indexes)) {
+				// Skip if importer already has a typeBinding for this name —
+				// an explicit local annotation must win over import-derived.
+				if (importerModule.typeBindings.has(localName)) continue;
 
-        const refs = lookupBindingsAt(importerModule.id, localName, indexes);
-        for (const ref of refs) {
-          if (ref.origin !== 'import' && ref.origin !== 'reexport' && ref.origin !== 'wildcard')
-            continue;
-          const sourceModule = moduleScopeByFile.get(ref.def.filePath);
-          if (sourceModule === undefined) continue;
+				const refs = lookupBindingsAt(importerModule.id, localName, indexes);
+				for (const ref of refs) {
+					if (
+						ref.origin !== "import" &&
+						ref.origin !== "reexport" &&
+						ref.origin !== "wildcard"
+					)
+						continue;
+					const sourceModule = moduleScopeByFile.get(ref.def.filePath);
+					if (sourceModule === undefined) continue;
 
-          // The source file's typeBinding is keyed by the def's simple
-          // name (e.g. `get_user`), not the importer's local alias.
-          const qn = ref.def.qualifiedName;
-          if (qn === undefined) continue;
-          const dot = qn.lastIndexOf('.');
-          const sourceName = dot === -1 ? qn : qn.slice(dot + 1);
+					// The source file's typeBinding is keyed by the def's simple
+					// name (e.g. `get_user`), not the importer's local alias.
+					const qn = ref.def.qualifiedName;
+					if (qn === undefined) continue;
+					const dot = qn.lastIndexOf(".");
+					const sourceName = dot === -1 ? qn : qn.slice(dot + 1);
 
-          const sourceTypeRef = sourceModule.typeBindings.get(sourceName);
-          if (sourceTypeRef === undefined) continue;
+					const sourceTypeRef = sourceModule.typeBindings.get(sourceName);
+					if (sourceTypeRef === undefined) continue;
 
-          // Chain-follow inside the source module so we mirror the
-          // terminal type, not an intermediate intra-source reference.
-          const terminal = followChainPostFinalize(sourceTypeRef, sourceModule.id, indexes);
+					// Chain-follow inside the source module so we mirror the
+					// terminal type, not an intermediate intra-source reference.
+					const terminal = followChainPostFinalize(
+						sourceTypeRef,
+						sourceModule.id,
+						indexes,
+					);
 
-          // Mutating typeBindings is safe because draftToScope
-          // produced a non-frozen Map (Contract Invariant I3/I8).
-          (importerModule.typeBindings as Map<string, TypeRef>).set(localName, terminal);
-          // First-write-wins for the local alias: if the same
-          // `localName` was registered multiple times via
-          // `mergeBindings` (rare; happens with conflicting
-          // re-exports), only the first ref with a usable
-          // typeBinding source is mirrored. Conflict resolution
-          // among multiple sources is the merger's job, not ours.
-          break;
-        }
-      }
+					// Mutating typeBindings is safe because draftToScope
+					// produced a non-frozen Map (Contract Invariant I3/I8).
+					(importerModule.typeBindings as Map<string, TypeRef>).set(
+						localName,
+						terminal,
+					);
+					// First-write-wins for the local alias: if the same
+					// `localName` was registered multiple times via
+					// `mergeBindings` (rare; happens with conflicting
+					// re-exports), only the first ref with a usable
+					// typeBinding source is mirrored. Conflict resolution
+					// among multiple sources is the merger's job, not ours.
+					break;
+				}
+			}
 
-      // Chain-follow this importer's own module typeBindings now —
-      // any local `const x = importedFn()` resolves while we have
-      // freshly-mirrored bindings, and downstream importers in a
-      // later (closer-to-root) SCC will see x's terminal type rather
-      // than an intra-module call ref.
-      for (const [name, ref] of importerModule.typeBindings) {
-        const resolved = followChainPostFinalize(ref, importerModule.id, indexes);
-        if (resolved !== ref) {
-          (importerModule.typeBindings as Map<string, TypeRef>).set(name, resolved);
-        }
-      }
-    }
-  }
+			// Chain-follow this importer's own module typeBindings now —
+			// any local `const x = importedFn()` resolves while we have
+			// freshly-mirrored bindings, and downstream importers in a
+			// later (closer-to-root) SCC will see x's terminal type rather
+			// than an intra-module call ref.
+			for (const [name, ref] of importerModule.typeBindings) {
+				const resolved = followChainPostFinalize(ref, importerModule.id, indexes);
+				if (resolved !== ref) {
+					(importerModule.typeBindings as Map<string, TypeRef>).set(name, resolved);
+				}
+			}
+		}
+	}
 
-  // Final pass: chain-follow non-module scopes (function-local
-  // typeBindings). Module scopes were already followed inside the
-  // SCC loop above.
-  for (const parsed of parsedFiles) {
-    const moduleScopeId = moduleScopeByFile.get(parsed.filePath)?.id;
-    for (const scope of parsed.scopes) {
-      if (scope.id === moduleScopeId) continue;
-      for (const [name, ref] of scope.typeBindings) {
-        const resolved = followChainPostFinalize(ref, scope.id, indexes);
-        if (resolved !== ref) {
-          (scope.typeBindings as Map<string, TypeRef>).set(name, resolved);
-        }
-      }
-    }
-  }
+	// Final pass: chain-follow non-module scopes (function-local
+	// typeBindings). Module scopes were already followed inside the
+	// SCC loop above.
+	for (const parsed of parsedFiles) {
+		const moduleScopeId = moduleScopeByFile.get(parsed.filePath)?.id;
+		for (const scope of parsed.scopes) {
+			if (scope.id === moduleScopeId) continue;
+			for (const [name, ref] of scope.typeBindings) {
+				const resolved = followChainPostFinalize(ref, scope.id, indexes);
+				if (resolved !== ref) {
+					(scope.typeBindings as Map<string, TypeRef>).set(name, resolved);
+				}
+			}
+		}
+	}
 }

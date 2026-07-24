@@ -34,17 +34,21 @@
  */
 
 import {
-  getLanguageFromFilename,
-  type SupportedLanguages,
-  type WorkspaceIndex,
-} from 'gitnexus-shared';
-import type { ImportResolverFn, ImportResult, ResolveCtx } from './import-resolvers/types.js';
-import type { LanguageProvider } from './language-provider.js';
+	getLanguageFromFilename,
+	type SupportedLanguages,
+	type WorkspaceIndex,
+} from "gitnexus-shared";
+import type {
+	ImportResolverFn,
+	ImportResult,
+	ResolveCtx,
+} from "./import-resolvers/types.js";
+import type { LanguageProvider } from "./language-provider.js";
 
 /** A single language's resolver bundled with the context it needs. */
 export interface LanguageResolverEntry {
-  readonly resolver: ImportResolverFn;
-  readonly ctx: ResolveCtx;
+	readonly resolver: ImportResolverFn;
+	readonly ctx: ResolveCtx;
 }
 
 /**
@@ -53,7 +57,7 @@ export interface LanguageResolverEntry {
  * `buildImportTargetWorkspace`, threaded through `finalizeScopeModel`.
  */
 export interface ImportTargetWorkspace {
-  readonly perLanguage: ReadonlyMap<SupportedLanguages, LanguageResolverEntry>;
+	readonly perLanguage: ReadonlyMap<SupportedLanguages, LanguageResolverEntry>;
 }
 
 /**
@@ -66,15 +70,15 @@ export interface ImportTargetWorkspace {
  * DAG) and hand it to both the legacy resolution path and this factory.
  */
 export function buildImportTargetWorkspace(
-  providers: ReadonlyMap<SupportedLanguages, LanguageProvider>,
-  resolveCtx: ResolveCtx,
+	providers: ReadonlyMap<SupportedLanguages, LanguageProvider>,
+	resolveCtx: ResolveCtx,
 ): ImportTargetWorkspace {
-  const perLanguage = new Map<SupportedLanguages, LanguageResolverEntry>();
-  for (const [lang, provider] of providers) {
-    if (provider.importResolver === undefined) continue;
-    perLanguage.set(lang, { resolver: provider.importResolver, ctx: resolveCtx });
-  }
-  return { perLanguage };
+	const perLanguage = new Map<SupportedLanguages, LanguageResolverEntry>();
+	for (const [lang, provider] of providers) {
+		if (provider.importResolver === undefined) continue;
+		perLanguage.set(lang, { resolver: provider.importResolver, ctx: resolveCtx });
+	}
+	return { perLanguage };
 }
 
 /**
@@ -90,35 +94,36 @@ export function buildImportTargetWorkspace(
  * single site to extend.
  */
 export function resolveImportTargetAcrossLanguages(
-  targetRaw: string,
-  fromFile: string,
-  workspaceIndex: WorkspaceIndex,
+	targetRaw: string,
+	fromFile: string,
+	workspaceIndex: WorkspaceIndex,
 ): string | null {
-  const workspace = workspaceIndex as ImportTargetWorkspace | undefined;
-  if (workspace === undefined || workspace.perLanguage === undefined) return null;
+	const workspace = workspaceIndex as ImportTargetWorkspace | undefined;
+	if (workspace === undefined || workspace.perLanguage === undefined)
+		return null;
 
-  const lang = getLanguageFromFilename(fromFile);
-  if (lang === null) return null;
+	const lang = getLanguageFromFilename(fromFile);
+	if (lang === null) return null;
 
-  const entry = workspace.perLanguage.get(lang);
-  if (entry === undefined) return null;
+	const entry = workspace.perLanguage.get(lang);
+	if (entry === undefined) return null;
 
-  let result: ImportResult;
-  try {
-    result = entry.resolver(targetRaw, fromFile, entry.ctx);
-  } catch {
-    // Existing resolvers can throw on malformed inputs (e.g., Python
-    // relative paths above the workspace root). Swallow — the shared
-    // algorithm treats a null here as `linkStatus: 'unresolved'`, which
-    // is the right fallback.
-    return null;
-  }
-  if (result === null) return null;
+	let result: ImportResult;
+	try {
+		result = entry.resolver(targetRaw, fromFile, entry.ctx);
+	} catch {
+		// Existing resolvers can throw on malformed inputs (e.g., Python
+		// relative paths above the workspace root). Swallow — the shared
+		// algorithm treats a null here as `linkStatus: 'unresolved'`, which
+		// is the right fallback.
+		return null;
+	}
+	if (result === null) return null;
 
-  // Both `files` and `package` variants expose a `files` array; the
-  // package variant also carries `dirSuffix` which we ignore at the
-  // FinalizeHook boundary (single-file contract). Legacy consumers
-  // continue to see the full result via `importResolver` directly.
-  const first = result.files[0];
-  return first ?? null;
+	// Both `files` and `package` variants expose a `files` array; the
+	// package variant also carries `dirSuffix` which we ignore at the
+	// FinalizeHook boundary (single-file contract). Legacy consumers
+	// continue to see the full result via `importResolver` directly.
+	const first = result.files[0];
+	return first ?? null;
 }

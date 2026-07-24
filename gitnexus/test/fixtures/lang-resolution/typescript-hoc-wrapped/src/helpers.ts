@@ -6,6 +6,7 @@ export const helper = (label: string): string => label.toUpperCase();
 
 export const doStuff = (n: number): number => n + 1;
 
-export const cn = (...classes: string[]): string => classes.filter(Boolean).join(' ');
+export const cn = (...classes: string[]): string =>
+	classes.filter(Boolean).join(" ");
 
 export const fmt = (value: number): string => `[${value}]`;

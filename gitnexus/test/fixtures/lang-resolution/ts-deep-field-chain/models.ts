@@ -1,25 +1,25 @@
 export class City {
-  zipCode: string;
+	zipCode: string;
 
-  getName(): string {
-    return 'city';
-  }
+	getName(): string {
+		return "city";
+	}
 }
 
 export class Address {
-  city: City;
-  street: string;
+	city: City;
+	street: string;
 
-  save(): void {
-    // persist address
-  }
+	save(): void {
+		// persist address
+	}
 }
 
 export class User {
-  name: string;
-  address: Address;
+	name: string;
+	address: Address;
 
-  greet(): string {
-    return this.name;
-  }
+	greet(): string {
+		return this.name;
+	}
 }

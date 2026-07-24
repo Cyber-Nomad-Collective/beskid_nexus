@@ -1,11 +1,11 @@
-import { IRepository } from './repository';
+import type { IRepository } from "./repository";
 
 export class SqlRepository implements IRepository {
-    find(id: number): string {
-        return "found";
-    }
+	find(id: number): string {
+		return "found";
+	}
 
-    save(entity: string): boolean {
-        return true;
-    }
+	save(entity: string): boolean {
+		return true;
+	}
 }

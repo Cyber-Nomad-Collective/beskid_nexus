@@ -1,8 +1,8 @@
-const { UserService } = require('./service');
+const { UserService } = require("./service");
 
 function processUser() {
-  const svc = new UserService();
-  svc.getUser().save();
+	const svc = new UserService();
+	svc.getUser().save();
 }
 
 module.exports = { processUser };

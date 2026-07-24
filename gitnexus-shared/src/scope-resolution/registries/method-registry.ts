@@ -12,10 +12,10 @@
  *     `unknown` (neutral signal).
  */
 
-import type { Callsite, Resolution, ScopeId } from '../types.js';
-import { lookupCore, type CoreLookupParams } from './lookup-core.js';
-import type { OwnerScopedContributor, RegistryContext } from './context.js';
-import { METHOD_KINDS } from './context.js';
+import type { Callsite, Resolution, ScopeId } from "../types.js";
+import type { OwnerScopedContributor, RegistryContext } from "./context.js";
+import { METHOD_KINDS } from "./context.js";
+import { type CoreLookupParams, lookupCore } from "./lookup-core.js";
 
 /**
  * Extra per-call parameters that vary across call sites but NOT across
@@ -24,31 +24,35 @@ import { METHOD_KINDS } from './context.js';
  * arity knobs the RFC algorithm needs.
  */
 export interface MethodLookupOptions {
-  /** Call-site arity for `provider.arityCompatibility`. */
-  readonly callsite?: Callsite;
-  /** Explicit receiver (e.g., `user` in `user.save()`). See §4.1. */
-  readonly explicitReceiver?: { readonly name: string };
-  /** Optional per-owner contributor (Step 3). */
-  readonly ownerScopedContributor?: OwnerScopedContributor;
+	/** Call-site arity for `provider.arityCompatibility`. */
+	readonly callsite?: Callsite;
+	/** Explicit receiver (e.g., `user` in `user.save()`). See §4.1. */
+	readonly explicitReceiver?: { readonly name: string };
+	/** Optional per-owner contributor (Step 3). */
+	readonly ownerScopedContributor?: OwnerScopedContributor;
 }
 
 export interface MethodRegistry {
-  lookup(name: string, scope: ScopeId, options?: MethodLookupOptions): readonly Resolution[];
+	lookup(
+		name: string,
+		scope: ScopeId,
+		options?: MethodLookupOptions,
+	): readonly Resolution[];
 }
 
 export function buildMethodRegistry(ctx: RegistryContext): MethodRegistry {
-  return {
-    lookup(name: string, scope: ScopeId, options: MethodLookupOptions = {}) {
-      const params: CoreLookupParams = {
-        acceptedKinds: METHOD_KINDS,
-        useReceiverTypeBinding: true,
-        ownerScopedContributor: options.ownerScopedContributor ?? null,
-        ...(options.callsite !== undefined ? { callsite: options.callsite } : {}),
-        ...(options.explicitReceiver !== undefined
-          ? { explicitReceiver: options.explicitReceiver }
-          : {}),
-      };
-      return lookupCore(name, scope, params, ctx);
-    },
-  };
+	return {
+		lookup(name: string, scope: ScopeId, options: MethodLookupOptions = {}) {
+			const params: CoreLookupParams = {
+				acceptedKinds: METHOD_KINDS,
+				useReceiverTypeBinding: true,
+				ownerScopedContributor: options.ownerScopedContributor ?? null,
+				...(options.callsite !== undefined ? { callsite: options.callsite } : {}),
+				...(options.explicitReceiver !== undefined
+					? { explicitReceiver: options.explicitReceiver }
+					: {}),
+			};
+			return lookupCore(name, scope, params, ctx);
+		},
+	};
 }

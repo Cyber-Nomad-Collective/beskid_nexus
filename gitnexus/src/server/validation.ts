@@ -18,28 +18,31 @@
  * in this module too but are introduced with the dependency they require.
  */
 
-import path from 'node:path';
-import rateLimit, { type RateLimitRequestHandler, ipKeyGenerator } from 'express-rate-limit';
-import type { Request } from 'express';
+import path from "node:path";
+import type { Request } from "express";
+import rateLimit, {
+	ipKeyGenerator,
+	type RateLimitRequestHandler,
+} from "express-rate-limit";
 
 /**
  * Thrown by validation helpers when user input is rejected.
  * Routes catch via existing try/catch and convert with err.status / err.message.
  */
 export class BadRequestError extends Error {
-  readonly status: number;
-  constructor(message: string, status = 400) {
-    super(message);
-    this.name = 'BadRequestError';
-    this.status = status;
-  }
+	readonly status: number;
+	constructor(message: string, status = 400) {
+		super(message);
+		this.name = "BadRequestError";
+		this.status = status;
+	}
 }
 
 export class ForbiddenError extends BadRequestError {
-  constructor(message: string) {
-    super(message, 403);
-    this.name = 'ForbiddenError';
-  }
+	constructor(message: string) {
+		super(message, 403);
+		this.name = "ForbiddenError";
+	}
 }
 
 /**
@@ -55,13 +58,15 @@ export class ForbiddenError extends BadRequestError {
  * @throws BadRequestError when value is not a string (array, object, undefined, etc.)
  */
 export function assertString(value: unknown, fieldName: string): string {
-  if (typeof value !== 'string') {
-    if (Array.isArray(value)) {
-      throw new BadRequestError(`Parameter "${fieldName}" must be a single string, got an array`);
-    }
-    throw new BadRequestError(`Parameter "${fieldName}" must be a string`);
-  }
-  return value;
+	if (typeof value !== "string") {
+		if (Array.isArray(value)) {
+			throw new BadRequestError(
+				`Parameter "${fieldName}" must be a single string, got an array`,
+			);
+		}
+		throw new BadRequestError(`Parameter "${fieldName}" must be a string`);
+	}
+	return value;
 }
 
 /**
@@ -75,18 +80,21 @@ export function assertString(value: unknown, fieldName: string): string {
  * @throws ForbiddenError when the resolved path escapes the root
  */
 export function assertSafePath(rawPath: string, root: string): string {
-  if (rawPath.length === 0) {
-    throw new BadRequestError('Path must not be empty');
-  }
-  if (rawPath.includes('\0')) {
-    throw new BadRequestError('Path must not contain null bytes');
-  }
-  const resolvedRoot = path.resolve(root);
-  const fullPath = path.resolve(resolvedRoot, rawPath);
-  if (fullPath !== resolvedRoot && !fullPath.startsWith(resolvedRoot + path.sep)) {
-    throw new ForbiddenError('Path traversal denied');
-  }
-  return fullPath;
+	if (rawPath.length === 0) {
+		throw new BadRequestError("Path must not be empty");
+	}
+	if (rawPath.includes("\0")) {
+		throw new BadRequestError("Path must not contain null bytes");
+	}
+	const resolvedRoot = path.resolve(root);
+	const fullPath = path.resolve(resolvedRoot, rawPath);
+	if (
+		fullPath !== resolvedRoot &&
+		!fullPath.startsWith(resolvedRoot + path.sep)
+	) {
+		throw new ForbiddenError("Path traversal denied");
+	}
+	return fullPath;
 }
 
 /**
@@ -95,7 +103,7 @@ export function assertSafePath(rawPath: string, root: string): string {
  * and any future endpoint that constructs a regex from caller input.
  */
 export function escapeRegExp(input: string): string {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -118,9 +126,9 @@ const DEFAULT_RATE_LIMIT_RPM = 60;
  * legitimate per-route tuning.
  */
 export interface RouteLimiterOverrides {
-  windowMs?: number;
-  /** Canonical name in express-rate-limit v8+. `max` is the deprecated alias. */
-  limit?: number;
+	windowMs?: number;
+	/** Canonical name in express-rate-limit v8+. `max` is the deprecated alias. */
+	limit?: number;
 }
 
 /**
@@ -147,18 +155,20 @@ export interface RouteLimiterOverrides {
  * Tests pass `{ windowMs: 100, limit: 3 }` to keep limiter tests fast and
  * deterministic.
  */
-export function createRouteLimiter(opts?: RouteLimiterOverrides): RateLimitRequestHandler {
-  return rateLimit({
-    windowMs: 60 * 1000,
-    limit: DEFAULT_RATE_LIMIT_RPM,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    passOnStoreError: true,
-    keyGenerator: (req: Request) => {
-      const ip = req.ip ?? req.socket?.remoteAddress;
-      return ip ? ipKeyGenerator(ip) : 'unknown';
-    },
-    message: { error: 'Too many requests, please try again later.' },
-    ...opts,
-  });
+export function createRouteLimiter(
+	opts?: RouteLimiterOverrides,
+): RateLimitRequestHandler {
+	return rateLimit({
+		windowMs: 60 * 1000,
+		limit: DEFAULT_RATE_LIMIT_RPM,
+		standardHeaders: "draft-7",
+		legacyHeaders: false,
+		passOnStoreError: true,
+		keyGenerator: (req: Request) => {
+			const ip = req.ip ?? req.socket?.remoteAddress;
+			return ip ? ipKeyGenerator(ip) : "unknown";
+		},
+		message: { error: "Too many requests, please try again later." },
+		...opts,
+	});
 }

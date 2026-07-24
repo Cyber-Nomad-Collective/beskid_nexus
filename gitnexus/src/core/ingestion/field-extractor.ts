@@ -1,57 +1,70 @@
 // gitnexus/src/core/ingestion/field-extractor.ts
 
-import type { SyntaxNode } from './utils/ast-helpers.js';
-import { SupportedLanguages } from 'gitnexus-shared';
-import type { FieldExtractorContext, ExtractedFields, FieldVisibility } from './field-types.js';
+import type { SupportedLanguages } from "gitnexus-shared";
+import type {
+	ExtractedFields,
+	FieldExtractorContext,
+	FieldVisibility,
+} from "./field-types.js";
+import type { SyntaxNode } from "./utils/ast-helpers.js";
 
 /**
  * Language-specific field extractor
  */
 export interface FieldExtractor {
-  /** Language this extractor handles */
-  language: SupportedLanguages;
+	/** Language this extractor handles */
+	language: SupportedLanguages;
 
-  /**
-   * Extract fields from a class/struct/interface declaration
-   */
-  extract(node: SyntaxNode, context: FieldExtractorContext): ExtractedFields | null;
+	/**
+	 * Extract fields from a class/struct/interface declaration
+	 */
+	extract(
+		node: SyntaxNode,
+		context: FieldExtractorContext,
+	): ExtractedFields | null;
 
-  /**
-   * Check if this node represents a type declaration with fields
-   */
-  isTypeDeclaration(node: SyntaxNode): boolean;
+	/**
+	 * Check if this node represents a type declaration with fields
+	 */
+	isTypeDeclaration(node: SyntaxNode): boolean;
 }
 
 /**
  * Base class for field extractors with common utilities
  */
 export abstract class BaseFieldExtractor implements FieldExtractor {
-  abstract language: SupportedLanguages;
+	abstract language: SupportedLanguages;
 
-  abstract extract(node: SyntaxNode, context: FieldExtractorContext): ExtractedFields | null;
-  abstract isTypeDeclaration(node: SyntaxNode): boolean;
+	abstract extract(
+		node: SyntaxNode,
+		context: FieldExtractorContext,
+	): ExtractedFields | null;
+	abstract isTypeDeclaration(node: SyntaxNode): boolean;
 
-  protected normalizeType(type: string | null): string | null {
-    if (!type) return null;
-    return type.trim().replace(/\s+/g, ' ');
-  }
+	protected normalizeType(type: string | null): string | null {
+		if (!type) return null;
+		return type.trim().replace(/\s+/g, " ");
+	}
 
-  protected resolveType(typeName: string, context: FieldExtractorContext): string | null {
-    const { typeEnv, symbolTable, filePath } = context;
+	protected resolveType(
+		typeName: string,
+		context: FieldExtractorContext,
+	): string | null {
+		const { typeEnv, symbolTable, filePath } = context;
 
-    // Try to find in type environment (check file scope first)
-    const fileEnv = typeEnv.fileScope();
-    const local = fileEnv.get(typeName);
-    if (local) return local;
+		// Try to find in type environment (check file scope first)
+		const fileEnv = typeEnv.fileScope();
+		const local = fileEnv.get(typeName);
+		if (local) return local;
 
-    // Try symbol table lookup in current file
-    const symbols = symbolTable.lookupExactAll(filePath, typeName);
-    if (symbols.length === 1) {
-      return symbols[0].nodeId;
-    }
+		// Try symbol table lookup in current file
+		const symbols = symbolTable.lookupExactAll(filePath, typeName);
+		if (symbols.length === 1) {
+			return symbols[0].nodeId;
+		}
 
-    return typeName;
-  }
+		return typeName;
+	}
 
-  protected abstract extractVisibility(node: SyntaxNode): FieldVisibility;
+	protected abstract extractVisibility(node: SyntaxNode): FieldVisibility;
 }

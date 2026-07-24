@@ -1,7 +1,7 @@
 export class Address {
-  city: string;
+	city: string;
 
-  save(): void {
-    // persist address
-  }
+	save(): void {
+		// persist address
+	}
 }

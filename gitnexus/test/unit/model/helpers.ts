@@ -6,18 +6,20 @@
  * test file that uses it.
  */
 
-import type { SymbolDefinition } from 'gitnexus-shared';
+import type { SymbolDefinition } from "gitnexus-shared";
 
 /**
  * Build a {@link SymbolDefinition} with sensible defaults. Every field
  * is overridable. Defaults produce a Method-typed def so the caller
  * only has to override for other shapes.
  */
-export const makeDef = (overrides: Partial<SymbolDefinition> = {}): SymbolDefinition => ({
-  nodeId: 'def:test',
-  filePath: 'src/test.ts',
-  type: 'Method',
-  ...overrides,
+export const makeDef = (
+	overrides: Partial<SymbolDefinition> = {},
+): SymbolDefinition => ({
+	nodeId: "def:test",
+	filePath: "src/test.ts",
+	type: "Method",
+	...overrides,
 });
 
 /**

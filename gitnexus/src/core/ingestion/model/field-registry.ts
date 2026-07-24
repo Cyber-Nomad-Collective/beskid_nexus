@@ -5,15 +5,18 @@
  * Stores Property symbols keyed by `ownerNodeId\0fieldName` for O(1) lookup.
  */
 
-import type { SymbolDefinition } from 'gitnexus-shared';
+import type { SymbolDefinition } from "gitnexus-shared";
 
 // ---------------------------------------------------------------------------
 // Public read-only interface
 // ---------------------------------------------------------------------------
 
 export interface FieldRegistry {
-  /** Look up a field/property by its owning class nodeId and field name. */
-  lookupFieldByOwner(ownerNodeId: string, fieldName: string): SymbolDefinition | undefined;
+	/** Look up a field/property by its owning class nodeId and field name. */
+	lookupFieldByOwner(
+		ownerNodeId: string,
+		fieldName: string,
+	): SymbolDefinition | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -21,10 +24,10 @@ export interface FieldRegistry {
 // ---------------------------------------------------------------------------
 
 export interface MutableFieldRegistry extends FieldRegistry {
-  /** Register a field/property under its owner. */
-  register(ownerNodeId: string, fieldName: string, def: SymbolDefinition): void;
-  /** Clear all entries. */
-  clear(): void;
+	/** Register a field/property under its owner. */
+	register(ownerNodeId: string, fieldName: string, def: SymbolDefinition): void;
+	/** Clear all entries. */
+	clear(): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -32,22 +35,26 @@ export interface MutableFieldRegistry extends FieldRegistry {
 // ---------------------------------------------------------------------------
 
 export const createFieldRegistry = (): MutableFieldRegistry => {
-  const fieldByOwner = new Map<string, SymbolDefinition>();
+	const fieldByOwner = new Map<string, SymbolDefinition>();
 
-  const lookupFieldByOwner = (
-    ownerNodeId: string,
-    fieldName: string,
-  ): SymbolDefinition | undefined => {
-    return fieldByOwner.get(`${ownerNodeId}\0${fieldName}`);
-  };
+	const lookupFieldByOwner = (
+		ownerNodeId: string,
+		fieldName: string,
+	): SymbolDefinition | undefined => {
+		return fieldByOwner.get(`${ownerNodeId}\0${fieldName}`);
+	};
 
-  const register = (ownerNodeId: string, fieldName: string, def: SymbolDefinition): void => {
-    fieldByOwner.set(`${ownerNodeId}\0${fieldName}`, def);
-  };
+	const register = (
+		ownerNodeId: string,
+		fieldName: string,
+		def: SymbolDefinition,
+	): void => {
+		fieldByOwner.set(`${ownerNodeId}\0${fieldName}`, def);
+	};
 
-  const clear = (): void => {
-    fieldByOwner.clear();
-  };
+	const clear = (): void => {
+		fieldByOwner.clear();
+	};
 
-  return { lookupFieldByOwner, register, clear };
+	return { lookupFieldByOwner, register, clear };
 };

@@ -7,25 +7,25 @@
 
 // ── Phase exports (in dependency order) ────────────────────────────────────
 
-export { scanPhase, type ScanOutput } from './scan.js';
-export { structurePhase, type StructureOutput } from './structure.js';
-export { markdownPhase, type MarkdownOutput } from './markdown.js';
-export { cobolPhase, type CobolOutput } from './cobol.js';
-export { parsePhase, type ParseOutput } from './parse.js';
-export { routesPhase, type RoutesOutput, type RouteEntry } from './routes.js';
-export { toolsPhase, type ToolsOutput, type ToolDef } from './tools.js';
-export { ormPhase, type ORMOutput } from './orm.js';
-export { crossFilePhase, type CrossFileOutput } from './cross-file.js';
 export {
-  scopeResolutionPhase,
-  type ScopeResolutionOutput,
-} from '../scope-resolution/pipeline/phase.js';
-export { mroPhase, type MROOutput } from './mro.js';
-export { communitiesPhase, type CommunitiesOutput } from './communities.js';
-export { processesPhase, type ProcessesOutput } from './processes.js';
+	type ScopeResolutionOutput,
+	scopeResolutionPhase,
+} from "../scope-resolution/pipeline/phase.js";
+export { type CobolOutput, cobolPhase } from "./cobol.js";
+export { type CommunitiesOutput, communitiesPhase } from "./communities.js";
+export { type CrossFileOutput, crossFilePhase } from "./cross-file.js";
+export { type MarkdownOutput, markdownPhase } from "./markdown.js";
+export { type MROOutput, mroPhase } from "./mro.js";
+export { type ORMOutput, ormPhase } from "./orm.js";
+export { type ParseOutput, parsePhase } from "./parse.js";
+export { type ProcessesOutput, processesPhase } from "./processes.js";
+export { type RouteEntry, type RoutesOutput, routesPhase } from "./routes.js";
+export { type ScanOutput, scanPhase } from "./scan.js";
+export { type StructureOutput, structurePhase } from "./structure.js";
+export { type ToolDef, type ToolsOutput, toolsPhase } from "./tools.js";
 
 // ── Infrastructure ─────────────────────────────────────────────────────────
 
-export { runPipeline } from './runner.js';
-export type { PipelinePhase, PipelineContext, PhaseResult } from './types.js';
-export { getPhaseOutput } from './types.js';
+export { runPipeline } from "./runner.js";
+export type { PhaseResult, PipelineContext, PipelinePhase } from "./types.js";
+export { getPhaseOutput } from "./types.js";

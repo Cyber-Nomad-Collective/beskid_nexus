@@ -1,3 +1,3 @@
 export class Cache {
-  store(): void {}
+	store(): void {}
 }

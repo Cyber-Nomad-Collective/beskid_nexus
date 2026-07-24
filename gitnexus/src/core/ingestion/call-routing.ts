@@ -15,7 +15,7 @@
  * Keep both copies in sync until a shared package is introduced.
  */
 
-import type { SyntaxNode } from './utils/ast-helpers.js';
+import type { SyntaxNode } from "./utils/ast-helpers.js";
 
 // ── Call routing dispatch table ─────────────────────────────────────────────
 
@@ -28,30 +28,33 @@ export type CallRoutingResult = RubyCallRouting | null;
  * returns an importPath MUST validate it independently (length cap, control-char
  * rejection). See routeRubyCall for the reference implementation.
  */
-export type CallRouter = (calledName: string, callNode: SyntaxNode) => CallRoutingResult;
+export type CallRouter = (
+	calledName: string,
+	callNode: SyntaxNode,
+) => CallRoutingResult;
 
 // ── Result types ────────────────────────────────────────────────────────────
 
 export type RubyCallRouting =
-  | { kind: 'import'; importPath: string; isRelative: boolean }
-  | { kind: 'properties'; items: RubyPropertyItem[] }
-  | { kind: 'call' }
-  | { kind: 'skip' };
+	| { kind: "import"; importPath: string; isRelative: boolean }
+	| { kind: "properties"; items: RubyPropertyItem[] }
+	| { kind: "call" }
+	| { kind: "skip" };
 
-export type RubyAccessorType = 'attr_accessor' | 'attr_reader' | 'attr_writer';
+export type RubyAccessorType = "attr_accessor" | "attr_reader" | "attr_writer";
 
 export interface RubyPropertyItem {
-  propName: string;
-  accessorType: RubyAccessorType;
-  startLine: number;
-  endLine: number;
-  /** YARD @return [Type] annotation preceding the attr_accessor call */
-  declaredType?: string;
+	propName: string;
+	accessorType: RubyAccessorType;
+	startLine: number;
+	endLine: number;
+	/** YARD @return [Type] annotation preceding the attr_accessor call */
+	declaredType?: string;
 }
 
 // ── Pre-allocated singletons for common return values ────────────────────────
-const CALL_RESULT: RubyCallRouting = { kind: 'call' };
-const SKIP_RESULT: RubyCallRouting = { kind: 'skip' };
+const CALL_RESULT: RubyCallRouting = { kind: "call" };
+const SKIP_RESULT: RubyCallRouting = { kind: "skip" };
 
 // ── Routing function ────────────────────────────────────────────────────────
 
@@ -62,75 +65,90 @@ const SKIP_RESULT: RubyCallRouting = { kind: 'skip' };
  * @param callNode   - The tree-sitter `call` AST node
  * @returns A discriminated union describing the call's semantic role
  */
-export function routeRubyCall(calledName: string, callNode: SyntaxNode): RubyCallRouting {
-  // ── require / require_relative → import ─────────────────────────────────
-  if (calledName === 'require' || calledName === 'require_relative') {
-    const argList = callNode.childForFieldName?.('arguments');
-    const stringNode = argList?.children?.find((c: SyntaxNode) => c.type === 'string');
-    const contentNode = stringNode?.children?.find((c: SyntaxNode) => c.type === 'string_content');
-    if (!contentNode) return SKIP_RESULT;
+export function routeRubyCall(
+	calledName: string,
+	callNode: SyntaxNode,
+): RubyCallRouting {
+	// ── require / require_relative → import ─────────────────────────────────
+	if (calledName === "require" || calledName === "require_relative") {
+		const argList = callNode.childForFieldName?.("arguments");
+		const stringNode = argList?.children?.find(
+			(c: SyntaxNode) => c.type === "string",
+		);
+		const contentNode = stringNode?.children?.find(
+			(c: SyntaxNode) => c.type === "string_content",
+		);
+		if (!contentNode) return SKIP_RESULT;
 
-    let importPath: string = contentNode.text;
-    // Validate: reject null bytes, control chars, excessively long paths
-    if (!importPath || importPath.length > 1024 || /[\x00-\x1f]/.test(importPath)) {
-      return SKIP_RESULT;
-    }
-    const isRelative = calledName === 'require_relative';
-    if (isRelative && !importPath.startsWith('.')) {
-      importPath = './' + importPath;
-    }
-    return { kind: 'import', importPath, isRelative };
-  }
+		let importPath: string = contentNode.text;
+		// Validate: reject null bytes, control chars, excessively long paths
+		if (
+			!importPath ||
+			importPath.length > 1024 ||
+			/[\x00-\x1f]/.test(importPath)
+		) {
+			return SKIP_RESULT;
+		}
+		const isRelative = calledName === "require_relative";
+		if (isRelative && !importPath.startsWith(".")) {
+			importPath = "./" + importPath;
+		}
+		return { kind: "import", importPath, isRelative };
+	}
 
-  // ── include / extend / prepend — heritage (now handled by heritageExtractor) ─
-  // Call-based heritage is intercepted by heritageExtractor.extractFromCall
-  // before the call router runs.  Return SKIP_RESULT so these calls don't
-  // fall through to normal call processing.
-  if (calledName === 'include' || calledName === 'extend' || calledName === 'prepend') {
-    return SKIP_RESULT;
-  }
+	// ── include / extend / prepend — heritage (now handled by heritageExtractor) ─
+	// Call-based heritage is intercepted by heritageExtractor.extractFromCall
+	// before the call router runs.  Return SKIP_RESULT so these calls don't
+	// fall through to normal call processing.
+	if (
+		calledName === "include" ||
+		calledName === "extend" ||
+		calledName === "prepend"
+	) {
+		return SKIP_RESULT;
+	}
 
-  // ── attr_accessor / attr_reader / attr_writer → property definitions ───
-  if (
-    calledName === 'attr_accessor' ||
-    calledName === 'attr_reader' ||
-    calledName === 'attr_writer'
-  ) {
-    // Extract YARD @return [Type] from preceding comment (e.g. `# @return [Address]`)
-    let yardType: string | undefined;
-    let sibling = callNode.previousSibling;
-    while (sibling) {
-      if (sibling.type === 'comment') {
-        const match = /@return\s+\[([^\]]+)\]/.exec(sibling.text);
-        if (match) {
-          const raw = match[1].trim();
-          // Extract simple type name: "User", "Array<User>" → "User"
-          const simple = raw.match(/^([A-Z]\w*)/);
-          if (simple) yardType = simple[1];
-          break;
-        }
-      } else if (sibling.isNamed) {
-        break; // stop at non-comment named sibling
-      }
-      sibling = sibling.previousSibling;
-    }
+	// ── attr_accessor / attr_reader / attr_writer → property definitions ───
+	if (
+		calledName === "attr_accessor" ||
+		calledName === "attr_reader" ||
+		calledName === "attr_writer"
+	) {
+		// Extract YARD @return [Type] from preceding comment (e.g. `# @return [Address]`)
+		let yardType: string | undefined;
+		let sibling = callNode.previousSibling;
+		while (sibling) {
+			if (sibling.type === "comment") {
+				const match = /@return\s+\[([^\]]+)\]/.exec(sibling.text);
+				if (match) {
+					const raw = match[1].trim();
+					// Extract simple type name: "User", "Array<User>" → "User"
+					const simple = raw.match(/^([A-Z]\w*)/);
+					if (simple) yardType = simple[1];
+					break;
+				}
+			} else if (sibling.isNamed) {
+				break; // stop at non-comment named sibling
+			}
+			sibling = sibling.previousSibling;
+		}
 
-    const items: RubyPropertyItem[] = [];
-    const argList = callNode.childForFieldName?.('arguments');
-    for (const arg of argList?.children ?? []) {
-      if (arg.type === 'simple_symbol') {
-        items.push({
-          propName: arg.text.startsWith(':') ? arg.text.slice(1) : arg.text,
-          accessorType: calledName as RubyAccessorType,
-          startLine: arg.startPosition.row,
-          endLine: arg.endPosition.row,
-          ...(yardType ? { declaredType: yardType } : {}),
-        });
-      }
-    }
-    return items.length > 0 ? { kind: 'properties', items } : SKIP_RESULT;
-  }
+		const items: RubyPropertyItem[] = [];
+		const argList = callNode.childForFieldName?.("arguments");
+		for (const arg of argList?.children ?? []) {
+			if (arg.type === "simple_symbol") {
+				items.push({
+					propName: arg.text.startsWith(":") ? arg.text.slice(1) : arg.text,
+					accessorType: calledName as RubyAccessorType,
+					startLine: arg.startPosition.row,
+					endLine: arg.endPosition.row,
+					...(yardType ? { declaredType: yardType } : {}),
+				});
+			}
+		}
+		return items.length > 0 ? { kind: "properties", items } : SKIP_RESULT;
+	}
 
-  // ── Everything else → regular call ─────────────────────────────────────
-  return CALL_RESULT;
+	// ── Everything else → regular call ─────────────────────────────────────
+	return CALL_RESULT;
 }

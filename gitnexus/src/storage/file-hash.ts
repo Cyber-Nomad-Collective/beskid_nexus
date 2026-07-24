@@ -18,21 +18,23 @@
  * (Option B revision).
  */
 
-import { createHash } from 'crypto';
-import fs from 'fs/promises';
-import path from 'path';
+import { createHash } from "crypto";
+import fs from "fs/promises";
+import path from "path";
 
 /**
  * Compute SHA-256 of a single file. Returns null when the file can't be
  * read — caller treats that as "no signature, assume changed".
  */
-export const computeFileHash = async (absPath: string): Promise<string | null> => {
-  try {
-    const buf = await fs.readFile(absPath);
-    return createHash('sha256').update(buf).digest('hex');
-  } catch {
-    return null;
-  }
+export const computeFileHash = async (
+	absPath: string,
+): Promise<string | null> => {
+	try {
+		const buf = await fs.readFile(absPath);
+		return createHash("sha256").update(buf).digest("hex");
+	} catch {
+		return null;
+	}
 };
 
 /**
@@ -40,34 +42,34 @@ export const computeFileHash = async (absPath: string): Promise<string | null> =
  * fail to read are omitted from the result map.
  */
 export const computeFileHashes = async (
-  repoPath: string,
-  relPaths: readonly string[],
+	repoPath: string,
+	relPaths: readonly string[],
 ): Promise<Map<string, string>> => {
-  const out = new Map<string, string>();
-  const BATCH = 100;
-  for (let i = 0; i < relPaths.length; i += BATCH) {
-    const batch = relPaths.slice(i, i + BATCH);
-    const results = await Promise.all(
-      batch.map(async (rel) => {
-        const h = await computeFileHash(path.join(repoPath, rel));
-        return h ? ([rel, h] as const) : null;
-      }),
-    );
-    for (const r of results) if (r) out.set(r[0], r[1]);
-  }
-  return out;
+	const out = new Map<string, string>();
+	const BATCH = 100;
+	for (let i = 0; i < relPaths.length; i += BATCH) {
+		const batch = relPaths.slice(i, i + BATCH);
+		const results = await Promise.all(
+			batch.map(async (rel) => {
+				const h = await computeFileHash(path.join(repoPath, rel));
+				return h ? ([rel, h] as const) : null;
+			}),
+		);
+		for (const r of results) if (r) out.set(r[0], r[1]);
+	}
+	return out;
 };
 
 /** Result of comparing the current on-disk hashes against stored ones. */
 export interface FileHashDiff {
-  /** Files whose content hash differs from stored. */
-  changed: string[];
-  /** Files in the current scan that weren't in the stored map. */
-  added: string[];
-  /** Files in the stored map that aren't in the current scan. */
-  deleted: string[];
-  /** All files whose DB rows must be replaced (changed ∪ added). */
-  toWrite: string[];
+	/** Files whose content hash differs from stored. */
+	changed: string[];
+	/** Files in the current scan that weren't in the stored map. */
+	added: string[];
+	/** Files in the stored map that aren't in the current scan. */
+	deleted: string[];
+	/** All files whose DB rows must be replaced (changed ∪ added). */
+	toWrite: string[];
 }
 
 /**
@@ -77,28 +79,30 @@ export interface FileHashDiff {
  * changes — useful for stable logging / equivalence checks.
  */
 export const diffFileHashes = (
-  current: ReadonlyMap<string, string>,
-  stored: Readonly<Record<string, string>> | undefined,
+	current: ReadonlyMap<string, string>,
+	stored: Readonly<Record<string, string>> | undefined,
 ): FileHashDiff => {
-  const storedMap = new Map<string, string>(stored ? Object.entries(stored) : []);
-  const changed: string[] = [];
-  const added: string[] = [];
-  for (const [p, h] of current) {
-    const prev = storedMap.get(p);
-    if (prev === undefined) added.push(p);
-    else if (prev !== h) changed.push(p);
-  }
-  const deleted: string[] = [];
-  for (const p of storedMap.keys()) {
-    if (!current.has(p)) deleted.push(p);
-  }
-  changed.sort();
-  added.sort();
-  deleted.sort();
-  return {
-    changed,
-    added,
-    deleted,
-    toWrite: [...changed, ...added].sort(),
-  };
+	const storedMap = new Map<string, string>(
+		stored ? Object.entries(stored) : [],
+	);
+	const changed: string[] = [];
+	const added: string[] = [];
+	for (const [p, h] of current) {
+		const prev = storedMap.get(p);
+		if (prev === undefined) added.push(p);
+		else if (prev !== h) changed.push(p);
+	}
+	const deleted: string[] = [];
+	for (const p of storedMap.keys()) {
+		if (!current.has(p)) deleted.push(p);
+	}
+	changed.sort();
+	added.sort();
+	deleted.sort();
+	return {
+		changed,
+		added,
+		deleted,
+		toWrite: [...changed, ...added].sort(),
+	};
 };

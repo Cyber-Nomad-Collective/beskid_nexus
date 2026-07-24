@@ -1,12 +1,12 @@
 {
-  "name": "beskid-nexus",
-  "private": true,
-  "description": "Beskid compiler knowledge graph (GitNexus fork)",
-  "scripts": {
-    "build:shared": "cd gitnexus-shared && pnpm build",
-    "build:web": "cd gitnexus-web && pnpm build",
-    "build:cli": "cd gitnexus && pnpm build",
-    "build": "pnpm build:shared && pnpm build:cli && pnpm build:web",
-    "dev:web": "cd gitnexus-web && pnpm dev"
-  }
+	"name": "beskid-nexus",
+	"private": true,
+	"description": "Beskid compiler knowledge graph (GitNexus fork)",
+	"scripts": {
+		"build:shared": "cd gitnexus-shared && pnpm build",
+		"build:web": "cd gitnexus-web && pnpm build",
+		"build:cli": "cd gitnexus && pnpm build",
+		"build": "pnpm build:shared && pnpm build:cli && pnpm build:web",
+		"dev:web": "cd gitnexus-web && pnpm dev"
+	}
 }

@@ -1,13 +1,17 @@
-import * as path from 'node:path';
-import type { GrpcLanguagePlugin } from './types.js';
-import { GO_GRPC_PLUGIN } from './go.js';
-import { JAVA_GRPC_PLUGIN } from './java.js';
-import { PYTHON_GRPC_PLUGIN } from './python.js';
-import { JAVASCRIPT_GRPC_PLUGIN, TYPESCRIPT_GRPC_PLUGIN, TSX_GRPC_PLUGIN } from './node.js';
-import { PROTO_GRPC_PLUGIN } from './proto.js';
+import * as path from "node:path";
+import { GO_GRPC_PLUGIN } from "./go.js";
+import { JAVA_GRPC_PLUGIN } from "./java.js";
+import {
+	JAVASCRIPT_GRPC_PLUGIN,
+	TSX_GRPC_PLUGIN,
+	TYPESCRIPT_GRPC_PLUGIN,
+} from "./node.js";
+import { PROTO_GRPC_PLUGIN } from "./proto.js";
+import { PYTHON_GRPC_PLUGIN } from "./python.js";
+import type { GrpcLanguagePlugin } from "./types.js";
 
-export type { GrpcDetection, GrpcLanguagePlugin, GrpcRole } from './types.js';
-export { PROTO_GRPC_PLUGIN, extractPackageFromTree } from './proto.js';
+export { extractPackageFromTree, PROTO_GRPC_PLUGIN } from "./proto.js";
+export type { GrpcDetection, GrpcLanguagePlugin, GrpcRole } from "./types.js";
 
 /**
  * File-extension → gRPC language plugin registry. Mirrors the shape
@@ -18,14 +22,14 @@ export { PROTO_GRPC_PLUGIN, extractPackageFromTree } from './proto.js';
  * falls back to the built-in manual proto parser.
  */
 const REGISTRY: Record<string, GrpcLanguagePlugin> = {
-  '.go': GO_GRPC_PLUGIN,
-  '.java': JAVA_GRPC_PLUGIN,
-  '.py': PYTHON_GRPC_PLUGIN,
-  '.js': JAVASCRIPT_GRPC_PLUGIN,
-  '.jsx': JAVASCRIPT_GRPC_PLUGIN,
-  '.ts': TYPESCRIPT_GRPC_PLUGIN,
-  '.tsx': TSX_GRPC_PLUGIN,
-  ...(PROTO_GRPC_PLUGIN ? { '.proto': PROTO_GRPC_PLUGIN } : {}),
+	".go": GO_GRPC_PLUGIN,
+	".java": JAVA_GRPC_PLUGIN,
+	".py": PYTHON_GRPC_PLUGIN,
+	".js": JAVASCRIPT_GRPC_PLUGIN,
+	".jsx": JAVASCRIPT_GRPC_PLUGIN,
+	".ts": TYPESCRIPT_GRPC_PLUGIN,
+	".tsx": TSX_GRPC_PLUGIN,
+	...(PROTO_GRPC_PLUGIN ? { ".proto": PROTO_GRPC_PLUGIN } : {}),
 };
 
 /**
@@ -33,8 +37,8 @@ const REGISTRY: Record<string, GrpcLanguagePlugin> = {
  * Includes `.proto` when the grammar is available.
  */
 export const GRPC_SCAN_GLOB = PROTO_GRPC_PLUGIN
-  ? '**/*.{go,java,py,ts,tsx,js,jsx,proto}'
-  : '**/*.{go,java,py,ts,tsx,js,jsx}';
+	? "**/*.{go,java,py,ts,tsx,js,jsx,proto}"
+	: "**/*.{go,java,py,ts,tsx,js,jsx}";
 
 /**
  * Whether the tree-sitter proto plugin is available. The orchestrator
@@ -48,6 +52,6 @@ export const hasProtoPlugin = PROTO_GRPC_PLUGIN !== null;
  * or `undefined` if the extension is not registered.
  */
 export function getPluginForFile(rel: string): GrpcLanguagePlugin | undefined {
-  const ext = path.extname(rel).toLowerCase();
-  return REGISTRY[ext];
+	const ext = path.extname(rel).toLowerCase();
+	return REGISTRY[ext];
 }

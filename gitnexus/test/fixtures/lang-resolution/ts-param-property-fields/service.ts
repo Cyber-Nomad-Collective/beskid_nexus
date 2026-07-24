@@ -1,5 +1,5 @@
-import { User } from './models';
+import type { User } from "./models";
 
 function processUser(user: User) {
-  user.address.save();
+	user.address.save();
 }

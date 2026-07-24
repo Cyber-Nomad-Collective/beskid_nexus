@@ -8,4 +8,4 @@
  * analyze pipeline). New non-test code MAY import from `pool-adapter.js`
  * directly, but the shim must continue to exist for the mock seam to work.
  */
-export * from '../../core/lbug/pool-adapter.js';
+export * from "../../core/lbug/pool-adapter.js";

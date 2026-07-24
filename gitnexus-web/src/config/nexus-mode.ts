@@ -1,7 +1,7 @@
 /** True when the UI is built for a hosted Beskid Nexus deployment (not local CLI onboarding). */
 export const isHostedNexus = (): boolean => {
-	if (import.meta.env.VITE_NEXUS_HOSTED === '1') return true;
-	if (import.meta.env.VITE_NEXUS_HOSTED === '0') return false;
+	if (import.meta.env.VITE_NEXUS_HOSTED === "1") return true;
+	if (import.meta.env.VITE_NEXUS_HOSTED === "0") return false;
 	// Production bundles are served by `gitnexus serve` on the same origin.
 	return !import.meta.env.DEV;
 };

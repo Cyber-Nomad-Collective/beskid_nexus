@@ -59,10 +59,10 @@
  *     (which also doesn't track type-only separately) is preserved.
  */
 
-import type { BindingRef, NodeLabel } from 'gitnexus-shared';
+import type { BindingRef, NodeLabel } from "gitnexus-shared";
 
 /** Declaration spaces a TypeScript binding can occupy. */
-type Space = 'value' | 'type' | 'namespace';
+type Space = "value" | "type" | "namespace";
 
 const TIER_LOCAL = 0;
 const TIER_IMPORT = 1;
@@ -70,18 +70,18 @@ const TIER_WILDCARD = 2;
 const TIER_UNKNOWN = 3;
 
 function tierOf(b: BindingRef): number {
-  switch (b.origin) {
-    case 'local':
-      return TIER_LOCAL;
-    case 'reexport':
-    case 'import':
-    case 'namespace':
-      return TIER_IMPORT;
-    case 'wildcard':
-      return TIER_WILDCARD;
-    default:
-      return TIER_UNKNOWN;
-  }
+	switch (b.origin) {
+		case "local":
+			return TIER_LOCAL;
+		case "reexport":
+		case "import":
+		case "namespace":
+			return TIER_IMPORT;
+		case "wildcard":
+			return TIER_WILDCARD;
+		default:
+			return TIER_UNKNOWN;
+	}
 }
 
 /**
@@ -92,77 +92,79 @@ function tierOf(b: BindingRef): number {
  * matching legacy behavior where everything lives in a single flat bucket.
  */
 function spacesOf(type: NodeLabel): readonly Space[] {
-  switch (type) {
-    // value-only
-    case 'Function':
-    case 'Method':
-    case 'Variable':
-    case 'Const':
-    case 'Static':
-    case 'Property':
-    case 'Constructor':
-    case 'Macro':
-      return ['value'];
+	switch (type) {
+		// value-only
+		case "Function":
+		case "Method":
+		case "Variable":
+		case "Const":
+		case "Static":
+		case "Property":
+		case "Constructor":
+		case "Macro":
+			return ["value"];
 
-    // type-only
-    case 'Interface':
-    case 'Type':
-    case 'TypeAlias':
-    case 'Typedef':
-    case 'Trait':
-    case 'Annotation':
-    case 'Decorator':
-      return ['type'];
+		// type-only
+		case "Interface":
+		case "Type":
+		case "TypeAlias":
+		case "Typedef":
+		case "Trait":
+		case "Annotation":
+		case "Decorator":
+			return ["type"];
 
-    // dual: value AND type
-    case 'Class':
-    case 'Enum':
-    case 'Struct':
-    case 'Record':
-    case 'Union':
-      return ['value', 'type'];
+		// dual: value AND type
+		case "Class":
+		case "Enum":
+		case "Struct":
+		case "Record":
+		case "Union":
+			return ["value", "type"];
 
-    // namespace AND value (namespaces introduce a runtime object AND a
-    // named scope for static-style access)
-    case 'Namespace':
-    case 'Module':
-      return ['namespace', 'value'];
+		// namespace AND value (namespaces introduce a runtime object AND a
+		// named scope for static-style access)
+		case "Namespace":
+		case "Module":
+			return ["namespace", "value"];
 
-    // catch-all — treat as value to match legacy permissive behavior
-    default:
-      return ['value'];
-  }
+		// catch-all — treat as value to match legacy permissive behavior
+		default:
+			return ["value"];
+	}
 }
 
-export function typescriptMergeBindings(bindings: readonly BindingRef[]): readonly BindingRef[] {
-  if (bindings.length === 0) return bindings;
+export function typescriptMergeBindings(
+	bindings: readonly BindingRef[],
+): readonly BindingRef[] {
+	if (bindings.length === 0) return bindings;
 
-  // Partition bindings by space. A single binding occupying two spaces
-  // (e.g. a class) is duplicated into both partitions; the final dedupe
-  // by nodeId collapses it back.
-  const perSpace = new Map<Space, BindingRef[]>();
-  for (const b of bindings) {
-    const spaces = spacesOf(b.def.type);
-    for (const s of spaces) {
-      const list = perSpace.get(s);
-      if (list === undefined) perSpace.set(s, [b]);
-      else list.push(b);
-    }
-  }
+	// Partition bindings by space. A single binding occupying two spaces
+	// (e.g. a class) is duplicated into both partitions; the final dedupe
+	// by nodeId collapses it back.
+	const perSpace = new Map<Space, BindingRef[]>();
+	for (const b of bindings) {
+		const spaces = spacesOf(b.def.type);
+		for (const s of spaces) {
+			const list = perSpace.get(s);
+			if (list === undefined) perSpace.set(s, [b]);
+			else list.push(b);
+		}
+	}
 
-  // Within each space, keep only the best-tier bindings.
-  const survivorsSet = new Set<BindingRef>();
-  for (const list of perSpace.values()) {
-    let bestTier = Number.POSITIVE_INFINITY;
-    for (const b of list) bestTier = Math.min(bestTier, tierOf(b));
-    for (const b of list) {
-      if (tierOf(b) === bestTier) survivorsSet.add(b);
-    }
-  }
+	// Within each space, keep only the best-tier bindings.
+	const survivorsSet = new Set<BindingRef>();
+	for (const list of perSpace.values()) {
+		let bestTier = Number.POSITIVE_INFINITY;
+		for (const b of list) bestTier = Math.min(bestTier, tierOf(b));
+		for (const b of list) {
+			if (tierOf(b) === bestTier) survivorsSet.add(b);
+		}
+	}
 
-  // Dedupe by def.nodeId. If the same binding survived in multiple
-  // spaces (e.g. a class in both value + type) we keep a single entry.
-  const seen = new Map<string, BindingRef>();
-  for (const b of survivorsSet) seen.set(b.def.nodeId, b);
-  return [...seen.values()];
+	// Dedupe by def.nodeId. If the same binding survived in multiple
+	// spaces (e.g. a class in both value + type) we keep a single entry.
+	const seen = new Map<string, BindingRef>();
+	for (const b of survivorsSet) seen.set(b.def.nodeId, b);
+	return [...seen.values()];
 }

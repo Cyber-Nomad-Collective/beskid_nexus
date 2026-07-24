@@ -12,27 +12,27 @@
  * reaches into the CLI package.
  */
 
-import type { NodeLabel } from '../../graph/types.js';
-import type { SymbolDefinition } from '../symbol-definition.js';
-import type { Callsite, DefId } from '../types.js';
-import type { DefIndex } from '../def-index.js';
-import type { QualifiedNameIndex } from '../qualified-name-index.js';
-import type { ModuleScopeIndex } from '../module-scope-index.js';
-import type { ScopeTree } from '../scope-tree.js';
-import type { MethodDispatchIndex } from '../method-dispatch-index.js';
+import type { NodeLabel } from "../../graph/types.js";
+import type { DefIndex } from "../def-index.js";
+import type { MethodDispatchIndex } from "../method-dispatch-index.js";
+import type { ModuleScopeIndex } from "../module-scope-index.js";
+import type { QualifiedNameIndex } from "../qualified-name-index.js";
+import type { ScopeTree } from "../scope-tree.js";
+import type { SymbolDefinition } from "../symbol-definition.js";
+import type { Callsite, DefId } from "../types.js";
 
 // ─── Provider hooks consumed by the registries ─────────────────────────────
 
 export interface RegistryProviders {
-  /**
-   * Language-specific arity compatibility between a callsite and a candidate
-   * `def`. Mirrors `LanguageProvider.arityCompatibility` from #911. Optional:
-   * when absent, every candidate receives `'unknown'` (neutral signal).
-   */
-  arityCompatibility?(callsite: Callsite, def: SymbolDefinition): ArityVerdict;
+	/**
+	 * Language-specific arity compatibility between a callsite and a candidate
+	 * `def`. Mirrors `LanguageProvider.arityCompatibility` from #911. Optional:
+	 * when absent, every candidate receives `'unknown'` (neutral signal).
+	 */
+	arityCompatibility?(callsite: Callsite, def: SymbolDefinition): ArityVerdict;
 }
 
-export type ArityVerdict = 'compatible' | 'unknown' | 'incompatible';
+export type ArityVerdict = "compatible" | "unknown" | "incompatible";
 
 // ─── Owner-scoped contributor (concrete shape for `RegistryContributor`) ────
 
@@ -50,29 +50,29 @@ export type ArityVerdict = 'compatible' | 'unknown' | 'incompatible';
  * to this concrete shape here in Ring 2 SHARED (#917).
  */
 export interface OwnerScopedContributor {
-  /** The owner (class/struct/trait/interface) that bounds this view. */
-  readonly ownerDefId: DefId;
-  /**
-   * Methods / fields directly declared on the owner, keyed by simple name.
-   * Return empty array on miss; implementations should NOT walk the MRO —
-   * that's `MethodDispatchIndex`'s job, handled in the type-binding step.
-   */
-  byName(name: string): readonly SymbolDefinition[];
+	/** The owner (class/struct/trait/interface) that bounds this view. */
+	readonly ownerDefId: DefId;
+	/**
+	 * Methods / fields directly declared on the owner, keyed by simple name.
+	 * Return empty array on miss; implementations should NOT walk the MRO —
+	 * that's `MethodDispatchIndex`'s job, handled in the type-binding step.
+	 */
+	byName(name: string): readonly SymbolDefinition[];
 }
 
 // ─── Top-level context threaded through every lookup ───────────────────────
 
 export interface RegistryContext {
-  readonly scopes: ScopeTree;
-  readonly defs: DefIndex;
-  readonly qualifiedNames: QualifiedNameIndex;
-  readonly moduleScopes: ModuleScopeIndex;
-  /**
-   * Method-dispatch index; required for method/field registries that
-   * honor `useReceiverTypeBinding`. Omit for class-only lookups.
-   */
-  readonly methodDispatch?: MethodDispatchIndex;
-  readonly providers: RegistryProviders;
+	readonly scopes: ScopeTree;
+	readonly defs: DefIndex;
+	readonly qualifiedNames: QualifiedNameIndex;
+	readonly moduleScopes: ModuleScopeIndex;
+	/**
+	 * Method-dispatch index; required for method/field registries that
+	 * honor `useReceiverTypeBinding`. Omit for class-only lookups.
+	 */
+	readonly methodDispatch?: MethodDispatchIndex;
+	readonly providers: RegistryProviders;
 }
 
 // ─── Per-kind default `acceptedKinds` sets ─────────────────────────────────
@@ -81,30 +81,30 @@ export interface RegistryContext {
 // points at the right constant + passes it to `lookupCore`).
 
 export const CLASS_KINDS: readonly NodeLabel[] = Object.freeze([
-  'Class',
-  'Interface',
-  'Enum',
-  'Struct',
-  'Union',
-  'Trait',
-  'TypeAlias',
-  'Typedef',
-  'Record',
-  'Delegate',
-  'Annotation',
-  'Template',
-  'Namespace',
+	"Class",
+	"Interface",
+	"Enum",
+	"Struct",
+	"Union",
+	"Trait",
+	"TypeAlias",
+	"Typedef",
+	"Record",
+	"Delegate",
+	"Annotation",
+	"Template",
+	"Namespace",
 ]);
 
 export const METHOD_KINDS: readonly NodeLabel[] = Object.freeze([
-  'Method',
-  'Function',
-  'Constructor',
+	"Method",
+	"Function",
+	"Constructor",
 ]);
 
 export const FIELD_KINDS: readonly NodeLabel[] = Object.freeze([
-  'Variable',
-  'Property',
-  'Const',
-  'Static',
+	"Variable",
+	"Property",
+	"Const",
+	"Static",
 ]);

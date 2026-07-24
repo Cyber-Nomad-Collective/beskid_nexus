@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useRef } from 'react';
-
-import { BESKID_NEXUS } from '../config/beskid-nexus';
-import { ERROR_RESET_DELAY_MS } from '../config/ui-constants';
-import { createKnowledgeGraph } from '../core/graph/graph';
+import type { PipelineProgress } from "gitnexus-shared";
+import { useCallback, useEffect, useRef } from "react";
+import { BESKID_NEXUS } from "../config/beskid-nexus";
+import { ERROR_RESET_DELAY_MS } from "../config/ui-constants";
+import { createKnowledgeGraph } from "../core/graph/graph";
 import {
+	type ConnectResult,
 	connectToServer,
 	fetchRepos,
 	normalizeServerUrl,
-	type ConnectResult,
-} from '../services/backend-client';
-import type { PipelineProgress } from 'gitnexus-shared';
+} from "../services/backend-client";
 
-import { useAppState } from './useAppState';
+import { useAppState } from "./useAppState";
 
 function connectProgress(
 	setProgress: (progress: PipelineProgress | null) => void,
@@ -19,32 +18,32 @@ function connectProgress(
 	downloaded?: number,
 	total?: number,
 ) {
-	if (phase === 'validating') {
+	if (phase === "validating") {
 		setProgress({
-			phase: 'extracting',
+			phase: "extracting",
 			percent: 5,
-			message: 'Connecting to server…',
-			detail: 'Validating backend',
+			message: "Connecting to server…",
+			detail: "Validating backend",
 		});
 		return;
 	}
-	if (phase === 'downloading') {
+	if (phase === "downloading") {
 		const pct = total ? Math.round((downloaded! / total) * 90) + 5 : 50;
 		const mb = ((downloaded ?? 0) / (1024 * 1024)).toFixed(1);
 		setProgress({
-			phase: 'extracting',
+			phase: "extracting",
 			percent: pct,
-			message: 'Loading compiler graph…',
+			message: "Loading compiler graph…",
 			detail: `${mb} MB downloaded`,
 		});
 		return;
 	}
-	if (phase === 'extracting') {
+	if (phase === "extracting") {
 		setProgress({
-			phase: 'extracting',
+			phase: "extracting",
 			percent: 97,
-			message: 'Processing…',
-			detail: 'Preparing visualization',
+			message: "Processing…",
+			detail: "Preparing visualization",
 		});
 	}
 }
@@ -69,7 +68,7 @@ export function useServerBootstrap() {
 			const repoPath = result.repoInfo.repoPath ?? result.repoInfo.path;
 			const projectName =
 				repoName ||
-				(repoPath || '').replace(/\\/g, '/').split('/').filter(Boolean).pop() ||
+				(repoPath || "").replace(/\\/g, "/").split("/").filter(Boolean).pop() ||
 				BESKID_NEXUS.defaultRepo;
 
 			setProjectName(projectName);
@@ -81,9 +80,9 @@ export function useServerBootstrap() {
 			setGraph(graph);
 
 			const url = new URL(window.location.href);
-			url.searchParams.set('project', projectName);
-			window.history.replaceState(null, '', url.toString());
-			setViewMode('exploring');
+			url.searchParams.set("project", projectName);
+			window.history.replaceState(null, "", url.toString());
+			setViewMode("exploring");
 		},
 		[setCurrentRepo, setGraph, setProjectName, setViewMode],
 	);
@@ -93,21 +92,26 @@ export function useServerBootstrap() {
 		bootstrapped.current = true;
 
 		const params = new URLSearchParams(window.location.search);
-		const project = params.get('project') || BESKID_NEXUS.defaultRepo;
-		const serverUrl = params.get('server') || window.location.origin;
+		const project = params.get("project") || BESKID_NEXUS.defaultRepo;
+		const serverUrl = params.get("server") || window.location.origin;
 
 		setProgress({
-			phase: 'extracting',
+			phase: "extracting",
 			percent: 0,
-			message: 'Connecting to server…',
-			detail: 'Compiler knowledge graph',
+			message: "Connecting to server…",
+			detail: "Compiler knowledge graph",
 		});
-		setViewMode('loading');
+		setViewMode("loading");
 
 		connectToServer(
 			serverUrl,
 			(phase, downloaded, total) =>
-				connectProgress(setProgress, phase, downloaded ?? undefined, total ?? undefined),
+				connectProgress(
+					setProgress,
+					phase,
+					downloaded ?? undefined,
+					total ?? undefined,
+				),
 			undefined,
 			project,
 			{ awaitAnalysis: true },
@@ -118,18 +122,18 @@ export function useServerBootstrap() {
 				setServerBaseUrl(normalizeServerUrl(serverUrl));
 				fetchRepos()
 					.then(setAvailableRepos)
-					.catch((err) => console.warn('Failed to fetch repo list:', err));
+					.catch((err) => console.warn("Failed to fetch repo list:", err));
 			})
 			.catch((err) => {
-				console.error('Server bootstrap failed:', err);
+				console.error("Server bootstrap failed:", err);
 				setProgress({
-					phase: 'error',
+					phase: "error",
 					percent: 0,
-					message: 'Failed to connect',
-					detail: err instanceof Error ? err.message : 'Unknown error',
+					message: "Failed to connect",
+					detail: err instanceof Error ? err.message : "Unknown error",
 				});
 				setTimeout(() => {
-					setViewMode('loading');
+					setViewMode("loading");
 					setProgress(null);
 					bootstrapped.current = false;
 				}, ERROR_RESET_DELAY_MS);

@@ -1,8 +1,8 @@
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod } from "@nestjs/microservices";
 
 export class AuthController {
-  @GrpcMethod('AuthService', 'Login')
-  login(data: unknown): unknown {
-    return { token: 'ok' };
-  }
+	@GrpcMethod("AuthService", "Login")
+	login(data: unknown): unknown {
+		return { token: "ok" };
+	}
 }

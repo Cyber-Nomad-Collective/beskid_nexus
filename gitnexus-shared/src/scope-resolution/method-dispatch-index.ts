@@ -28,137 +28,143 @@
  * dispatch resolver).
  */
 
-import type { DefId } from './types.js';
+import type { DefId } from "./types.js";
 
 // ─── Public contracts ───────────────────────────────────────────────────────
 
 export interface MethodDispatchIndex {
-  /**
-   * Full MRO ancestor chain per owner class (excludes the owner itself).
-   * Order reflects the per-language strategy used by `computeMro`.
-   */
-  readonly mroByOwnerDefId: ReadonlyMap<DefId, readonly DefId[]>;
-  /** Interfaces / traits → classes that implement them. */
-  readonly implsByInterfaceDefId: ReadonlyMap<DefId, readonly DefId[]>;
-  /**
-   * Optional parallel MRO view that EXCLUDES mixin-like augmentation
-   * (e.g., PHP traits). Populated only when the input supplies
-   * `computeExtendsOnlyMro`. Used by the super-branch dispatch in
-   * `receiver-bound-calls` so that `parent::method()` walks the
-   * inheritance chain only, not the trait-augmented one. Undefined for
-   * languages without mixin-like semantics — callers should fall back
-   * to `mroFor` when this is missing.
-   */
-  readonly extendsOnlyMroByOwnerDefId?: ReadonlyMap<DefId, readonly DefId[]>;
+	/**
+	 * Full MRO ancestor chain per owner class (excludes the owner itself).
+	 * Order reflects the per-language strategy used by `computeMro`.
+	 */
+	readonly mroByOwnerDefId: ReadonlyMap<DefId, readonly DefId[]>;
+	/** Interfaces / traits → classes that implement them. */
+	readonly implsByInterfaceDefId: ReadonlyMap<DefId, readonly DefId[]>;
+	/**
+	 * Optional parallel MRO view that EXCLUDES mixin-like augmentation
+	 * (e.g., PHP traits). Populated only when the input supplies
+	 * `computeExtendsOnlyMro`. Used by the super-branch dispatch in
+	 * `receiver-bound-calls` so that `parent::method()` walks the
+	 * inheritance chain only, not the trait-augmented one. Undefined for
+	 * languages without mixin-like semantics — callers should fall back
+	 * to `mroFor` when this is missing.
+	 */
+	readonly extendsOnlyMroByOwnerDefId?: ReadonlyMap<DefId, readonly DefId[]>;
 
-  /** `mroByOwnerDefId.get`, with an empty frozen array on miss. */
-  mroFor(ownerDefId: DefId): readonly DefId[];
-  /** `implsByInterfaceDefId.get`, with an empty frozen array on miss. */
-  implementorsOf(interfaceDefId: DefId): readonly DefId[];
-  /**
-   * `extendsOnlyMroByOwnerDefId.get`, with an empty frozen array on miss.
-   * Undefined when `extendsOnlyMroByOwnerDefId` was not populated; callers
-   * should treat this as equivalent to `mroFor` for non-mixin languages.
-   */
-  readonly extendsOnlyMroFor?: (ownerDefId: DefId) => readonly DefId[];
+	/** `mroByOwnerDefId.get`, with an empty frozen array on miss. */
+	mroFor(ownerDefId: DefId): readonly DefId[];
+	/** `implsByInterfaceDefId.get`, with an empty frozen array on miss. */
+	implementorsOf(interfaceDefId: DefId): readonly DefId[];
+	/**
+	 * `extendsOnlyMroByOwnerDefId.get`, with an empty frozen array on miss.
+	 * Undefined when `extendsOnlyMroByOwnerDefId` was not populated; callers
+	 * should treat this as equivalent to `mroFor` for non-mixin languages.
+	 */
+	readonly extendsOnlyMroFor?: (ownerDefId: DefId) => readonly DefId[];
 }
 
 export interface MethodDispatchInput {
-  /**
-   * Owner defs to index (classes, structs, traits, interfaces — any kind
-   * that can appear on the owner side of a method-dispatch graph).
-   */
-  readonly owners: readonly DefId[];
-  /**
-   * Return the full MRO ancestor chain for `ownerDefId`, **excluding the
-   * owner itself**, in the order dictated by the owner's language-specific
-   * MRO strategy.
-   *
-   * Contract:
-   *   - Pure (no side effects).
-   *   - Deterministic per input.
-   *   - `undefined` not allowed — return `[]` when the owner has no parents.
-   */
-  readonly computeMro: (ownerDefId: DefId) => readonly DefId[];
-  /**
-   * Return the set of interface/trait defs that `ownerDefId` implements.
-   * Transitive inclusion (e.g., `implements` on a parent class) is the
-   * caller's choice — the build function simply inverts whatever is
-   * returned.
-   *
-   * Repeated IDs in the output are deduplicated automatically.
-   *
-   * **Call-count contract.** `implementsOf` is invoked **once per
-   * occurrence** of an owner in `input.owners`, not once per unique
-   * owner. Duplicate owners therefore re-invoke it; dedup happens at
-   * the bucket layer (after the callback returns). Callers with
-   * expensive `implementsOf` implementations should pass a deduplicated
-   * `owners` list. `computeMro`, by contrast, is memoized by the first-
-   * write-wins policy and fires at most once per unique owner.
-   */
-  readonly implementsOf: (ownerDefId: DefId) => readonly DefId[];
-  /**
-   * Optional: return the EXTENDS-only ancestor chain for `ownerDefId`,
-   * excluding the owner itself AND any mixin-like augmentation (e.g.,
-   * PHP traits). Languages without mixin semantics leave this undefined
-   * and the index's `extendsOnlyMroByOwnerDefId` stays unpopulated.
-   *
-   * Same contract as `computeMro`: pure, deterministic, `[]` on no parents.
-   * Called at most once per unique owner (first-write-wins).
-   */
-  readonly computeExtendsOnlyMro?: (ownerDefId: DefId) => readonly DefId[];
+	/**
+	 * Owner defs to index (classes, structs, traits, interfaces — any kind
+	 * that can appear on the owner side of a method-dispatch graph).
+	 */
+	readonly owners: readonly DefId[];
+	/**
+	 * Return the full MRO ancestor chain for `ownerDefId`, **excluding the
+	 * owner itself**, in the order dictated by the owner's language-specific
+	 * MRO strategy.
+	 *
+	 * Contract:
+	 *   - Pure (no side effects).
+	 *   - Deterministic per input.
+	 *   - `undefined` not allowed — return `[]` when the owner has no parents.
+	 */
+	readonly computeMro: (ownerDefId: DefId) => readonly DefId[];
+	/**
+	 * Return the set of interface/trait defs that `ownerDefId` implements.
+	 * Transitive inclusion (e.g., `implements` on a parent class) is the
+	 * caller's choice — the build function simply inverts whatever is
+	 * returned.
+	 *
+	 * Repeated IDs in the output are deduplicated automatically.
+	 *
+	 * **Call-count contract.** `implementsOf` is invoked **once per
+	 * occurrence** of an owner in `input.owners`, not once per unique
+	 * owner. Duplicate owners therefore re-invoke it; dedup happens at
+	 * the bucket layer (after the callback returns). Callers with
+	 * expensive `implementsOf` implementations should pass a deduplicated
+	 * `owners` list. `computeMro`, by contrast, is memoized by the first-
+	 * write-wins policy and fires at most once per unique owner.
+	 */
+	readonly implementsOf: (ownerDefId: DefId) => readonly DefId[];
+	/**
+	 * Optional: return the EXTENDS-only ancestor chain for `ownerDefId`,
+	 * excluding the owner itself AND any mixin-like augmentation (e.g.,
+	 * PHP traits). Languages without mixin semantics leave this undefined
+	 * and the index's `extendsOnlyMroByOwnerDefId` stays unpopulated.
+	 *
+	 * Same contract as `computeMro`: pure, deterministic, `[]` on no parents.
+	 * Called at most once per unique owner (first-write-wins).
+	 */
+	readonly computeExtendsOnlyMro?: (ownerDefId: DefId) => readonly DefId[];
 }
 
 // ─── Builder ────────────────────────────────────────────────────────────────
 
-export function buildMethodDispatchIndex(input: MethodDispatchInput): MethodDispatchIndex {
-  const mroByOwnerDefId = new Map<DefId, readonly DefId[]>();
-  const extendsOnlyByOwnerDefId = input.computeExtendsOnlyMro
-    ? new Map<DefId, readonly DefId[]>()
-    : undefined;
-  const implsBuilding = new Map<DefId, DefId[]>();
-  const implsSeen = new Map<DefId, Set<DefId>>();
+export function buildMethodDispatchIndex(
+	input: MethodDispatchInput,
+): MethodDispatchIndex {
+	const mroByOwnerDefId = new Map<DefId, readonly DefId[]>();
+	const extendsOnlyByOwnerDefId = input.computeExtendsOnlyMro
+		? new Map<DefId, readonly DefId[]>()
+		: undefined;
+	const implsBuilding = new Map<DefId, DefId[]>();
+	const implsSeen = new Map<DefId, Set<DefId>>();
 
-  for (const ownerId of input.owners) {
-    // First-write-wins on duplicate owner ids: a stable policy consistent
-    // with sibling indexes (#913 DefIndex / ModuleScopeIndex).
-    if (!mroByOwnerDefId.has(ownerId)) {
-      const chain = input.computeMro(ownerId);
-      mroByOwnerDefId.set(ownerId, Object.freeze(chain.slice()));
-    }
-    if (
-      input.computeExtendsOnlyMro !== undefined &&
-      extendsOnlyByOwnerDefId !== undefined &&
-      !extendsOnlyByOwnerDefId.has(ownerId)
-    ) {
-      const extOnly = input.computeExtendsOnlyMro(ownerId);
-      extendsOnlyByOwnerDefId.set(ownerId, Object.freeze(extOnly.slice()));
-    }
+	for (const ownerId of input.owners) {
+		// First-write-wins on duplicate owner ids: a stable policy consistent
+		// with sibling indexes (#913 DefIndex / ModuleScopeIndex).
+		if (!mroByOwnerDefId.has(ownerId)) {
+			const chain = input.computeMro(ownerId);
+			mroByOwnerDefId.set(ownerId, Object.freeze(chain.slice()));
+		}
+		if (
+			input.computeExtendsOnlyMro !== undefined &&
+			extendsOnlyByOwnerDefId !== undefined &&
+			!extendsOnlyByOwnerDefId.has(ownerId)
+		) {
+			const extOnly = input.computeExtendsOnlyMro(ownerId);
+			extendsOnlyByOwnerDefId.set(ownerId, Object.freeze(extOnly.slice()));
+		}
 
-    for (const ifaceId of input.implementsOf(ownerId)) {
-      let seen = implsSeen.get(ifaceId);
-      if (seen === undefined) {
-        seen = new Set<DefId>();
-        implsSeen.set(ifaceId, seen);
-      }
-      if (seen.has(ownerId)) continue;
-      seen.add(ownerId);
+		for (const ifaceId of input.implementsOf(ownerId)) {
+			let seen = implsSeen.get(ifaceId);
+			if (seen === undefined) {
+				seen = new Set<DefId>();
+				implsSeen.set(ifaceId, seen);
+			}
+			if (seen.has(ownerId)) continue;
+			seen.add(ownerId);
 
-      let bucket = implsBuilding.get(ifaceId);
-      if (bucket === undefined) {
-        bucket = [];
-        implsBuilding.set(ifaceId, bucket);
-      }
-      bucket.push(ownerId);
-    }
-  }
+			let bucket = implsBuilding.get(ifaceId);
+			if (bucket === undefined) {
+				bucket = [];
+				implsBuilding.set(ifaceId, bucket);
+			}
+			bucket.push(ownerId);
+		}
+	}
 
-  const implsByInterfaceDefId = new Map<DefId, readonly DefId[]>();
-  for (const [ifaceId, owners] of implsBuilding) {
-    implsByInterfaceDefId.set(ifaceId, Object.freeze(owners.slice()));
-  }
+	const implsByInterfaceDefId = new Map<DefId, readonly DefId[]>();
+	for (const [ifaceId, owners] of implsBuilding) {
+		implsByInterfaceDefId.set(ifaceId, Object.freeze(owners.slice()));
+	}
 
-  return wrapIndex(mroByOwnerDefId, implsByInterfaceDefId, extendsOnlyByOwnerDefId);
+	return wrapIndex(
+		mroByOwnerDefId,
+		implsByInterfaceDefId,
+		extendsOnlyByOwnerDefId,
+	);
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
@@ -166,28 +172,28 @@ export function buildMethodDispatchIndex(input: MethodDispatchInput): MethodDisp
 const EMPTY: readonly DefId[] = Object.freeze([]);
 
 function wrapIndex(
-  mroByOwnerDefId: Map<DefId, readonly DefId[]>,
-  implsByInterfaceDefId: Map<DefId, readonly DefId[]>,
-  extendsOnlyMroByOwnerDefId: Map<DefId, readonly DefId[]> | undefined,
+	mroByOwnerDefId: Map<DefId, readonly DefId[]>,
+	implsByInterfaceDefId: Map<DefId, readonly DefId[]>,
+	extendsOnlyMroByOwnerDefId: Map<DefId, readonly DefId[]> | undefined,
 ): MethodDispatchIndex {
-  const base: MethodDispatchIndex = {
-    mroByOwnerDefId,
-    implsByInterfaceDefId,
-    mroFor(ownerDefId: DefId): readonly DefId[] {
-      return mroByOwnerDefId.get(ownerDefId) ?? EMPTY;
-    },
-    implementorsOf(interfaceDefId: DefId): readonly DefId[] {
-      return implsByInterfaceDefId.get(interfaceDefId) ?? EMPTY;
-    },
-  };
-  if (extendsOnlyMroByOwnerDefId !== undefined) {
-    return {
-      ...base,
-      extendsOnlyMroByOwnerDefId,
-      extendsOnlyMroFor(ownerDefId: DefId): readonly DefId[] {
-        return extendsOnlyMroByOwnerDefId.get(ownerDefId) ?? EMPTY;
-      },
-    };
-  }
-  return base;
+	const base: MethodDispatchIndex = {
+		mroByOwnerDefId,
+		implsByInterfaceDefId,
+		mroFor(ownerDefId: DefId): readonly DefId[] {
+			return mroByOwnerDefId.get(ownerDefId) ?? EMPTY;
+		},
+		implementorsOf(interfaceDefId: DefId): readonly DefId[] {
+			return implsByInterfaceDefId.get(interfaceDefId) ?? EMPTY;
+		},
+	};
+	if (extendsOnlyMroByOwnerDefId !== undefined) {
+		return {
+			...base,
+			extendsOnlyMroByOwnerDefId,
+			extendsOnlyMroFor(ownerDefId: DefId): readonly DefId[] {
+				return extendsOnlyMroByOwnerDefId.get(ownerDefId) ?? EMPTY;
+			},
+		};
+	}
+	return base;
 }

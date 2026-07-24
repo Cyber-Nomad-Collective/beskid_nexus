@@ -1,2 +1,2 @@
-import { alias } from './util';
+import { alias } from "./util";
 export const bridge = alias;

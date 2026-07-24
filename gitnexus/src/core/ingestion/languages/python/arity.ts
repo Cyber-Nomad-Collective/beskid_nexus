@@ -19,27 +19,29 @@
  * still considered when no compatible candidate exists), per RFC §4.
  */
 
-import type { Callsite, SymbolDefinition } from 'gitnexus-shared';
+import type { Callsite, SymbolDefinition } from "gitnexus-shared";
 
 export function pythonArityCompatibility(
-  def: SymbolDefinition,
-  callsite: Callsite,
-): 'compatible' | 'unknown' | 'incompatible' {
-  const max = def.parameterCount;
-  const min = def.requiredParameterCount;
-  if (max === undefined && min === undefined) return 'unknown';
+	def: SymbolDefinition,
+	callsite: Callsite,
+): "compatible" | "unknown" | "incompatible" {
+	const max = def.parameterCount;
+	const min = def.requiredParameterCount;
+	if (max === undefined && min === undefined) return "unknown";
 
-  const argCount = callsite.arity;
-  if (!Number.isFinite(argCount) || argCount < 0) return 'unknown';
+	const argCount = callsite.arity;
+	if (!Number.isFinite(argCount) || argCount < 0) return "unknown";
 
-  // Detect varargs/kwargs from parameterTypes if present (the Python
-  // method extractor stores `'*args'`/`'**kwargs'` in this list).
-  const hasVarArgs =
-    def.parameterTypes !== undefined &&
-    def.parameterTypes.some((t) => t === '*args' || t === '**kwargs' || t.startsWith('*'));
+	// Detect varargs/kwargs from parameterTypes if present (the Python
+	// method extractor stores `'*args'`/`'**kwargs'` in this list).
+	const hasVarArgs =
+		def.parameterTypes !== undefined &&
+		def.parameterTypes.some(
+			(t) => t === "*args" || t === "**kwargs" || t.startsWith("*"),
+		);
 
-  if (min !== undefined && argCount < min) return 'incompatible';
-  if (max !== undefined && argCount > max && !hasVarArgs) return 'incompatible';
+	if (min !== undefined && argCount < min) return "incompatible";
+	if (max !== undefined && argCount > max && !hasVarArgs) return "incompatible";
 
-  return 'compatible';
+	return "compatible";
 }

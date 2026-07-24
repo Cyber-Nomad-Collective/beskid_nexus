@@ -1,5 +1,5 @@
-import { bridge } from './bridge';
+import { bridge } from "./bridge";
 export function main() {
-  bridge.save();
-  bridge.getName();
+	bridge.save();
+	bridge.getName();
 }

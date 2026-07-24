@@ -1,6 +1,6 @@
-import { C } from './derived';
+import { C } from "./derived";
 
 function process() {
-  const c = new C();
-  c.greet().save();
+	const c = new C();
+	c.greet().save();
 }

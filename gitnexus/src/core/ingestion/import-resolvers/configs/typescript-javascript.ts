@@ -4,18 +4,18 @@
  * Vue delegates to TypeScript's resolver.
  */
 
-import { SupportedLanguages } from 'gitnexus-shared';
-import type { ImportResolutionConfig } from '../types.js';
-import { createStandardStrategy } from '../standard.js';
+import { SupportedLanguages } from "gitnexus-shared";
+import { createStandardStrategy } from "../standard.js";
+import type { ImportResolutionConfig } from "../types.js";
 
 export const typescriptImportConfig: ImportResolutionConfig = {
-  language: SupportedLanguages.TypeScript,
-  strategies: [createStandardStrategy(SupportedLanguages.TypeScript)],
+	language: SupportedLanguages.TypeScript,
+	strategies: [createStandardStrategy(SupportedLanguages.TypeScript)],
 };
 
 export const javascriptImportConfig: ImportResolutionConfig = {
-  language: SupportedLanguages.JavaScript,
-  strategies: [createStandardStrategy(SupportedLanguages.JavaScript)],
+	language: SupportedLanguages.JavaScript,
+	strategies: [createStandardStrategy(SupportedLanguages.JavaScript)],
 };
 
 // Vue SFCs are preprocessed into TypeScript upstream of import resolution,
@@ -23,6 +23,6 @@ export const javascriptImportConfig: ImportResolutionConfig = {
 // documentation-only metadata (see `ImportResolutionConfig.language` JSDoc
 // and ARCHITECTURE.md §Vue); it is not consumed by `createImportResolver`.
 export const vueImportConfig: ImportResolutionConfig = {
-  language: SupportedLanguages.Vue,
-  strategies: [createStandardStrategy(SupportedLanguages.TypeScript)],
+	language: SupportedLanguages.Vue,
+	strategies: [createStandardStrategy(SupportedLanguages.TypeScript)],
 };

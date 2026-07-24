@@ -38,9 +38,9 @@
  * @see languages/ruby.ts § selectDispatch
  */
 export type MroStrategy =
-  | 'first-wins'
-  | 'c3'
-  | 'leftmost-base'
-  | 'implements-split'
-  | 'qualified-syntax'
-  | 'ruby-mixin';
+	| "first-wins"
+	| "c3"
+	| "leftmost-base"
+	| "implements-split"
+	| "qualified-syntax"
+	| "ruby-mixin";

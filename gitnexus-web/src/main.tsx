@@ -1,25 +1,25 @@
-import '#beskid-hub-entry';
-import '#beskid-hub-css';
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import "#beskid-hub-entry";
+import "#beskid-hub-css";
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import App from './App';
-import { ThemeProvider } from './components/theme-provider';
-import { isHostedNexus } from './config/nexus-mode';
-import { ensureBackendUrlFromPage } from './services/backend-client';
-import './index.css';
+import App from "./App";
+import { ThemeProvider } from "./components/theme-provider";
+import { isHostedNexus } from "./config/nexus-mode";
+import { ensureBackendUrlFromPage } from "./services/backend-client";
+import "./index.css";
 
 // Hosted deployments must use same-origin `/api`, not a stale localStorage URL from dev.
 if (isHostedNexus()) {
 	try {
-		localStorage.removeItem('gitnexus-backend-url');
+		localStorage.removeItem("gitnexus-backend-url");
 	} catch {
 		// ignore
 	}
 }
 ensureBackendUrlFromPage();
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>
 		<ThemeProvider>
 			<App />

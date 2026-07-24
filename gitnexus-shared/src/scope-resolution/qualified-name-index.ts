@@ -17,16 +17,16 @@
  * dotted fallback via #916).
  */
 
-import type { SymbolDefinition } from './symbol-definition.js';
-import type { DefId } from './types.js';
+import type { SymbolDefinition } from "./symbol-definition.js";
+import type { DefId } from "./types.js";
 
 export interface QualifiedNameIndex {
-  readonly byQualifiedName: ReadonlyMap<string, readonly DefId[]>;
-  readonly size: number;
-  /** Returns all `DefId`s registered under this qualified name; empty frozen
-   *  array on miss so callers can iterate without null checks. */
-  get(qualifiedName: string): readonly DefId[];
-  has(qualifiedName: string): boolean;
+	readonly byQualifiedName: ReadonlyMap<string, readonly DefId[]>;
+	readonly size: number;
+	/** Returns all `DefId`s registered under this qualified name; empty frozen
+	 *  array on miss so callers can iterate without null checks. */
+	get(qualifiedName: string): readonly DefId[];
+	has(qualifiedName: string): boolean;
 }
 
 /**
@@ -43,50 +43,54 @@ export interface QualifiedNameIndex {
  *
  * Pure function — safe to call repeatedly; no side effects.
  */
-export function buildQualifiedNameIndex(defs: readonly SymbolDefinition[]): QualifiedNameIndex {
-  const byQualifiedName = new Map<string, DefId[]>();
-  const seenPairs = new Set<string>();
+export function buildQualifiedNameIndex(
+	defs: readonly SymbolDefinition[],
+): QualifiedNameIndex {
+	const byQualifiedName = new Map<string, DefId[]>();
+	const seenPairs = new Set<string>();
 
-  for (const def of defs) {
-    const qname = def.qualifiedName;
-    if (qname === undefined || qname.length === 0) continue;
+	for (const def of defs) {
+		const qname = def.qualifiedName;
+		if (qname === undefined || qname.length === 0) continue;
 
-    const pairKey = `${qname}\0${def.nodeId}`;
-    if (seenPairs.has(pairKey)) continue;
-    seenPairs.add(pairKey);
+		const pairKey = `${qname}\0${def.nodeId}`;
+		if (seenPairs.has(pairKey)) continue;
+		seenPairs.add(pairKey);
 
-    const bucket = byQualifiedName.get(qname);
-    if (bucket === undefined) {
-      byQualifiedName.set(qname, [def.nodeId]);
-    } else {
-      bucket.push(def.nodeId);
-    }
-  }
+		const bucket = byQualifiedName.get(qname);
+		if (bucket === undefined) {
+			byQualifiedName.set(qname, [def.nodeId]);
+		} else {
+			bucket.push(def.nodeId);
+		}
+	}
 
-  // Freeze bucket arrays so consumers can't mutate the index.
-  const frozen = new Map<string, readonly DefId[]>();
-  for (const [k, v] of byQualifiedName) {
-    frozen.set(k, Object.freeze(v.slice()));
-  }
+	// Freeze bucket arrays so consumers can't mutate the index.
+	const frozen = new Map<string, readonly DefId[]>();
+	for (const [k, v] of byQualifiedName) {
+		frozen.set(k, Object.freeze(v.slice()));
+	}
 
-  return wrapIndex(frozen);
+	return wrapIndex(frozen);
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
 
 const EMPTY: readonly DefId[] = Object.freeze([]);
 
-function wrapIndex(byQualifiedName: Map<string, readonly DefId[]>): QualifiedNameIndex {
-  return {
-    byQualifiedName,
-    get size() {
-      return byQualifiedName.size;
-    },
-    get(qualifiedName: string): readonly DefId[] {
-      return byQualifiedName.get(qualifiedName) ?? EMPTY;
-    },
-    has(qualifiedName: string): boolean {
-      return byQualifiedName.has(qualifiedName);
-    },
-  };
+function wrapIndex(
+	byQualifiedName: Map<string, readonly DefId[]>,
+): QualifiedNameIndex {
+	return {
+		byQualifiedName,
+		get size() {
+			return byQualifiedName.size;
+		},
+		get(qualifiedName: string): readonly DefId[] {
+			return byQualifiedName.get(qualifiedName) ?? EMPTY;
+		},
+		has(qualifiedName: string): boolean {
+			return byQualifiedName.has(qualifiedName);
+		},
+	};
 }

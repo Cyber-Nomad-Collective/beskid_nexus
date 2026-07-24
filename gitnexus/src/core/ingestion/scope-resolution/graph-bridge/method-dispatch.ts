@@ -16,32 +16,32 @@
  * can extend the return shape without breaking existing consumers.
  */
 
-import type { MethodDispatchIndex } from 'gitnexus-shared';
+import type { MethodDispatchIndex } from "gitnexus-shared";
 
 const EMPTY_DEFS: readonly string[] = Object.freeze([]);
 
 export function buildPopulatedMethodDispatch(
-  mroByDefId: ReadonlyMap<string, readonly string[]>,
-  extendsOnlyMroByDefId?: ReadonlyMap<string, readonly string[]>,
+	mroByDefId: ReadonlyMap<string, readonly string[]>,
+	extendsOnlyMroByDefId?: ReadonlyMap<string, readonly string[]>,
 ): MethodDispatchIndex {
-  const base: MethodDispatchIndex = {
-    mroByOwnerDefId: mroByDefId,
-    implsByInterfaceDefId: new Map(),
-    mroFor(ownerDefId) {
-      return mroByDefId.get(ownerDefId) ?? EMPTY_DEFS;
-    },
-    implementorsOf() {
-      return EMPTY_DEFS;
-    },
-  };
-  if (extendsOnlyMroByDefId !== undefined) {
-    return {
-      ...base,
-      extendsOnlyMroByOwnerDefId: extendsOnlyMroByDefId,
-      extendsOnlyMroFor(ownerDefId) {
-        return extendsOnlyMroByDefId.get(ownerDefId) ?? EMPTY_DEFS;
-      },
-    };
-  }
-  return base;
+	const base: MethodDispatchIndex = {
+		mroByOwnerDefId: mroByDefId,
+		implsByInterfaceDefId: new Map(),
+		mroFor(ownerDefId) {
+			return mroByDefId.get(ownerDefId) ?? EMPTY_DEFS;
+		},
+		implementorsOf() {
+			return EMPTY_DEFS;
+		},
+	};
+	if (extendsOnlyMroByDefId !== undefined) {
+		return {
+			...base,
+			extendsOnlyMroByOwnerDefId: extendsOnlyMroByDefId,
+			extendsOnlyMroFor(ownerDefId) {
+				return extendsOnlyMroByDefId.get(ownerDefId) ?? EMPTY_DEFS;
+			},
+		};
+	}
+	return base;
 }

@@ -1,5 +1,5 @@
-import Parser from 'tree-sitter';
-import Go from 'tree-sitter-go';
+import Parser from "tree-sitter";
+import Go from "tree-sitter-go";
 
 const GO_SCOPE_QUERY = `
 ;; Scopes
@@ -196,16 +196,19 @@ let _parser: Parser | null = null;
 let _query: Parser.Query | null = null;
 
 export function getGoParser(): Parser {
-  if (_parser === null) {
-    _parser = new Parser();
-    _parser.setLanguage(Go as Parameters<Parser['setLanguage']>[0]);
-  }
-  return _parser;
+	if (_parser === null) {
+		_parser = new Parser();
+		_parser.setLanguage(Go as Parameters<Parser["setLanguage"]>[0]);
+	}
+	return _parser;
 }
 
 export function getGoScopeQuery(): Parser.Query {
-  if (_query === null) {
-    _query = new Parser.Query(Go as Parameters<Parser['setLanguage']>[0], GO_SCOPE_QUERY);
-  }
-  return _query;
+	if (_query === null) {
+		_query = new Parser.Query(
+			Go as Parameters<Parser["setLanguage"]>[0],
+			GO_SCOPE_QUERY,
+		);
+	}
+	return _query;
 }

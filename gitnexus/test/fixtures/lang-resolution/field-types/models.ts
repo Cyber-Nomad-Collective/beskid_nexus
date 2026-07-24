@@ -1,24 +1,24 @@
 export class Address {
-  city: string;
+	city: string;
 
-  save(): void {
-    // persist address
-  }
+	save(): void {
+		// persist address
+	}
 }
 
 export class User {
-  name: string;
-  address: Address;
+	name: string;
+	address: Address;
 
-  greet(): string {
-    return this.name;
-  }
+	greet(): string {
+		return this.name;
+	}
 }
 
 export class Config {
-  static DEFAULT: Config = new Config();
+	static DEFAULT: Config = new Config();
 
-  validate(): boolean {
-    return true;
-  }
+	validate(): boolean {
+		return true;
+	}
 }

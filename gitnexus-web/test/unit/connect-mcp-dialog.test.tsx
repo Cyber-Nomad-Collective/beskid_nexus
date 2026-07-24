@@ -1,18 +1,26 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import { ConnectMcpDialog } from '../../src/components/connect-mcp-dialog';
+import { ConnectMcpDialog } from "../../src/components/connect-mcp-dialog";
 
-vi.mock('#/components/ui/dialog', () => ({
+vi.mock("#/components/ui/dialog", () => ({
 	Dialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
 		open ? <div data-testid="dialog">{children}</div> : null,
-	DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-	DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-	DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
-	DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+	DialogContent: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	DialogHeader: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	DialogTitle: ({ children }: { children: React.ReactNode }) => (
+		<h2>{children}</h2>
+	),
+	DialogDescription: ({ children }: { children: React.ReactNode }) => (
+		<p>{children}</p>
+	),
 }));
 
-vi.mock('#/components/ui/button', () => ({
+vi.mock("#/components/ui/button", () => ({
 	Button: ({
 		children,
 		onClick,
@@ -28,12 +36,14 @@ vi.mock('#/components/ui/button', () => ({
 	),
 }));
 
-vi.mock('#/components/ui/input', () => ({
-	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} readOnly />,
+vi.mock("#/components/ui/input", () => ({
+	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+		<input {...props} readOnly />
+	),
 }));
 
-describe('ConnectMcpDialog', () => {
-	it('renders MCP endpoint from origin', () => {
+describe("ConnectMcpDialog", () => {
+	it("renders MCP endpoint from origin", () => {
 		render(
 			<ConnectMcpDialog
 				open
@@ -41,6 +51,8 @@ describe('ConnectMcpDialog', () => {
 				mcpUrl="https://nexus.example/api/mcp"
 			/>,
 		);
-		expect(screen.getByDisplayValue('https://nexus.example/api/mcp')).toBeInTheDocument();
+		expect(
+			screen.getByDisplayValue("https://nexus.example/api/mcp"),
+		).toBeInTheDocument();
 	});
 });

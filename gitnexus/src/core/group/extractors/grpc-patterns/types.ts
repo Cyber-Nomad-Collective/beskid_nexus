@@ -1,4 +1,4 @@
-import type Parser from 'tree-sitter';
+import type Parser from "tree-sitter";
 
 /**
  * Shared types for the grpc-extractor language plugins.
@@ -10,7 +10,7 @@ import type Parser from 'tree-sitter';
  * grammar or query text directly.
  */
 
-export type GrpcRole = 'provider' | 'consumer';
+export type GrpcRole = "provider" | "consumer";
 
 /**
  * One raw gRPC detection produced by a plugin's `scan()` function. The
@@ -23,19 +23,19 @@ export type GrpcRole = 'provider' | 'consumer';
  * a method-level contract (`grpc::pkg.Service/Method`).
  */
 export interface GrpcDetection {
-  role: GrpcRole;
-  /** Short service name, e.g. `"AuthService"`. */
-  serviceName: string;
-  /** Symbol name emitted into the contract's symbolRef. */
-  symbolName: string;
-  /** Metadata source label (goes into `meta.source`). */
-  source: string;
-  /** Explicit method name; set only by TS `@GrpcMethod`. */
-  methodName?: string;
-  /** Confidence when the proto map resolves the service. */
-  confidenceWithProto: number;
-  /** Confidence when the proto map has no entry. */
-  confidenceWithoutProto: number;
+	role: GrpcRole;
+	/** Short service name, e.g. `"AuthService"`. */
+	serviceName: string;
+	/** Symbol name emitted into the contract's symbolRef. */
+	symbolName: string;
+	/** Metadata source label (goes into `meta.source`). */
+	source: string;
+	/** Explicit method name; set only by TS `@GrpcMethod`. */
+	methodName?: string;
+	/** Confidence when the proto map resolves the service. */
+	confidenceWithProto: number;
+	/** Confidence when the proto map has no entry. */
+	confidenceWithoutProto: number;
 }
 
 /**
@@ -48,7 +48,7 @@ export interface GrpcDetection {
  * `tree-sitter-scanner.ts`.
  */
 export interface GrpcLanguagePlugin {
-  name: string;
-  language: unknown;
-  scan(tree: Parser.Tree): GrpcDetection[];
+	name: string;
+	language: unknown;
+	scan(tree: Parser.Tree): GrpcDetection[];
 }

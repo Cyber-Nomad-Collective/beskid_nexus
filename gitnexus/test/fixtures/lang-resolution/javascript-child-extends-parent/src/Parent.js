@@ -1,5 +1,5 @@
 export class Parent {
-  parentMethod() {
-    return 'parent';
-  }
+	parentMethod() {
+		return "parent";
+	}
 }

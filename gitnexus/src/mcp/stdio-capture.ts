@@ -26,10 +26,11 @@ type StdoutWrite = typeof process.stdout.write;
 
 /** Captured at module load, before any rebinding. */
 // eslint-disable-next-line no-restricted-syntax -- this IS the captured-real-write infrastructure used by the MCP sentinel
-export const realStdoutWrite: StdoutWrite = process.stdout.write.bind(process.stdout);
-export const realStderrWrite: typeof process.stderr.write = process.stderr.write.bind(
-  process.stderr,
+export const realStdoutWrite: StdoutWrite = process.stdout.write.bind(
+	process.stdout,
 );
+export const realStderrWrite: typeof process.stderr.write =
+	process.stderr.write.bind(process.stderr);
 
 /**
  * The function `restoreStdout` (and the watchdog) in pool-adapter restore
@@ -47,9 +48,9 @@ let activeStdoutWrite: StdoutWrite = realStdoutWrite;
  * previous value so callers can chain or restore.
  */
 export function setActiveStdoutWrite(fn: StdoutWrite): StdoutWrite {
-  const prev = activeStdoutWrite;
-  activeStdoutWrite = fn;
-  return prev;
+	const prev = activeStdoutWrite;
+	activeStdoutWrite = fn;
+	return prev;
 }
 
 /**
@@ -57,5 +58,5 @@ export function setActiveStdoutWrite(fn: StdoutWrite): StdoutWrite {
  * restoreStdout and watchdog so silence/restore preserves the sentinel.
  */
 export function getActiveStdoutWrite(): StdoutWrite {
-  return activeStdoutWrite;
+	return activeStdoutWrite;
 }

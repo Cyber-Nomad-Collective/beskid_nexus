@@ -1,31 +1,31 @@
 export class City {
-  name: string;
+	name: string;
 
-  constructor(name: string) {
-    this.name = name;
-  }
+	constructor(name: string) {
+		this.name = name;
+	}
 
-  save(): boolean {
-    return true;
-  }
+	save(): boolean {
+		return true;
+	}
 }
 
 export class Address {
-  city: City;
+	city: City;
 
-  constructor(city: City) {
-    this.city = city;
-  }
+	constructor(city: City) {
+		this.city = city;
+	}
 
-  getCity(): City {
-    return this.city;
-  }
+	getCity(): City {
+		return this.city;
+	}
 }
 
 export class User {
-  address: Address;
+	address: Address;
 
-  constructor(address: Address) {
-    this.address = address;
-  }
+	constructor(address: Address) {
+		this.address = address;
+	}
 }

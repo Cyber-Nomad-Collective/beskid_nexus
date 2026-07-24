@@ -6,14 +6,14 @@
  *
  * This file only defines web-specific additions.
  */
-import type { GraphNode, GraphRelationship } from 'gitnexus-shared';
+import type { GraphNode, GraphRelationship } from "gitnexus-shared";
 
 // Web-specific: in-memory graph container (simpler than CLI version)
 export interface KnowledgeGraph {
-  nodes: GraphNode[];
-  relationships: GraphRelationship[];
-  nodeCount: number;
-  relationshipCount: number;
-  addNode: (node: GraphNode) => void;
-  addRelationship: (relationship: GraphRelationship) => void;
+	nodes: GraphNode[];
+	relationships: GraphRelationship[];
+	nodeCount: number;
+	relationshipCount: number;
+	addNode: (node: GraphNode) => void;
+	addRelationship: (relationship: GraphRelationship) => void;
 }

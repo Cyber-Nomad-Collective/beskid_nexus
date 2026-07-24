@@ -6,13 +6,13 @@
  */
 
 import type {
-  CaptureMatch,
-  ParsedImport,
-  Scope,
-  ScopeId,
-  ScopeTree,
-  TypeRef,
-} from 'gitnexus-shared';
+	CaptureMatch,
+	ParsedImport,
+	Scope,
+	ScopeId,
+	ScopeTree,
+	TypeRef,
+} from "gitnexus-shared";
 
 // ─── bindingScopeFor ──────────────────────────────────────────────────────
 
@@ -35,20 +35,20 @@ import type {
  *      `sourceModule.typeBindings`.
  *  Walking to Module restores both paths. */
 export function csharpBindingScopeFor(
-  decl: CaptureMatch,
-  innermost: Scope,
-  tree: ScopeTree,
+	decl: CaptureMatch,
+	innermost: Scope,
+	tree: ScopeTree,
 ): ScopeId | null {
-  if (decl['@type-binding.return'] !== undefined) {
-    let cur: Scope | undefined = innermost;
-    while (cur !== undefined && cur.kind !== 'Module') {
-      const parentId: ScopeId | null = cur.parent ?? null;
-      if (parentId === null) break;
-      cur = tree.getScope(parentId);
-    }
-    if (cur !== undefined && cur.kind === 'Module') return cur.id;
-  }
-  return null;
+	if (decl["@type-binding.return"] !== undefined) {
+		let cur: Scope | undefined = innermost;
+		while (cur !== undefined && cur.kind !== "Module") {
+			const parentId: ScopeId | null = cur.parent ?? null;
+			if (parentId === null) break;
+			cur = tree.getScope(parentId);
+		}
+		if (cur !== undefined && cur.kind === "Module") return cur.id;
+	}
+	return null;
 }
 
 // ─── importOwningScope ────────────────────────────────────────────────────
@@ -63,13 +63,17 @@ export function csharpBindingScopeFor(
  *  as a file-scoped using for Unit 2's purposes; cross-file propagation
  *  will be addressed if Unit 7's parity gate flags it. */
 export function csharpImportOwningScope(
-  _imp: ParsedImport,
-  innermost: Scope,
-  _tree: ScopeTree,
+	_imp: ParsedImport,
+	innermost: Scope,
+	_tree: ScopeTree,
 ): ScopeId | null {
-  if (innermost.kind === 'Namespace' || innermost.kind === 'Class' || innermost.kind === 'Function')
-    return innermost.id;
-  return null;
+	if (
+		innermost.kind === "Namespace" ||
+		innermost.kind === "Class" ||
+		innermost.kind === "Function"
+	)
+		return innermost.id;
+	return null;
 }
 
 // ─── receiverBinding ──────────────────────────────────────────────────────
@@ -91,6 +95,10 @@ export function csharpImportOwningScope(
  *  Matches `pythonReceiverBinding`'s shape so the two provider
  *  wirings stay symmetric. */
 export function csharpReceiverBinding(functionScope: Scope): TypeRef | null {
-  if (functionScope.kind !== 'Function') return null;
-  return functionScope.typeBindings.get('this') ?? functionScope.typeBindings.get('base') ?? null;
+	if (functionScope.kind !== "Function") return null;
+	return (
+		functionScope.typeBindings.get("this") ??
+		functionScope.typeBindings.get("base") ??
+		null
+	);
 }

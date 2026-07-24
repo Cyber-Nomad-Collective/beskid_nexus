@@ -1,8 +1,10 @@
 export class User {
-  save() {}
-  getName() { return ''; }
+	save() {}
+	getName() {
+		return "";
+	}
 }
 
 export function getUser() {
-  return new User();
+	return new User();
 }

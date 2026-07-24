@@ -33,24 +33,24 @@
  */
 
 import type {
-  BindingRef,
-  FinalizeFile,
-  FinalizeHooks,
-  ParsedFile,
-  Scope,
-  ScopeId,
-  SymbolDefinition,
-  WorkspaceIndex,
-} from 'gitnexus-shared';
+	BindingRef,
+	FinalizeFile,
+	FinalizeHooks,
+	ParsedFile,
+	Scope,
+	ScopeId,
+	SymbolDefinition,
+	WorkspaceIndex,
+} from "gitnexus-shared";
 import {
-  buildDefIndex,
-  buildMethodDispatchIndex,
-  buildModuleScopeIndex,
-  buildQualifiedNameIndex,
-  buildScopeTree,
-  finalize,
-} from 'gitnexus-shared';
-import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js';
+	buildDefIndex,
+	buildMethodDispatchIndex,
+	buildModuleScopeIndex,
+	buildQualifiedNameIndex,
+	buildScopeTree,
+	finalize,
+} from "gitnexus-shared";
+import type { ScopeResolutionIndexes } from "./model/scope-resolution-indexes.js";
 
 // ─── Public entry point ─────────────────────────────────────────────────────
 
@@ -60,18 +60,18 @@ import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js
  * #922 will populate `hooks.resolveImportTarget` + friends per language.
  */
 export interface FinalizeOrchestratorOptions {
-  /**
-   * Hooks forwarded to shared `finalize()`. Any omitted field gets a
-   * no-op default: unresolved targets, empty wildcard expansion, append
-   * merge for bindings.
-   */
-  readonly hooks?: Partial<FinalizeHooks>;
-  /**
-   * Opaque workspace context forwarded to hooks. `undefined` today; Ring
-   * 2 PKG #922 populates this with a real cross-file index for the
-   * per-language resolvers.
-   */
-  readonly workspaceIndex?: WorkspaceIndex;
+	/**
+	 * Hooks forwarded to shared `finalize()`. Any omitted field gets a
+	 * no-op default: unresolved targets, empty wildcard expansion, append
+	 * merge for bindings.
+	 */
+	readonly hooks?: Partial<FinalizeHooks>;
+	/**
+	 * Opaque workspace context forwarded to hooks. `undefined` today; Ring
+	 * 2 PKG #922 populates this with a real cross-file index for the
+	 * per-language resolvers.
+	 */
+	readonly workspaceIndex?: WorkspaceIndex;
 }
 
 /**
@@ -83,71 +83,74 @@ export interface FinalizeOrchestratorOptions {
  * `MutableSemanticModel.attachScopeIndexes`.
  */
 export function finalizeScopeModel(
-  parsedFiles: readonly ParsedFile[],
-  options: FinalizeOrchestratorOptions = {},
+	parsedFiles: readonly ParsedFile[],
+	options: FinalizeOrchestratorOptions = {},
 ): ScopeResolutionIndexes {
-  const hooks = withDefaultHooks(options.hooks ?? {});
-  const workspaceIndex: WorkspaceIndex = options.workspaceIndex ?? undefined;
+	const hooks = withDefaultHooks(options.hooks ?? {});
+	const workspaceIndex: WorkspaceIndex = options.workspaceIndex ?? undefined;
 
-  // ── Step 1: Shared finalize — runs SCC-aware cross-file link + binding
-  // materialization. Returns linked imports + merged bindings per module
-  // scope + SCC condensation + stats.
-  const finalizeInput = {
-    files: parsedFiles.map(toFinalizeFile),
-    workspaceIndex,
-  };
-  const finalizeOut = finalize(finalizeInput, hooks);
+	// ── Step 1: Shared finalize — runs SCC-aware cross-file link + binding
+	// materialization. Returns linked imports + merged bindings per module
+	// scope + SCC condensation + stats.
+	const finalizeInput = {
+		files: parsedFiles.map(toFinalizeFile),
+		workspaceIndex,
+	};
+	const finalizeOut = finalize(finalizeInput, hooks);
 
-  // ── Step 2: Workspace-wide indexes built from the per-file unions.
-  // These are pure aggregations — no algorithm beyond what the builders
-  // in gitnexus-shared already encapsulate (first-write-wins, qname
-  // collision buckets, etc.).
+	// ── Step 2: Workspace-wide indexes built from the per-file unions.
+	// These are pure aggregations — no algorithm beyond what the builders
+	// in gitnexus-shared already encapsulate (first-write-wins, qname
+	// collision buckets, etc.).
 
-  const allScopes: Scope[] = [];
-  const allDefs: SymbolDefinition[] = [];
-  const moduleEntries: { filePath: string; moduleScopeId: ScopeId }[] = [];
-  const allReferenceSites = collectReferenceSites(parsedFiles);
+	const allScopes: Scope[] = [];
+	const allDefs: SymbolDefinition[] = [];
+	const moduleEntries: { filePath: string; moduleScopeId: ScopeId }[] = [];
+	const allReferenceSites = collectReferenceSites(parsedFiles);
 
-  for (const file of parsedFiles) {
-    for (const s of file.scopes) allScopes.push(s);
-    for (const d of file.localDefs) allDefs.push(d);
-    moduleEntries.push({ filePath: file.filePath, moduleScopeId: file.moduleScope });
-  }
+	for (const file of parsedFiles) {
+		for (const s of file.scopes) allScopes.push(s);
+		for (const d of file.localDefs) allDefs.push(d);
+		moduleEntries.push({
+			filePath: file.filePath,
+			moduleScopeId: file.moduleScope,
+		});
+	}
 
-  const scopeTree = buildScopeTree(allScopes);
-  const defs = buildDefIndex(allDefs);
-  const qualifiedNames = buildQualifiedNameIndex(allDefs);
-  const moduleScopes = buildModuleScopeIndex(moduleEntries);
+	const scopeTree = buildScopeTree(allScopes);
+	const defs = buildDefIndex(allDefs);
+	const qualifiedNames = buildQualifiedNameIndex(allDefs);
+	const moduleScopes = buildModuleScopeIndex(moduleEntries);
 
-  // ── Step 3: MethodDispatchIndex. Today we lack per-language MRO
-  // strategies wired into this orchestrator (that belongs with the
-  // HeritageMap bridge, a separate piece of work). Ship an EMPTY index
-  // so the bundle shape is consistent; the callbacks return `[]` for
-  // every owner and `implementsOf` returns `[]`. Populating this
-  // properly is tracked alongside the per-language provider hooks.
-  const methodDispatch = buildMethodDispatchIndex({
-    owners: [], // empty → no MRO entries; `mroFor(x)` returns the frozen empty array
-    computeMro: () => [],
-    implementsOf: () => [],
-  });
+	// ── Step 3: MethodDispatchIndex. Today we lack per-language MRO
+	// strategies wired into this orchestrator (that belongs with the
+	// HeritageMap bridge, a separate piece of work). Ship an EMPTY index
+	// so the bundle shape is consistent; the callbacks return `[]` for
+	// every owner and `implementsOf` returns `[]`. Populating this
+	// properly is tracked alongside the per-language provider hooks.
+	const methodDispatch = buildMethodDispatchIndex({
+		owners: [], // empty → no MRO entries; `mroFor(x)` returns the frozen empty array
+		computeMro: () => [],
+		implementsOf: () => [],
+	});
 
-  return {
-    scopeTree,
-    defs,
-    qualifiedNames,
-    moduleScopes,
-    methodDispatch,
-    imports: finalizeOut.imports,
-    bindings: finalizeOut.bindings,
-    // Empty post-finalize augmentation channel. Populated (if at all)
-    // by language hooks like `populateCsharpNamespaceSiblings` running
-    // AFTER `finalizeScopeModel` returns, before `resolveReferenceSites`
-    // consumes the bundle. Most languages leave it empty.
-    bindingAugmentations: new Map(),
-    referenceSites: Object.freeze([...allReferenceSites]),
-    sccs: finalizeOut.sccs,
-    stats: finalizeOut.stats,
-  };
+	return {
+		scopeTree,
+		defs,
+		qualifiedNames,
+		moduleScopes,
+		methodDispatch,
+		imports: finalizeOut.imports,
+		bindings: finalizeOut.bindings,
+		// Empty post-finalize augmentation channel. Populated (if at all)
+		// by language hooks like `populateCsharpNamespaceSiblings` running
+		// AFTER `finalizeScopeModel` returns, before `resolveReferenceSites`
+		// consumes the bundle. Most languages leave it empty.
+		bindingAugmentations: new Map(),
+		referenceSites: Object.freeze([...allReferenceSites]),
+		sccs: finalizeOut.sccs,
+		stats: finalizeOut.stats,
+	};
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
@@ -156,22 +159,22 @@ export function finalizeScopeModel(
  *  algorithm reads. The subset is stable — `FinalizeFile` is a proper
  *  subset of `ParsedFile`. */
 function toFinalizeFile(file: ParsedFile): FinalizeFile {
-  return {
-    filePath: file.filePath,
-    moduleScope: file.moduleScope,
-    parsedImports: file.parsedImports,
-    localDefs: file.localDefs,
-  };
+	return {
+		filePath: file.filePath,
+		moduleScope: file.moduleScope,
+		parsedImports: file.parsedImports,
+		localDefs: file.localDefs,
+	};
 }
 
 /** Flatten every file's reference sites into one list. Order reflects
  *  input-file order, then capture order inside each file. Deterministic. */
 function collectReferenceSites(parsedFiles: readonly ParsedFile[]) {
-  const out: ParsedFile['referenceSites'][number][] = [];
-  for (const file of parsedFiles) {
-    for (const site of file.referenceSites) out.push(site);
-  }
-  return out;
+	const out: ParsedFile["referenceSites"][number][] = [];
+	for (const file of parsedFiles) {
+		for (const site of file.referenceSites) out.push(site);
+	}
+	return out;
 }
 
 /**
@@ -186,14 +189,14 @@ function collectReferenceSites(parsedFiles: readonly ParsedFile[]) {
  *     shadows-import and similar rules.
  */
 function withDefaultHooks(partial: Partial<FinalizeHooks>): FinalizeHooks {
-  return {
-    resolveImportTarget: partial.resolveImportTarget ?? (() => null),
-    expandsWildcardTo: partial.expandsWildcardTo ?? (() => []),
-    mergeBindings:
-      partial.mergeBindings ??
-      ((
-        existing: readonly BindingRef[],
-        incoming: readonly BindingRef[],
-      ): readonly BindingRef[] => [...existing, ...incoming]),
-  };
+	return {
+		resolveImportTarget: partial.resolveImportTarget ?? (() => null),
+		expandsWildcardTo: partial.expandsWildcardTo ?? (() => []),
+		mergeBindings:
+			partial.mergeBindings ??
+			((
+				existing: readonly BindingRef[],
+				incoming: readonly BindingRef[],
+			): readonly BindingRef[] => [...existing, ...incoming]),
+	};
 }

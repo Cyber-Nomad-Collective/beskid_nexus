@@ -1,21 +1,21 @@
 class Animal {
-    speak() {
-        throw new Error("Not implemented");
-    }
+	speak() {
+		throw new Error("Not implemented");
+	}
 
-    static classify(name) {
-        return "mammal";
-    }
+	static classify(name) {
+		return "mammal";
+	}
 
-    breathe() {
-        return true;
-    }
+	breathe() {
+		return true;
+	}
 }
 
 class Dog extends Animal {
-    speak() {
-        return "woof";
-    }
+	speak() {
+		return "woof";
+	}
 }
 
 module.exports = { Animal, Dog };

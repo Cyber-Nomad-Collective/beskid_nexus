@@ -60,23 +60,28 @@
  */
 
 import type {
-  BindingRef,
-  CaptureMatch,
-  ImportEdge,
-  ParsedFile,
-  ParsedImport,
-  ReferenceSite,
-  ReferenceKind,
-  Range,
-  Scope,
-  ScopeId,
-  ScopeKind,
-  SymbolDefinition,
-  TypeRef,
-} from 'gitnexus-shared';
-import { buildPositionIndex, buildScopeTree, canParentScope, makeScopeId } from 'gitnexus-shared';
-import type { LanguageProvider } from './language-provider.js';
-import { extractTemplateArguments } from './utils/template-arguments.js';
+	BindingRef,
+	CaptureMatch,
+	ImportEdge,
+	ParsedFile,
+	ParsedImport,
+	Range,
+	ReferenceKind,
+	ReferenceSite,
+	Scope,
+	ScopeId,
+	ScopeKind,
+	SymbolDefinition,
+	TypeRef,
+} from "gitnexus-shared";
+import {
+	buildPositionIndex,
+	buildScopeTree,
+	canParentScope,
+	makeScopeId,
+} from "gitnexus-shared";
+import type { LanguageProvider } from "./language-provider.js";
+import { extractTemplateArguments } from "./utils/template-arguments.js";
 
 // ─── Narrow hook surface the extractor actually uses ───────────────────────
 
@@ -94,12 +99,12 @@ import { extractTemplateArguments } from './utils/template-arguments.js';
  * a `ScopeExtractorHooks` for free.
  */
 export type ScopeExtractorHooks = Pick<
-  LanguageProvider,
-  | 'resolveScopeKind'
-  | 'bindingScopeFor'
-  | 'interpretImport'
-  | 'interpretTypeBinding'
-  | 'classifyCallForm'
+	LanguageProvider,
+	| "resolveScopeKind"
+	| "bindingScopeFor"
+	| "interpretImport"
+	| "interpretTypeBinding"
+	| "classifyCallForm"
 >;
 
 // ─── Public entry point ─────────────────────────────────────────────────────
@@ -114,87 +119,87 @@ export type ScopeExtractorHooks = Pick<
  * to tolerate.
  */
 export function extract(
-  matches: readonly CaptureMatch[],
-  filePath: string,
-  provider: ScopeExtractorHooks,
+	matches: readonly CaptureMatch[],
+	filePath: string,
+	provider: ScopeExtractorHooks,
 ): ParsedFile {
-  // Partition matches by topic up front — one linear pass over the input.
-  const partitioned = partitionByTopic(matches);
+	// Partition matches by topic up front — one linear pass over the input.
+	const partitioned = partitionByTopic(matches);
 
-  // ── Pass 1: build the scope tree ─────────────────────────────────────
-  const scopeDrafts = pass1BuildScopes(partitioned.scope, filePath, provider);
-  const moduleScope = ensureModuleScope(scopeDrafts, matches.length, filePath);
-  const scopes = scopeDrafts.map(draftToScope);
-  // buildScopeTree validates invariants (throws on violation) and exposes
-  // the lookup contract consumed by Passes 2-5.
-  //
-  // **Snapshot semantics.** Both `scopeTree` and `positionIndex` are built
-  // from the post-Pass-1 `scopes` — parent/range/kind are accurate, but
-  // `bindings`, `ownedDefs`, and `typeBindings` are all empty here. Later
-  // passes write into the *drafts*, not into these snapshots; any hook
-  // that reads `scope.bindings` etc. via the `scopeTree` argument sees a
-  // structural view only. This is by design — hooks use scopeTree for
-  // "what's the parent chain?" queries, not for content queries.
-  const scopeTree = buildScopeTree(scopes);
-  const positionIndex = buildPositionIndex(scopes);
+	// ── Pass 1: build the scope tree ─────────────────────────────────────
+	const scopeDrafts = pass1BuildScopes(partitioned.scope, filePath, provider);
+	const moduleScope = ensureModuleScope(scopeDrafts, matches.length, filePath);
+	const scopes = scopeDrafts.map(draftToScope);
+	// buildScopeTree validates invariants (throws on violation) and exposes
+	// the lookup contract consumed by Passes 2-5.
+	//
+	// **Snapshot semantics.** Both `scopeTree` and `positionIndex` are built
+	// from the post-Pass-1 `scopes` — parent/range/kind are accurate, but
+	// `bindings`, `ownedDefs`, and `typeBindings` are all empty here. Later
+	// passes write into the *drafts*, not into these snapshots; any hook
+	// that reads `scope.bindings` etc. via the `scopeTree` argument sees a
+	// structural view only. This is by design — hooks use scopeTree for
+	// "what's the parent chain?" queries, not for content queries.
+	const scopeTree = buildScopeTree(scopes);
+	const positionIndex = buildPositionIndex(scopes);
 
-  // ── Pass 2: attach declarations + local bindings ────────────────────
-  const localDefs: SymbolDefinition[] = [];
-  pass2AttachDeclarations(
-    partitioned.declaration,
-    scopeDrafts,
-    positionIndex,
-    localDefs,
-    filePath,
-    provider,
-    scopeTree,
-  );
+	// ── Pass 2: attach declarations + local bindings ────────────────────
+	const localDefs: SymbolDefinition[] = [];
+	pass2AttachDeclarations(
+		partitioned.declaration,
+		scopeDrafts,
+		positionIndex,
+		localDefs,
+		filePath,
+		provider,
+		scopeTree,
+	);
 
-  // ── Pass 3: collect raw imports ─────────────────────────────────────
-  const parsedImports: ParsedImport[] = [];
-  pass3CollectImports(partitioned.import_, parsedImports, provider);
+	// ── Pass 3: collect raw imports ─────────────────────────────────────
+	const parsedImports: ParsedImport[] = [];
+	pass3CollectImports(partitioned.import_, parsedImports, provider);
 
-  // ── Pass 4: collect type bindings ───────────────────────────────────
-  pass4CollectTypeBindings(
-    partitioned.typeBinding,
-    scopeDrafts,
-    positionIndex,
-    filePath,
-    provider,
-    scopeTree,
-  );
+	// ── Pass 4: collect type bindings ───────────────────────────────────
+	pass4CollectTypeBindings(
+		partitioned.typeBinding,
+		scopeDrafts,
+		positionIndex,
+		filePath,
+		provider,
+		scopeTree,
+	);
 
-  // ── Pass 5: collect reference sites ─────────────────────────────────
-  const referenceSites: ReferenceSite[] = [];
-  pass5CollectReferences(
-    partitioned.reference,
-    positionIndex,
-    filePath,
-    referenceSites,
-    provider,
-    scopeTree,
-  );
+	// ── Pass 5: collect reference sites ─────────────────────────────────
+	const referenceSites: ReferenceSite[] = [];
+	pass5CollectReferences(
+		partitioned.reference,
+		positionIndex,
+		filePath,
+		referenceSites,
+		provider,
+		scopeTree,
+	);
 
-  // Freeze Scope drafts into final shape and return.
-  const frozenScopes = scopeDrafts.map(draftToScope);
-  return Object.freeze({
-    filePath,
-    moduleScope: moduleScope.id,
-    scopes: Object.freeze(frozenScopes),
-    parsedImports: Object.freeze(parsedImports.slice()),
-    localDefs: Object.freeze(localDefs.slice()),
-    referenceSites: Object.freeze(referenceSites.slice()),
-  });
+	// Freeze Scope drafts into final shape and return.
+	const frozenScopes = scopeDrafts.map(draftToScope);
+	return Object.freeze({
+		filePath,
+		moduleScope: moduleScope.id,
+		scopes: Object.freeze(frozenScopes),
+		parsedImports: Object.freeze(parsedImports.slice()),
+		localDefs: Object.freeze(localDefs.slice()),
+		referenceSites: Object.freeze(referenceSites.slice()),
+	});
 }
 
 // ─── Internal: partitioning by topic ───────────────────────────────────────
 
 interface Partitioned {
-  readonly scope: readonly CaptureMatch[];
-  readonly declaration: readonly CaptureMatch[];
-  readonly import_: readonly CaptureMatch[];
-  readonly typeBinding: readonly CaptureMatch[];
-  readonly reference: readonly CaptureMatch[];
+	readonly scope: readonly CaptureMatch[];
+	readonly declaration: readonly CaptureMatch[];
+	readonly import_: readonly CaptureMatch[];
+	readonly typeBinding: readonly CaptureMatch[];
+	readonly reference: readonly CaptureMatch[];
 }
 
 /**
@@ -208,54 +213,60 @@ interface Partitioned {
  * to hooks verbatim — the extractor itself only routes by anchor.
  */
 function partitionByTopic(matches: readonly CaptureMatch[]): Partitioned {
-  const scope: CaptureMatch[] = [];
-  const declaration: CaptureMatch[] = [];
-  const import_: CaptureMatch[] = [];
-  const typeBinding: CaptureMatch[] = [];
-  const reference: CaptureMatch[] = [];
+	const scope: CaptureMatch[] = [];
+	const declaration: CaptureMatch[] = [];
+	const import_: CaptureMatch[] = [];
+	const typeBinding: CaptureMatch[] = [];
+	const reference: CaptureMatch[] = [];
 
-  for (const match of matches) {
-    const topic = topicOf(match);
-    switch (topic) {
-      case 'scope':
-        scope.push(match);
-        break;
-      case 'declaration':
-        declaration.push(match);
-        break;
-      case 'import':
-        import_.push(match);
-        break;
-      case 'type-binding':
-        typeBinding.push(match);
-        break;
-      case 'reference':
-        reference.push(match);
-        break;
-      case 'unknown':
-        // Unrecognized anchor — silently skip. Providers may emit extra
-        // captures (e.g., `@comment`) that the extractor has no topic for.
-        break;
-    }
-  }
+	for (const match of matches) {
+		const topic = topicOf(match);
+		switch (topic) {
+			case "scope":
+				scope.push(match);
+				break;
+			case "declaration":
+				declaration.push(match);
+				break;
+			case "import":
+				import_.push(match);
+				break;
+			case "type-binding":
+				typeBinding.push(match);
+				break;
+			case "reference":
+				reference.push(match);
+				break;
+			case "unknown":
+				// Unrecognized anchor — silently skip. Providers may emit extra
+				// captures (e.g., `@comment`) that the extractor has no topic for.
+				break;
+		}
+	}
 
-  return { scope, declaration, import_, typeBinding, reference };
+	return { scope, declaration, import_, typeBinding, reference };
 }
 
-type Topic = 'scope' | 'declaration' | 'import' | 'type-binding' | 'reference' | 'unknown';
+type Topic =
+	| "scope"
+	| "declaration"
+	| "import"
+	| "type-binding"
+	| "reference"
+	| "unknown";
 
 function topicOf(match: CaptureMatch): Topic {
-  // The anchor is the capture whose name uses one of the known topic
-  // prefixes. For multi-capture matches, ALL captures share the topic;
-  // we pick the first matching key for efficiency.
-  for (const name of Object.keys(match)) {
-    if (name.startsWith('@scope.')) return 'scope';
-    if (name.startsWith('@declaration.')) return 'declaration';
-    if (name.startsWith('@import.')) return 'import';
-    if (name.startsWith('@type-binding.')) return 'type-binding';
-    if (name.startsWith('@reference.')) return 'reference';
-  }
-  return 'unknown';
+	// The anchor is the capture whose name uses one of the known topic
+	// prefixes. For multi-capture matches, ALL captures share the topic;
+	// we pick the first matching key for efficiency.
+	for (const name of Object.keys(match)) {
+		if (name.startsWith("@scope.")) return "scope";
+		if (name.startsWith("@declaration.")) return "declaration";
+		if (name.startsWith("@import.")) return "import";
+		if (name.startsWith("@type-binding.")) return "type-binding";
+		if (name.startsWith("@reference.")) return "reference";
+	}
+	return "unknown";
 }
 
 // ─── Internal: Scope draft model ───────────────────────────────────────────
@@ -266,60 +277,60 @@ function topicOf(match: CaptureMatch): Topic {
  * of each pass's writes.
  */
 interface ScopeDraft {
-  readonly id: ScopeId;
-  readonly parent: ScopeId | null;
-  readonly kind: ScopeKind;
-  readonly range: Range;
-  readonly filePath: string;
-  readonly bindings: Map<string, BindingRef[]>;
-  readonly ownedDefs: SymbolDefinition[];
-  readonly imports: ImportEdge[];
-  readonly typeBindings: Map<string, TypeRef>;
+	readonly id: ScopeId;
+	readonly parent: ScopeId | null;
+	readonly kind: ScopeKind;
+	readonly range: Range;
+	readonly filePath: string;
+	readonly bindings: Map<string, BindingRef[]>;
+	readonly ownedDefs: SymbolDefinition[];
+	readonly imports: ImportEdge[];
+	readonly typeBindings: Map<string, TypeRef>;
 }
 
 function ensureModuleScope(
-  scopeDrafts: ScopeDraft[],
-  matchCount: number,
-  filePath: string,
+	scopeDrafts: ScopeDraft[],
+	matchCount: number,
+	filePath: string,
 ): ScopeDraft {
-  const moduleScope = scopeDrafts.find((s) => s.kind === 'Module');
-  if (moduleScope !== undefined) return moduleScope;
+	const moduleScope = scopeDrafts.find((s) => s.kind === "Module");
+	if (moduleScope !== undefined) return moduleScope;
 
-  if (scopeDrafts.length === 0 && matchCount === 0) {
-    const range: Range = { startLine: 0, startCol: 0, endLine: 0, endCol: 0 };
-    const synthetic = makeDraft(
-      makeScopeId({ filePath, range, kind: 'Module' }),
-      null,
-      'Module',
-      range,
-      filePath,
-    );
-    scopeDrafts.push(synthetic);
-    return synthetic;
-  }
+	if (scopeDrafts.length === 0 && matchCount === 0) {
+		const range: Range = { startLine: 0, startCol: 0, endLine: 0, endCol: 0 };
+		const synthetic = makeDraft(
+			makeScopeId({ filePath, range, kind: "Module" }),
+			null,
+			"Module",
+			range,
+			filePath,
+		);
+		scopeDrafts.push(synthetic);
+		return synthetic;
+	}
 
-  throw new Error(
-    `ScopeExtractor: no Module scope found for '${filePath}'. ` +
-      `Provider must emit at least one @scope.module capture per file.`,
-  );
+	throw new Error(
+		`ScopeExtractor: no Module scope found for '${filePath}'. ` +
+			`Provider must emit at least one @scope.module capture per file.`,
+	);
 }
 
 function draftToScope(draft: ScopeDraft): Scope {
-  const frozenBindings = new Map<string, readonly BindingRef[]>();
-  for (const [name, refs] of draft.bindings) {
-    frozenBindings.set(name, Object.freeze(refs.slice()));
-  }
-  return {
-    id: draft.id,
-    parent: draft.parent,
-    kind: draft.kind,
-    range: draft.range,
-    filePath: draft.filePath,
-    bindings: frozenBindings,
-    ownedDefs: Object.freeze(draft.ownedDefs.slice()),
-    imports: Object.freeze(draft.imports.slice()),
-    typeBindings: new Map(draft.typeBindings),
-  };
+	const frozenBindings = new Map<string, readonly BindingRef[]>();
+	for (const [name, refs] of draft.bindings) {
+		frozenBindings.set(name, Object.freeze(refs.slice()));
+	}
+	return {
+		id: draft.id,
+		parent: draft.parent,
+		kind: draft.kind,
+		range: draft.range,
+		filePath: draft.filePath,
+		bindings: frozenBindings,
+		ownedDefs: Object.freeze(draft.ownedDefs.slice()),
+		imports: Object.freeze(draft.imports.slice()),
+		typeBindings: new Map(draft.typeBindings),
+	};
 }
 
 // ─── Pass 1: build scope tree ──────────────────────────────────────────────
@@ -330,271 +341,297 @@ function draftToScope(draft: ScopeDraft): Scope {
  * becomes the parent).
  */
 function pass1BuildScopes(
-  matches: readonly CaptureMatch[],
-  filePath: string,
-  provider: ScopeExtractorHooks,
+	matches: readonly CaptureMatch[],
+	filePath: string,
+	provider: ScopeExtractorHooks,
 ): ScopeDraft[] {
-  interface Candidate {
-    readonly match: CaptureMatch;
-    readonly range: Range;
-    readonly kind: ScopeKind;
-    readonly id: ScopeId;
-  }
+	interface Candidate {
+		readonly match: CaptureMatch;
+		readonly range: Range;
+		readonly kind: ScopeKind;
+		readonly id: ScopeId;
+	}
 
-  const candidates: Candidate[] = [];
-  for (const match of matches) {
-    const anchor = anchorCaptureFor(match, '@scope.');
-    if (anchor === undefined) continue;
-    const kind = resolveKindForScopeMatch(match, anchor, provider);
-    if (kind === null) continue;
-    const id = makeScopeId({ filePath, range: anchor.range, kind });
-    candidates.push({ match, range: anchor.range, kind, id });
-  }
+	const candidates: Candidate[] = [];
+	for (const match of matches) {
+		const anchor = anchorCaptureFor(match, "@scope.");
+		if (anchor === undefined) continue;
+		const kind = resolveKindForScopeMatch(match, anchor, provider);
+		if (kind === null) continue;
+		const id = makeScopeId({ filePath, range: anchor.range, kind });
+		candidates.push({ match, range: anchor.range, kind, id });
+	}
 
-  // Sort by (startLine, startCol) ASC, (endLine, endCol) DESC so outer
-  // scopes appear before their children for parent-resolution. When two
-  // candidates have exactly equal ranges (e.g. a `compilation_unit` and
-  // the only top-level scope in the file — see `canParentScope`), Module
-  // sorts first so it lands on the stack ahead of the candidate that will
-  // claim it as parent.
-  candidates.sort((a, b) => {
-    if (a.range.startLine !== b.range.startLine) return a.range.startLine - b.range.startLine;
-    if (a.range.startCol !== b.range.startCol) return a.range.startCol - b.range.startCol;
-    if (a.range.endLine !== b.range.endLine) return b.range.endLine - a.range.endLine;
-    if (a.range.endCol !== b.range.endCol) return b.range.endCol - a.range.endCol;
-    if (a.kind === b.kind) return 0;
-    if (a.kind === 'Module') return -1;
-    if (b.kind === 'Module') return 1;
-    return 0;
-  });
+	// Sort by (startLine, startCol) ASC, (endLine, endCol) DESC so outer
+	// scopes appear before their children for parent-resolution. When two
+	// candidates have exactly equal ranges (e.g. a `compilation_unit` and
+	// the only top-level scope in the file — see `canParentScope`), Module
+	// sorts first so it lands on the stack ahead of the candidate that will
+	// claim it as parent.
+	candidates.sort((a, b) => {
+		if (a.range.startLine !== b.range.startLine)
+			return a.range.startLine - b.range.startLine;
+		if (a.range.startCol !== b.range.startCol)
+			return a.range.startCol - b.range.startCol;
+		if (a.range.endLine !== b.range.endLine)
+			return b.range.endLine - a.range.endLine;
+		if (a.range.endCol !== b.range.endCol) return b.range.endCol - a.range.endCol;
+		if (a.kind === b.kind) return 0;
+		if (a.kind === "Module") return -1;
+		if (b.kind === "Module") return 1;
+		return 0;
+	});
 
-  const drafts: ScopeDraft[] = [];
-  const stack: Candidate[] = []; // enclosing real scopes, outermost at [0]
+	const drafts: ScopeDraft[] = [];
+	const stack: Candidate[] = []; // enclosing real scopes, outermost at [0]
 
-  for (const cand of candidates) {
-    // Pop the stack until the top can parent this candidate (strict
-    // containment, plus the equal-range Module carve-out).
-    while (
-      stack.length > 0 &&
-      !canParentScope(
-        stack[stack.length - 1]!.range,
-        cand.range,
-        stack[stack.length - 1]!.kind,
-        cand.kind,
-      )
-    ) {
-      stack.pop();
-    }
+	for (const cand of candidates) {
+		// Pop the stack until the top can parent this candidate (strict
+		// containment, plus the equal-range Module carve-out).
+		while (
+			stack.length > 0 &&
+			!canParentScope(
+				stack[stack.length - 1]!.range,
+				cand.range,
+				stack[stack.length - 1]!.kind,
+				cand.kind,
+			)
+		) {
+			stack.pop();
+		}
 
-    const parent = stack.length > 0 ? stack[stack.length - 1]!.id : null;
-    drafts.push(makeDraft(cand.id, parent, cand.kind, cand.range, filePath));
-    stack.push(cand);
-  }
+		const parent = stack.length > 0 ? stack[stack.length - 1]!.id : null;
+		drafts.push(makeDraft(cand.id, parent, cand.kind, cand.range, filePath));
+		stack.push(cand);
+	}
 
-  return drafts;
+	return drafts;
 }
 
 function resolveKindForScopeMatch(
-  match: CaptureMatch,
-  anchor: { readonly name: string },
-  provider: ScopeExtractorHooks,
+	match: CaptureMatch,
+	anchor: { readonly name: string },
+	provider: ScopeExtractorHooks,
 ): ScopeKind | null {
-  // Provider override takes precedence.
-  const override = provider.resolveScopeKind?.(match);
-  if (override !== undefined && override !== null) return override;
+	// Provider override takes precedence.
+	const override = provider.resolveScopeKind?.(match);
+	if (override !== undefined && override !== null) return override;
 
-  // Default: derive from capture name suffix (`@scope.function` → 'Function').
-  const suffix = anchor.name.slice('@scope.'.length);
-  switch (suffix.toLowerCase()) {
-    case 'module':
-      return 'Module';
-    case 'namespace':
-      return 'Namespace';
-    case 'class':
-      return 'Class';
-    case 'function':
-      return 'Function';
-    case 'block':
-      return 'Block';
-    case 'expression':
-      return 'Expression';
-    default:
-      return null;
-  }
+	// Default: derive from capture name suffix (`@scope.function` → 'Function').
+	const suffix = anchor.name.slice("@scope.".length);
+	switch (suffix.toLowerCase()) {
+		case "module":
+			return "Module";
+		case "namespace":
+			return "Namespace";
+		case "class":
+			return "Class";
+		case "function":
+			return "Function";
+		case "block":
+			return "Block";
+		case "expression":
+			return "Expression";
+		default:
+			return null;
+	}
 }
 
 function makeDraft(
-  id: ScopeId,
-  parent: ScopeId | null,
-  kind: ScopeKind,
-  range: Range,
-  filePath: string,
+	id: ScopeId,
+	parent: ScopeId | null,
+	kind: ScopeKind,
+	range: Range,
+	filePath: string,
 ): ScopeDraft {
-  return {
-    id,
-    parent,
-    kind,
-    range,
-    filePath,
-    bindings: new Map(),
-    ownedDefs: [],
-    imports: [],
-    typeBindings: new Map(),
-  };
+	return {
+		id,
+		parent,
+		kind,
+		range,
+		filePath,
+		bindings: new Map(),
+		ownedDefs: [],
+		imports: [],
+		typeBindings: new Map(),
+	};
 }
 
 // ─── Pass 2: attach declarations + local bindings ──────────────────────────
 
 function pass2AttachDeclarations(
-  matches: readonly CaptureMatch[],
-  drafts: readonly ScopeDraft[],
-  positionIndex: ReturnType<typeof buildPositionIndex>,
-  localDefs: SymbolDefinition[],
-  filePath: string,
-  provider: ScopeExtractorHooks,
-  scopeTree: ReturnType<typeof buildScopeTree>,
+	matches: readonly CaptureMatch[],
+	drafts: readonly ScopeDraft[],
+	positionIndex: ReturnType<typeof buildPositionIndex>,
+	localDefs: SymbolDefinition[],
+	filePath: string,
+	provider: ScopeExtractorHooks,
+	scopeTree: ReturnType<typeof buildScopeTree>,
 ): void {
-  const draftById = new Map<ScopeId, ScopeDraft>();
-  for (const d of drafts) draftById.set(d.id, d);
+	const draftById = new Map<ScopeId, ScopeDraft>();
+	for (const d of drafts) draftById.set(d.id, d);
 
-  for (const match of matches) {
-    const anchor = anchorCaptureFor(match, '@declaration.');
-    if (anchor === undefined) continue;
+	for (const match of matches) {
+		const anchor = anchorCaptureFor(match, "@declaration.");
+		if (anchor === undefined) continue;
 
-    const def = buildDefFromDeclarationMatch(match, anchor, filePath);
-    if (def === undefined) continue;
+		const def = buildDefFromDeclarationMatch(match, anchor, filePath);
+		if (def === undefined) continue;
 
-    // Find the innermost scope that contains the declaration's anchor range.
-    const innermostId = positionIndex.atPosition(
-      filePath,
-      anchor.range.startLine,
-      anchor.range.startCol,
-    );
-    if (innermostId === undefined) continue;
-    const innermost = draftById.get(innermostId);
-    if (innermost === undefined) continue;
+		// Find the innermost scope that contains the declaration's anchor range.
+		const innermostId = positionIndex.atPosition(
+			filePath,
+			anchor.range.startLine,
+			anchor.range.startCol,
+		);
+		if (innermostId === undefined) continue;
+		const innermost = draftById.get(innermostId);
+		if (innermost === undefined) continue;
 
-    // Ownership: attach the def to the innermost scope's `ownedDefs` — that
-    // is the structural owner. `def.ownerId` is NOT populated here — the
-    // extractor has no clean path to the parent's own DefId mid-extraction
-    // (the parent declaration may not yet have been processed, or may live
-    // in a different scope entirely). Providers that need `ownerId` should
-    // set it directly from the declaration hook (e.g., derive from the
-    // `@declaration.owner` capture or the parent scope id); otherwise
-    // `finalize` populates method/field `ownerId` via `MethodDispatchIndex`
-    // (#914) in a follow-up pass that sees every def already in place.
-    innermost.ownedDefs.push(def);
-    localDefs.push(def);
+		// Ownership: attach the def to the innermost scope's `ownedDefs` — that
+		// is the structural owner. `def.ownerId` is NOT populated here — the
+		// extractor has no clean path to the parent's own DefId mid-extraction
+		// (the parent declaration may not yet have been processed, or may live
+		// in a different scope entirely). Providers that need `ownerId` should
+		// set it directly from the declaration hook (e.g., derive from the
+		// `@declaration.owner` capture or the parent scope id); otherwise
+		// `finalize` populates method/field `ownerId` via `MethodDispatchIndex`
+		// (#914) in a follow-up pass that sees every def already in place.
+		innermost.ownedDefs.push(def);
+		localDefs.push(def);
 
-    // Binding visibility: default to innermost; allow hoisting via
-    // `provider.bindingScopeFor`. `draftToScope(innermost)` here is a
-    // **structural** snapshot — parent/range/kind only. Hooks MUST NOT
-    // rely on `scope.bindings`, `ownedDefs`, or `typeBindings` being
-    // populated during Pass 2: those fields are written across passes,
-    // so reading them mid-extraction yields a partial view. The
-    // `scopeTree` argument is similarly snapshot-before-mutation.
-    //
-    // Auto-hoist for scope-creating declarations: when the declaration's
-    // anchor range is the same node that produced `innermost` (e.g. a
-    // `function_definition` is both `@scope.function` and the
-    // `@declaration.function` anchor), the name is visible OUTSIDE the
-    // body, not inside. Hoisting to the parent scope is what every
-    // mainstream language wants for function/class declarations. Hooks
-    // can override by returning a non-null scope id.
-    const autoHostedId =
-      innermost.parent !== null && rangesEqual(anchor.range, innermost.range)
-        ? innermost.parent
-        : innermost.id;
-    const bindingScopeId =
-      provider.bindingScopeFor?.(match, draftToScope(innermost), scopeTree) ?? autoHostedId;
-    const bindingHost = draftById.get(bindingScopeId) ?? innermost;
+		// Binding visibility: default to innermost; allow hoisting via
+		// `provider.bindingScopeFor`. `draftToScope(innermost)` here is a
+		// **structural** snapshot — parent/range/kind only. Hooks MUST NOT
+		// rely on `scope.bindings`, `ownedDefs`, or `typeBindings` being
+		// populated during Pass 2: those fields are written across passes,
+		// so reading them mid-extraction yields a partial view. The
+		// `scopeTree` argument is similarly snapshot-before-mutation.
+		//
+		// Auto-hoist for scope-creating declarations: when the declaration's
+		// anchor range is the same node that produced `innermost` (e.g. a
+		// `function_definition` is both `@scope.function` and the
+		// `@declaration.function` anchor), the name is visible OUTSIDE the
+		// body, not inside. Hoisting to the parent scope is what every
+		// mainstream language wants for function/class declarations. Hooks
+		// can override by returning a non-null scope id.
+		const autoHostedId =
+			innermost.parent !== null && rangesEqual(anchor.range, innermost.range)
+				? innermost.parent
+				: innermost.id;
+		const bindingScopeId =
+			provider.bindingScopeFor?.(match, draftToScope(innermost), scopeTree) ??
+			autoHostedId;
+		const bindingHost = draftById.get(bindingScopeId) ?? innermost;
 
-    const nameKey = deriveDeclarationName(match, def);
-    if (nameKey === undefined) continue;
+		const nameKey = deriveDeclarationName(match, def);
+		if (nameKey === undefined) continue;
 
-    const existing = bindingHost.bindings.get(nameKey) ?? [];
-    existing.push({ def, origin: 'local' });
-    bindingHost.bindings.set(nameKey, existing);
-  }
+		const existing = bindingHost.bindings.get(nameKey) ?? [];
+		existing.push({ def, origin: "local" });
+		bindingHost.bindings.set(nameKey, existing);
+	}
 }
 
 function buildDefFromDeclarationMatch(
-  match: CaptureMatch,
-  anchor: { readonly name: string; readonly range: Range; readonly text: string },
-  filePath: string,
+	match: CaptureMatch,
+	anchor: {
+		readonly name: string;
+		readonly range: Range;
+		readonly text: string;
+	},
+	filePath: string,
 ): SymbolDefinition | undefined {
-  // Anchor name pattern: `@declaration.<kind>` where <kind> maps to NodeLabel.
-  const kindStr = anchor.name.slice('@declaration.'.length);
-  const type = normalizeNodeLabel(kindStr);
-  if (type === undefined) return undefined;
+	// Anchor name pattern: `@declaration.<kind>` where <kind> maps to NodeLabel.
+	const kindStr = anchor.name.slice("@declaration.".length);
+	const type = normalizeNodeLabel(kindStr);
+	if (type === undefined) return undefined;
 
-  const nameCap =
-    match['@declaration.name'] ?? match[`@declaration.${kindStr}.name`] ?? match[anchor.name];
-  if (nameCap === undefined) return undefined;
+	const nameCap =
+		match["@declaration.name"] ??
+		match[`@declaration.${kindStr}.name`] ??
+		match[anchor.name];
+	if (nameCap === undefined) return undefined;
 
-  const qualifiedCap = match['@declaration.qualified_name'];
-  const qualifiedName = qualifiedCap?.text;
-  const templateArguments =
-    extractTemplateArguments(match['@declaration.template-arguments']?.text ?? '') ??
-    extractTemplateArguments(qualifiedName ?? nameCap.text);
+	const qualifiedCap = match["@declaration.qualified_name"];
+	const qualifiedName = qualifiedCap?.text;
+	const templateArguments =
+		extractTemplateArguments(
+			match["@declaration.template-arguments"]?.text ?? "",
+		) ?? extractTemplateArguments(qualifiedName ?? nameCap.text);
 
-  // Optional arity metadata — producers (e.g. Python emit-captures)
-  // synthesize these on function/method declarations. Their absence is
-  // the normal case for other producers; readers treat undefined as
-  // "unknown" per `SymbolDefinition` contract.
-  const parameterCount = parseIntCapture(match['@declaration.parameter-count']);
-  const requiredParameterCount = parseIntCapture(match['@declaration.required-parameter-count']);
-  const parameterTypes = parseJsonStringArrayCapture(match['@declaration.parameter-types']);
-  const declaredType = match['@declaration.field-type']?.text;
-  const returnType = match['@declaration.return-type']?.text;
+	// Optional arity metadata — producers (e.g. Python emit-captures)
+	// synthesize these on function/method declarations. Their absence is
+	// the normal case for other producers; readers treat undefined as
+	// "unknown" per `SymbolDefinition` contract.
+	const parameterCount = parseIntCapture(match["@declaration.parameter-count"]);
+	const requiredParameterCount = parseIntCapture(
+		match["@declaration.required-parameter-count"],
+	);
+	const parameterTypes = parseJsonStringArrayCapture(
+		match["@declaration.parameter-types"],
+	);
+	const declaredType = match["@declaration.field-type"]?.text;
+	const returnType = match["@declaration.return-type"]?.text;
 
-  return {
-    nodeId: makeDefId(filePath, anchor.range, type, nameCap.text),
-    filePath,
-    type,
-    ...(qualifiedName !== undefined ? { qualifiedName } : { qualifiedName: nameCap.text }),
-    ...(parameterCount !== undefined ? { parameterCount } : {}),
-    ...(requiredParameterCount !== undefined ? { requiredParameterCount } : {}),
-    ...(parameterTypes !== undefined ? { parameterTypes } : {}),
-    ...(declaredType !== undefined ? { declaredType } : {}),
-    ...(returnType !== undefined ? { returnType } : {}),
-    ...(templateArguments !== undefined ? { templateArguments } : {}),
-  };
+	return {
+		nodeId: makeDefId(filePath, anchor.range, type, nameCap.text),
+		filePath,
+		type,
+		...(qualifiedName !== undefined
+			? { qualifiedName }
+			: { qualifiedName: nameCap.text }),
+		...(parameterCount !== undefined ? { parameterCount } : {}),
+		...(requiredParameterCount !== undefined ? { requiredParameterCount } : {}),
+		...(parameterTypes !== undefined ? { parameterTypes } : {}),
+		...(declaredType !== undefined ? { declaredType } : {}),
+		...(returnType !== undefined ? { returnType } : {}),
+		...(templateArguments !== undefined ? { templateArguments } : {}),
+	};
 }
 
-function parseIntCapture(cap: { readonly text: string } | undefined): number | undefined {
-  if (cap === undefined) return undefined;
-  const n = Number.parseInt(cap.text, 10);
-  return Number.isFinite(n) ? n : undefined;
+function parseIntCapture(
+	cap: { readonly text: string } | undefined,
+): number | undefined {
+	if (cap === undefined) return undefined;
+	const n = Number.parseInt(cap.text, 10);
+	return Number.isFinite(n) ? n : undefined;
 }
 
 function parseJsonStringArrayCapture(
-  cap: { readonly text: string } | undefined,
+	cap: { readonly text: string } | undefined,
 ): string[] | undefined {
-  if (cap === undefined) return undefined;
-  try {
-    const parsed = JSON.parse(cap.text) as unknown;
-    if (!Array.isArray(parsed)) return undefined;
-    return parsed.every((x): x is string => typeof x === 'string') ? parsed : undefined;
-  } catch {
-    return undefined;
-  }
+	if (cap === undefined) return undefined;
+	try {
+		const parsed = JSON.parse(cap.text) as unknown;
+		if (!Array.isArray(parsed)) return undefined;
+		return parsed.every((x): x is string => typeof x === "string")
+			? parsed
+			: undefined;
+	} catch {
+		return undefined;
+	}
 }
 
-function deriveDeclarationName(match: CaptureMatch, def: SymbolDefinition): string | undefined {
-  const nameCap =
-    match['@declaration.name'] ??
-    match[
-      Object.keys(match).find((k) => k.startsWith('@declaration.') && k.endsWith('.name')) ?? ''
-    ];
-  if (nameCap !== undefined) return nameCap.text;
-  // Fall back to qualifiedName tail.
-  const q = def.qualifiedName;
-  if (q !== undefined && q.length > 0) {
-    const dot = q.lastIndexOf('.');
-    return dot === -1 ? q : q.slice(dot + 1);
-  }
-  return undefined;
+function deriveDeclarationName(
+	match: CaptureMatch,
+	def: SymbolDefinition,
+): string | undefined {
+	const nameCap =
+		match["@declaration.name"] ??
+		match[
+			Object.keys(match).find(
+				(k) => k.startsWith("@declaration.") && k.endsWith(".name"),
+			) ?? ""
+		];
+	if (nameCap !== undefined) return nameCap.text;
+	// Fall back to qualifiedName tail.
+	const q = def.qualifiedName;
+	if (q !== undefined && q.length > 0) {
+		const dot = q.lastIndexOf(".");
+		return dot === -1 ? q : q.slice(dot + 1);
+	}
+	return undefined;
 }
 
 /**
@@ -603,153 +640,156 @@ function deriveDeclarationName(match: CaptureMatch, def: SymbolDefinition): stri
  * recognize — providers can emit richer captures without breaking the
  * driver.
  */
-function normalizeNodeLabel(kindStr: string): SymbolDefinition['type'] | undefined {
-  switch (kindStr.toLowerCase()) {
-    case 'class':
-      return 'Class';
-    case 'interface':
-      return 'Interface';
-    case 'enum':
-      return 'Enum';
-    case 'struct':
-      return 'Struct';
-    case 'union':
-      return 'Union';
-    case 'trait':
-      return 'Trait';
-    case 'method':
-      return 'Method';
-    case 'function':
-      return 'Function';
-    case 'constructor':
-      return 'Constructor';
-    case 'field':
-    case 'property':
-      return 'Property';
-    case 'variable':
-    case 'const':
-      return 'Variable';
-    case 'typealias':
-    case 'type_alias':
-      return 'TypeAlias';
-    case 'typedef':
-      return 'Typedef';
-    case 'record':
-      return 'Record';
-    case 'delegate':
-      return 'Delegate';
-    case 'annotation':
-      return 'Annotation';
-    case 'namespace':
-      return 'Namespace';
-    default:
-      return undefined;
-  }
+function normalizeNodeLabel(
+	kindStr: string,
+): SymbolDefinition["type"] | undefined {
+	switch (kindStr.toLowerCase()) {
+		case "class":
+			return "Class";
+		case "interface":
+			return "Interface";
+		case "enum":
+			return "Enum";
+		case "struct":
+			return "Struct";
+		case "union":
+			return "Union";
+		case "trait":
+			return "Trait";
+		case "method":
+			return "Method";
+		case "function":
+			return "Function";
+		case "constructor":
+			return "Constructor";
+		case "field":
+		case "property":
+			return "Property";
+		case "variable":
+		case "const":
+			return "Variable";
+		case "typealias":
+		case "type_alias":
+			return "TypeAlias";
+		case "typedef":
+			return "Typedef";
+		case "record":
+			return "Record";
+		case "delegate":
+			return "Delegate";
+		case "annotation":
+			return "Annotation";
+		case "namespace":
+			return "Namespace";
+		default:
+			return undefined;
+	}
 }
 
 function makeDefId(
-  filePath: string,
-  range: Range,
-  type: SymbolDefinition['type'],
-  name: string,
+	filePath: string,
+	range: Range,
+	type: SymbolDefinition["type"],
+	name: string,
 ): string {
-  return `def:${filePath}#${range.startLine}:${range.startCol}:${type}:${name}`;
+	return `def:${filePath}#${range.startLine}:${range.startCol}:${type}:${name}`;
 }
 
 // ─── Pass 3: collect raw imports ───────────────────────────────────────────
 
 function pass3CollectImports(
-  matches: readonly CaptureMatch[],
-  parsedImports: ParsedImport[],
-  provider: ScopeExtractorHooks,
+	matches: readonly CaptureMatch[],
+	parsedImports: ParsedImport[],
+	provider: ScopeExtractorHooks,
 ): void {
-  if (provider.interpretImport === undefined) return;
-  for (const match of matches) {
-    const anchor = anchorCaptureFor(match, '@import.');
-    if (anchor === undefined) continue;
-    const parsed = provider.interpretImport(match);
-    if (parsed === null) continue;
-    parsedImports.push(parsed);
-  }
+	if (provider.interpretImport === undefined) return;
+	for (const match of matches) {
+		const anchor = anchorCaptureFor(match, "@import.");
+		if (anchor === undefined) continue;
+		const parsed = provider.interpretImport(match);
+		if (parsed === null) continue;
+		parsedImports.push(parsed);
+	}
 }
 
 // ─── Pass 4: collect type bindings ─────────────────────────────────────────
 
 function pass4CollectTypeBindings(
-  matches: readonly CaptureMatch[],
-  drafts: readonly ScopeDraft[],
-  positionIndex: ReturnType<typeof buildPositionIndex>,
-  filePath: string,
-  provider: ScopeExtractorHooks,
-  scopeTree: ReturnType<typeof buildScopeTree>,
+	matches: readonly CaptureMatch[],
+	drafts: readonly ScopeDraft[],
+	positionIndex: ReturnType<typeof buildPositionIndex>,
+	filePath: string,
+	provider: ScopeExtractorHooks,
+	scopeTree: ReturnType<typeof buildScopeTree>,
 ): void {
-  const draftById = new Map<ScopeId, ScopeDraft>();
-  for (const d of drafts) draftById.set(d.id, d);
+	const draftById = new Map<ScopeId, ScopeDraft>();
+	for (const d of drafts) draftById.set(d.id, d);
 
-  for (const match of matches) {
-    const anchor = anchorCaptureFor(match, '@type-binding.');
-    if (anchor === undefined) continue;
+	for (const match of matches) {
+		const anchor = anchorCaptureFor(match, "@type-binding.");
+		if (anchor === undefined) continue;
 
-    const parsed = provider.interpretTypeBinding?.(match);
-    if (parsed === null || parsed === undefined) continue;
+		const parsed = provider.interpretTypeBinding?.(match);
+		if (parsed === null || parsed === undefined) continue;
 
-    const innermostId = positionIndex.atPosition(
-      filePath,
-      anchor.range.startLine,
-      anchor.range.startCol,
-    );
-    if (innermostId === undefined) continue;
-    const innermost = draftById.get(innermostId);
-    if (innermost === undefined) continue;
+		const innermostId = positionIndex.atPosition(
+			filePath,
+			anchor.range.startLine,
+			anchor.range.startCol,
+		);
+		if (innermostId === undefined) continue;
+		const innermost = draftById.get(innermostId);
+		if (innermost === undefined) continue;
 
-    // Auto-hoist for scope-creating type bindings (e.g. Python's
-    // `@type-binding.return` whose anchor is the function_definition
-    // itself). Same condition as Pass 2 — when the anchor coincides
-    // with the innermost scope's range, the binding belongs in the
-    // enclosing scope (callers, not the function body, look up the
-    // return type by the function's name).
-    const autoHostedId =
-      innermost.parent !== null && rangesEqual(anchor.range, innermost.range)
-        ? innermost.parent
-        : innermost.id;
-    // `bindingScopeFor` may hoist the type binding to an outer scope.
-    const hostId =
-      provider.bindingScopeFor?.(match, draftToScope(innermost), scopeTree) ?? autoHostedId;
-    const host = draftById.get(hostId) ?? innermost;
+		// Auto-hoist for scope-creating type bindings (e.g. Python's
+		// `@type-binding.return` whose anchor is the function_definition
+		// itself). Same condition as Pass 2 — when the anchor coincides
+		// with the innermost scope's range, the binding belongs in the
+		// enclosing scope (callers, not the function body, look up the
+		// return type by the function's name).
+		const autoHostedId =
+			innermost.parent !== null && rangesEqual(anchor.range, innermost.range)
+				? innermost.parent
+				: innermost.id;
+		// `bindingScopeFor` may hoist the type binding to an outer scope.
+		const hostId =
+			provider.bindingScopeFor?.(match, draftToScope(innermost), scopeTree) ??
+			autoHostedId;
+		const host = draftById.get(hostId) ?? innermost;
 
-    const typeRef: TypeRef = {
-      rawName: parsed.rawTypeName,
-      declaredAtScope: host.id,
-      source: parsed.source,
-    };
-    // Prefer stronger sources when multiple matches fire for the same
-    // bound name in the same scope. Example: `u: User = find()` matches
-    // both the annotation and constructor-inferred patterns; the explicit
-    // annotation (stronger source) must win over the call-site guess
-    // regardless of query-match arrival order.
-    const existing = host.typeBindings.get(parsed.boundName);
-    if (
-      existing === undefined ||
-      typeBindingStrength(typeRef.source) >= typeBindingStrength(existing.source)
-    ) {
-      host.typeBindings.set(parsed.boundName, typeRef);
-    }
-  }
+		const typeRef: TypeRef = {
+			rawName: parsed.rawTypeName,
+			declaredAtScope: host.id,
+			source: parsed.source,
+		};
+		// Prefer stronger sources when multiple matches fire for the same
+		// bound name in the same scope. Example: `u: User = find()` matches
+		// both the annotation and constructor-inferred patterns; the explicit
+		// annotation (stronger source) must win over the call-site guess
+		// regardless of query-match arrival order.
+		const existing = host.typeBindings.get(parsed.boundName);
+		if (
+			existing === undefined ||
+			typeBindingStrength(typeRef.source) >= typeBindingStrength(existing.source)
+		) {
+			host.typeBindings.set(parsed.boundName, typeRef);
+		}
+	}
 
-  // ── Transitive closure over identifier-chain type bindings ─────────
-  // Captures like `(assignment left: (ident) right: (ident))` emit a
-  // TypeRef whose `rawName` is the RHS identifier. When the RHS name is
-  // itself a bound variable with a known type in the same scope (or a
-  // parent scope), follow the chain so `alias` ultimately points at the
-  // class type — not at another local variable name. Without this,
-  // `resolveTypeRef` hits the chained name, sees it's a local Variable
-  // (non-type kind), and strict-returns null.
-  for (const draft of drafts) {
-    for (const [name, ref] of draft.typeBindings) {
-      const resolved = followChainedRef(ref, draftById);
-      if (resolved !== ref) draft.typeBindings.set(name, resolved);
-    }
-  }
+	// ── Transitive closure over identifier-chain type bindings ─────────
+	// Captures like `(assignment left: (ident) right: (ident))` emit a
+	// TypeRef whose `rawName` is the RHS identifier. When the RHS name is
+	// itself a bound variable with a known type in the same scope (or a
+	// parent scope), follow the chain so `alias` ultimately points at the
+	// class type — not at another local variable name. Without this,
+	// `resolveTypeRef` hits the chained name, sees it's a local Variable
+	// (non-type kind), and strict-returns null.
+	for (const draft of drafts) {
+		for (const [name, ref] of draft.typeBindings) {
+			const resolved = followChainedRef(ref, draftById);
+			if (resolved !== ref) draft.typeBindings.set(name, resolved);
+		}
+	}
 }
 
 /** Max chain depth: practical programs rarely exceed 4-5 re-bindings;
@@ -761,33 +801,36 @@ const CHAIN_MAX_DEPTH = 16;
  * lookups in the declaring scope and its ancestors. Returns the terminal
  * TypeRef (or the original if the chain dead-ends or cycles).
  */
-function followChainedRef(start: TypeRef, draftById: ReadonlyMap<ScopeId, ScopeDraft>): TypeRef {
-  let current = start;
-  const visited = new Set<string>();
-  for (let depth = 0; depth < CHAIN_MAX_DEPTH; depth++) {
-    // A rawName containing a dot (`models.User`) goes through
-    // `QualifiedNameIndex` at resolution time — don't follow it here.
-    if (current.rawName.includes('.')) return current;
+function followChainedRef(
+	start: TypeRef,
+	draftById: ReadonlyMap<ScopeId, ScopeDraft>,
+): TypeRef {
+	let current = start;
+	const visited = new Set<string>();
+	for (let depth = 0; depth < CHAIN_MAX_DEPTH; depth++) {
+		// A rawName containing a dot (`models.User`) goes through
+		// `QualifiedNameIndex` at resolution time — don't follow it here.
+		if (current.rawName.includes(".")) return current;
 
-    // Look up the current rawName in the declaring scope and walk up
-    // the chain until we hit a scope that has a binding for it.
-    let scopeId: ScopeId | null = current.declaredAtScope;
-    let next: TypeRef | undefined;
-    while (scopeId !== null) {
-      const scope = draftById.get(scopeId);
-      if (scope === undefined) break;
-      next = scope.typeBindings.get(current.rawName);
-      if (next !== undefined) break;
-      scopeId = scope.parent;
-    }
+		// Look up the current rawName in the declaring scope and walk up
+		// the chain until we hit a scope that has a binding for it.
+		let scopeId: ScopeId | null = current.declaredAtScope;
+		let next: TypeRef | undefined;
+		while (scopeId !== null) {
+			const scope = draftById.get(scopeId);
+			if (scope === undefined) break;
+			next = scope.typeBindings.get(current.rawName);
+			if (next !== undefined) break;
+			scopeId = scope.parent;
+		}
 
-    if (next === undefined) return current; // dead end — nothing to chain to
-    if (next === current) return current; // self-ref
-    if (visited.has(next.rawName)) return current; // cycle guard
-    visited.add(next.rawName);
-    current = next;
-  }
-  return current;
+		if (next === undefined) return current; // dead end — nothing to chain to
+		if (next === current) return current; // self-ref
+		if (visited.has(next.rawName)) return current; // cycle guard
+		visited.add(next.rawName);
+		current = next;
+	}
+	return current;
 }
 
 /**
@@ -799,158 +842,169 @@ function followChainedRef(start: TypeRef, draftById: ReadonlyMap<ScopeId, ScopeD
  * reflect user intent. `self`/`cls` are treated as strongly as annotations
  * because they are language-required receiver types.
  */
-function typeBindingStrength(source: TypeRef['source']): number {
-  switch (source) {
-    case 'annotation':
-    case 'parameter-annotation':
-    case 'return-annotation':
-    case 'self':
-      return 2;
-    case 'assignment-inferred':
-    case 'constructor-inferred':
-    case 'receiver-propagated':
-      return 1;
-    default:
-      return 0;
-  }
+function typeBindingStrength(source: TypeRef["source"]): number {
+	switch (source) {
+		case "annotation":
+		case "parameter-annotation":
+		case "return-annotation":
+		case "self":
+			return 2;
+		case "assignment-inferred":
+		case "constructor-inferred":
+		case "receiver-propagated":
+			return 1;
+		default:
+			return 0;
+	}
 }
 
 // ─── Pass 5: collect reference sites ───────────────────────────────────────
 
 function pass5CollectReferences(
-  matches: readonly CaptureMatch[],
-  positionIndex: ReturnType<typeof buildPositionIndex>,
-  filePath: string,
-  referenceSites: ReferenceSite[],
-  provider: ScopeExtractorHooks,
-  scopeTree: ReturnType<typeof buildScopeTree>,
+	matches: readonly CaptureMatch[],
+	positionIndex: ReturnType<typeof buildPositionIndex>,
+	filePath: string,
+	referenceSites: ReferenceSite[],
+	provider: ScopeExtractorHooks,
+	scopeTree: ReturnType<typeof buildScopeTree>,
 ): void {
-  for (const match of matches) {
-    const anchor = anchorCaptureFor(match, '@reference.');
-    if (anchor === undefined) continue;
+	for (const match of matches) {
+		const anchor = anchorCaptureFor(match, "@reference.");
+		if (anchor === undefined) continue;
 
-    const kind = referenceKindFromAnchor(anchor.name);
-    if (kind === undefined) continue;
+		const kind = referenceKindFromAnchor(anchor.name);
+		if (kind === undefined) continue;
 
-    const nameCap = match['@reference.name'] ?? anchor;
-    const inScopeId = positionIndex.atPosition(
-      filePath,
-      anchor.range.startLine,
-      anchor.range.startCol,
-    );
-    if (inScopeId === undefined) continue;
+		const nameCap = match["@reference.name"] ?? anchor;
+		const inScopeId = positionIndex.atPosition(
+			filePath,
+			anchor.range.startLine,
+			anchor.range.startCol,
+		);
+		if (inScopeId === undefined) continue;
 
-    const callForm =
-      kind === 'call'
-        ? classifyCallFormForMatch(match, anchor.name, provider, scopeTree, inScopeId)
-        : undefined;
-    const explicitReceiver = extractExplicitReceiver(match);
-    const arity = extractArity(match);
-    const argumentTypes = extractArgumentTypes(match);
+		const callForm =
+			kind === "call"
+				? classifyCallFormForMatch(
+						match,
+						anchor.name,
+						provider,
+						scopeTree,
+						inScopeId,
+					)
+				: undefined;
+		const explicitReceiver = extractExplicitReceiver(match);
+		const arity = extractArity(match);
+		const argumentTypes = extractArgumentTypes(match);
 
-    const site: ReferenceSite = {
-      name: nameCap.text,
-      atRange: anchor.range,
-      inScope: inScopeId,
-      kind,
-      ...(callForm !== undefined ? { callForm } : {}),
-      ...(explicitReceiver !== undefined ? { explicitReceiver } : {}),
-      ...(arity !== undefined ? { arity } : {}),
-      ...(argumentTypes !== undefined ? { argumentTypes } : {}),
-    };
-    referenceSites.push(site);
-  }
+		const site: ReferenceSite = {
+			name: nameCap.text,
+			atRange: anchor.range,
+			inScope: inScopeId,
+			kind,
+			...(callForm !== undefined ? { callForm } : {}),
+			...(explicitReceiver !== undefined ? { explicitReceiver } : {}),
+			...(arity !== undefined ? { arity } : {}),
+			...(argumentTypes !== undefined ? { argumentTypes } : {}),
+		};
+		referenceSites.push(site);
+	}
 }
 
 function referenceKindFromAnchor(name: string): ReferenceKind | undefined {
-  const suffix = name.slice('@reference.'.length);
-  // Strip sub-tag after the kind (`@reference.call.member` → `call`).
-  const firstDot = suffix.indexOf('.');
-  const head = firstDot === -1 ? suffix : suffix.slice(0, firstDot);
-  switch (head.toLowerCase()) {
-    case 'call':
-      return 'call';
-    case 'read':
-      return 'read';
-    case 'write':
-      return 'write';
-    case 'type':
-    case 'type_reference':
-      return 'type-reference';
-    case 'inherits':
-      return 'inherits';
-    case 'import_use':
-    case 'import-use':
-      return 'import-use';
-    default:
-      return undefined;
-  }
+	const suffix = name.slice("@reference.".length);
+	// Strip sub-tag after the kind (`@reference.call.member` → `call`).
+	const firstDot = suffix.indexOf(".");
+	const head = firstDot === -1 ? suffix : suffix.slice(0, firstDot);
+	switch (head.toLowerCase()) {
+		case "call":
+			return "call";
+		case "read":
+			return "read";
+		case "write":
+			return "write";
+		case "type":
+		case "type_reference":
+			return "type-reference";
+		case "inherits":
+			return "inherits";
+		case "import_use":
+		case "import-use":
+			return "import-use";
+		default:
+			return undefined;
+	}
 }
 
 function classifyCallFormForMatch(
-  match: CaptureMatch,
-  anchorName: string,
-  provider: ScopeExtractorHooks,
-  scopeTree: ReturnType<typeof buildScopeTree>,
-  inScopeId: ScopeId,
-): 'free' | 'member' | 'constructor' | 'index' {
-  // Declarative sub-tag path first: `@reference.call.member` → 'member'.
-  const suffix = anchorName.slice('@reference.call.'.length);
-  switch (suffix.toLowerCase()) {
-    case 'free':
-      return 'free';
-    case 'member':
-      return 'member';
-    case 'constructor':
-      return 'constructor';
-    case 'index':
-      return 'index';
-  }
+	match: CaptureMatch,
+	anchorName: string,
+	provider: ScopeExtractorHooks,
+	scopeTree: ReturnType<typeof buildScopeTree>,
+	inScopeId: ScopeId,
+): "free" | "member" | "constructor" | "index" {
+	// Declarative sub-tag path first: `@reference.call.member` → 'member'.
+	const suffix = anchorName.slice("@reference.call.".length);
+	switch (suffix.toLowerCase()) {
+		case "free":
+			return "free";
+		case "member":
+			return "member";
+		case "constructor":
+			return "constructor";
+		case "index":
+			return "index";
+	}
 
-  // Hook-based path: provider knows.
-  const hook = provider.classifyCallForm;
-  if (hook !== undefined) {
-    const scope = scopeTree.getScope(inScopeId);
-    if (scope !== undefined) return hook(match, scope);
-  }
+	// Hook-based path: provider knows.
+	const hook = provider.classifyCallForm;
+	if (hook !== undefined) {
+		const scope = scopeTree.getScope(inScopeId);
+		if (scope !== undefined) return hook(match, scope);
+	}
 
-  return 'free';
+	return "free";
 }
 
-function extractExplicitReceiver(match: CaptureMatch): { readonly name: string } | undefined {
-  const cap = match['@reference.receiver'];
-  if (cap === undefined) return undefined;
-  return { name: cap.text };
+function extractExplicitReceiver(
+	match: CaptureMatch,
+): { readonly name: string } | undefined {
+	const cap = match["@reference.receiver"];
+	if (cap === undefined) return undefined;
+	return { name: cap.text };
 }
 
 function extractArity(match: CaptureMatch): number | undefined {
-  const cap = match['@reference.arity'];
-  if (cap === undefined) return undefined;
-  const n = Number.parseInt(cap.text, 10);
-  return Number.isFinite(n) ? n : undefined;
+	const cap = match["@reference.arity"];
+	if (cap === undefined) return undefined;
+	const n = Number.parseInt(cap.text, 10);
+	return Number.isFinite(n) ? n : undefined;
 }
 
-function extractArgumentTypes(match: CaptureMatch): readonly string[] | undefined {
-  const cap = match['@reference.parameter-types'];
-  if (cap === undefined) return undefined;
-  try {
-    const parsed = JSON.parse(cap.text);
-    if (Array.isArray(parsed) && parsed.every((x) => typeof x === 'string')) return parsed;
-  } catch {
-    /* malformed — fall through */
-  }
-  return undefined;
+function extractArgumentTypes(
+	match: CaptureMatch,
+): readonly string[] | undefined {
+	const cap = match["@reference.parameter-types"];
+	if (cap === undefined) return undefined;
+	try {
+		const parsed = JSON.parse(cap.text);
+		if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string"))
+			return parsed;
+	} catch {
+		/* malformed — fall through */
+	}
+	return undefined;
 }
 
 // ─── Internal: range + capture utilities ───────────────────────────────────
 
 function rangesEqual(a: Range, b: Range): boolean {
-  return (
-    a.startLine === b.startLine &&
-    a.startCol === b.startCol &&
-    a.endLine === b.endLine &&
-    a.endCol === b.endCol
-  );
+	return (
+		a.startLine === b.startLine &&
+		a.startCol === b.startCol &&
+		a.endLine === b.endLine &&
+		a.endCol === b.endCol
+	);
 }
 
 /**
@@ -963,20 +1017,20 @@ function rangesEqual(a: Range, b: Range): boolean {
  * change.
  */
 const KNOWN_SUB_TAGS: ReadonlySet<string> = new Set<string>([
-  '@declaration.name',
-  '@declaration.qualified_name',
-  '@import.name',
-  '@import.source',
-  '@import.alias',
-  '@type-binding.name',
-  '@type-binding.type',
-  '@reference.name',
-  '@reference.receiver',
-  '@reference.arity',
-  '@reference.parameter-types',
-  '@declaration.parameter-count',
-  '@declaration.required-parameter-count',
-  '@declaration.parameter-types',
+	"@declaration.name",
+	"@declaration.qualified_name",
+	"@import.name",
+	"@import.source",
+	"@import.alias",
+	"@type-binding.name",
+	"@type-binding.type",
+	"@reference.name",
+	"@reference.receiver",
+	"@reference.arity",
+	"@reference.parameter-types",
+	"@declaration.parameter-count",
+	"@declaration.required-parameter-count",
+	"@declaration.parameter-types",
 ]);
 
 /**
@@ -988,22 +1042,26 @@ const KNOWN_SUB_TAGS: ReadonlySet<string> = new Set<string>([
  * statement-level one.
  */
 function anchorCaptureFor(
-  match: CaptureMatch,
-  prefix: string,
-): { readonly name: string; readonly range: Range; readonly text: string } | undefined {
-  let best: { readonly name: string; readonly range: Range; readonly text: string } | undefined;
-  let bestSpan = -1;
-  for (const name of Object.keys(match)) {
-    if (!name.startsWith(prefix)) continue;
-    if (KNOWN_SUB_TAGS.has(name)) continue;
-    const cap = match[name]!;
-    const span =
-      (cap.range.endLine - cap.range.startLine) * 1_000_000 +
-      (cap.range.endCol - cap.range.startCol);
-    if (span > bestSpan) {
-      bestSpan = span;
-      best = cap;
-    }
-  }
-  return best;
+	match: CaptureMatch,
+	prefix: string,
+):
+	| { readonly name: string; readonly range: Range; readonly text: string }
+	| undefined {
+	let best:
+		| { readonly name: string; readonly range: Range; readonly text: string }
+		| undefined;
+	let bestSpan = -1;
+	for (const name of Object.keys(match)) {
+		if (!name.startsWith(prefix)) continue;
+		if (KNOWN_SUB_TAGS.has(name)) continue;
+		const cap = match[name]!;
+		const span =
+			(cap.range.endLine - cap.range.startLine) * 1_000_000 +
+			(cap.range.endCol - cap.range.startCol);
+		if (span > bestSpan) {
+			bestSpan = span;
+			best = cap;
+		}
+	}
+	return best;
 }

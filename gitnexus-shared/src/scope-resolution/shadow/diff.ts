@@ -12,40 +12,40 @@
  * Part of RFC #909 Ring 2 SHARED — #918.
  */
 
-import type { Resolution, ResolutionEvidence } from '../types.js';
+import type { Resolution, ResolutionEvidence } from "../types.js";
 
 // ─── Diff record shape ──────────────────────────────────────────────────────
 
 export type ShadowAgreement =
-  | 'both-agree' // top match identical (same DefId)
-  | 'only-legacy' // legacy resolved; new did not
-  | 'only-new' // new resolved; legacy did not
-  | 'both-disagree' // both resolved, but to different targets
-  | 'both-empty'; // both returned empty
+	| "both-agree" // top match identical (same DefId)
+	| "only-legacy" // legacy resolved; new did not
+	| "only-new" // new resolved; legacy did not
+	| "both-disagree" // both resolved, but to different targets
+	| "both-empty"; // both returned empty
 
 export interface ShadowDiff {
-  readonly callsite: ShadowCallsite;
-  readonly legacy: Resolution | null;
-  readonly newResult: Resolution | null;
-  readonly agreement: ShadowAgreement;
-  /**
-   * Symmetric difference of the two top resolutions' `evidence` arrays,
-   * keyed on `ResolutionEvidence.kind`.
-   *
-   * - For `'both-agree'` and `'both-empty'` agreements, always empty.
-   * - For `'both-disagree'`, contains evidence kinds present on exactly one
-   *   side (not in both).
-   * - For `'only-legacy'`, contains all of legacy's top evidence.
-   * - For `'only-new'`, contains all of new's top evidence.
-   */
-  readonly evidenceDelta: readonly ResolutionEvidence[];
+	readonly callsite: ShadowCallsite;
+	readonly legacy: Resolution | null;
+	readonly newResult: Resolution | null;
+	readonly agreement: ShadowAgreement;
+	/**
+	 * Symmetric difference of the two top resolutions' `evidence` arrays,
+	 * keyed on `ResolutionEvidence.kind`.
+	 *
+	 * - For `'both-agree'` and `'both-empty'` agreements, always empty.
+	 * - For `'both-disagree'`, contains evidence kinds present on exactly one
+	 *   side (not in both).
+	 * - For `'only-legacy'`, contains all of legacy's top evidence.
+	 * - For `'only-new'`, contains all of new's top evidence.
+	 */
+	readonly evidenceDelta: readonly ResolutionEvidence[];
 }
 
 export interface ShadowCallsite {
-  readonly filePath: string;
-  readonly line: number;
-  readonly col: number;
-  readonly calledName: string;
+	readonly filePath: string;
+	readonly line: number;
+	readonly col: number;
+	readonly calledName: string;
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -70,29 +70,31 @@ export interface ShadowCallsite {
  * signal fires with slightly different calibration weights on each side.
  */
 export function diffResolutions(
-  callsite: ShadowCallsite,
-  legacy: readonly Resolution[],
-  newResult: readonly Resolution[],
+	callsite: ShadowCallsite,
+	legacy: readonly Resolution[],
+	newResult: readonly Resolution[],
 ): ShadowDiff {
-  const legacyTop: Resolution | null = legacy.length > 0 ? legacy[0] : null;
-  const newTop: Resolution | null = newResult.length > 0 ? newResult[0] : null;
+	const legacyTop: Resolution | null = legacy.length > 0 ? legacy[0] : null;
+	const newTop: Resolution | null = newResult.length > 0 ? newResult[0] : null;
 
-  const agreement: ShadowAgreement = (() => {
-    if (legacyTop === null && newTop === null) return 'both-empty';
-    if (legacyTop === null) return 'only-new';
-    if (newTop === null) return 'only-legacy';
-    return legacyTop.def.nodeId === newTop.def.nodeId ? 'both-agree' : 'both-disagree';
-  })();
+	const agreement: ShadowAgreement = (() => {
+		if (legacyTop === null && newTop === null) return "both-empty";
+		if (legacyTop === null) return "only-new";
+		if (newTop === null) return "only-legacy";
+		return legacyTop.def.nodeId === newTop.def.nodeId
+			? "both-agree"
+			: "both-disagree";
+	})();
 
-  const evidenceDelta = computeEvidenceDelta(legacyTop, newTop, agreement);
+	const evidenceDelta = computeEvidenceDelta(legacyTop, newTop, agreement);
 
-  return {
-    callsite,
-    legacy: legacyTop,
-    newResult: newTop,
-    agreement,
-    evidenceDelta,
-  };
+	return {
+		callsite,
+		legacy: legacyTop,
+		newResult: newTop,
+		agreement,
+		evidenceDelta,
+	};
 }
 
 // ─── Internal helpers ───────────────────────────────────────────────────────
@@ -107,20 +109,20 @@ export function diffResolutions(
  * subtract against).
  */
 function computeEvidenceDelta(
-  legacy: Resolution | null,
-  newResult: Resolution | null,
-  agreement: ShadowAgreement,
+	legacy: Resolution | null,
+	newResult: Resolution | null,
+	agreement: ShadowAgreement,
 ): readonly ResolutionEvidence[] {
-  if (agreement === 'both-agree' || agreement === 'both-empty') return [];
-  if (agreement === 'only-legacy') return legacy!.evidence;
-  if (agreement === 'only-new') return newResult!.evidence;
+	if (agreement === "both-agree" || agreement === "both-empty") return [];
+	if (agreement === "only-legacy") return legacy!.evidence;
+	if (agreement === "only-new") return newResult!.evidence;
 
-  // both-disagree: symmetric difference keyed on `kind`
-  const legacyKinds = new Set(legacy!.evidence.map((e) => e.kind));
-  const newKinds = new Set(newResult!.evidence.map((e) => e.kind));
+	// both-disagree: symmetric difference keyed on `kind`
+	const legacyKinds = new Set(legacy!.evidence.map((e) => e.kind));
+	const newKinds = new Set(newResult!.evidence.map((e) => e.kind));
 
-  const onlyInLegacy = legacy!.evidence.filter((e) => !newKinds.has(e.kind));
-  const onlyInNew = newResult!.evidence.filter((e) => !legacyKinds.has(e.kind));
+	const onlyInLegacy = legacy!.evidence.filter((e) => !newKinds.has(e.kind));
+	const onlyInNew = newResult!.evidence.filter((e) => !legacyKinds.has(e.kind));
 
-  return [...onlyInLegacy, ...onlyInNew];
+	return [...onlyInLegacy, ...onlyInNew];
 }

@@ -10,72 +10,76 @@
  * `linkStatus: 'unresolved'`.
  */
 
-import type { ParsedImport, WorkspaceIndex } from 'gitnexus-shared';
-import { resolvePythonImportInternal } from '../../import-resolvers/python.js';
+import type { ParsedImport, WorkspaceIndex } from "gitnexus-shared";
+import { resolvePythonImportInternal } from "../../import-resolvers/python.js";
 
 export interface PythonResolveContext {
-  readonly fromFile: string;
-  /** Mutable `Set` because the legacy `resolvePythonImportInternal`
-   *  chain downstream is typed to accept `Set<string>`. Callers that
-   *  only hold a `ReadonlySet` should copy via `new Set(...)` at the
-   *  adapter boundary. */
-  readonly allFilePaths: Set<string>;
+	readonly fromFile: string;
+	/** Mutable `Set` because the legacy `resolvePythonImportInternal`
+	 *  chain downstream is typed to accept `Set<string>`. Callers that
+	 *  only hold a `ReadonlySet` should copy via `new Set(...)` at the
+	 *  adapter boundary. */
+	readonly allFilePaths: Set<string>;
 }
 
 export function resolvePythonImportTarget(
-  parsedImport: ParsedImport,
-  workspaceIndex: WorkspaceIndex,
+	parsedImport: ParsedImport,
+	workspaceIndex: WorkspaceIndex,
 ): string | null {
-  // WorkspaceIndex is `unknown` in the shared contract (Ring 1
-  // placeholder). The scope-resolution orchestrator hands us a
-  // PythonResolveContext-shaped object; narrow structurally rather
-  // than via a cast chain so unexpected shapes return null cleanly.
-  const ctx = workspaceIndex as PythonResolveContext | undefined;
-  if (
-    ctx === undefined ||
-    typeof (ctx as { fromFile?: unknown }).fromFile !== 'string' ||
-    !((ctx as { allFilePaths?: unknown }).allFilePaths instanceof Set)
-  ) {
-    return null;
-  }
-  if (parsedImport.kind === 'dynamic-unresolved') return null;
-  if (parsedImport.targetRaw === null || parsedImport.targetRaw === '') return null;
+	// WorkspaceIndex is `unknown` in the shared contract (Ring 1
+	// placeholder). The scope-resolution orchestrator hands us a
+	// PythonResolveContext-shaped object; narrow structurally rather
+	// than via a cast chain so unexpected shapes return null cleanly.
+	const ctx = workspaceIndex as PythonResolveContext | undefined;
+	if (
+		ctx === undefined ||
+		typeof (ctx as { fromFile?: unknown }).fromFile !== "string" ||
+		!((ctx as { allFilePaths?: unknown }).allFilePaths instanceof Set)
+	) {
+		return null;
+	}
+	if (parsedImport.kind === "dynamic-unresolved") return null;
+	if (parsedImport.targetRaw === null || parsedImport.targetRaw === "")
+		return null;
 
-  // PEP-328 relative + single-segment proximity bare imports.
-  const internal = resolvePythonImportInternal(
-    ctx.fromFile,
-    parsedImport.targetRaw,
-    ctx.allFilePaths,
-  );
-  if (internal !== null) return internal;
+	// PEP-328 relative + single-segment proximity bare imports.
+	const internal = resolvePythonImportInternal(
+		ctx.fromFile,
+		parsedImport.targetRaw,
+		ctx.allFilePaths,
+	);
+	if (internal !== null) return internal;
 
-  // PEP-328: unresolved relative imports must NOT fall through to suffix
-  // matching. Mirrors `pythonImportStrategy` in `configs/python.ts`.
-  if (parsedImport.targetRaw.startsWith('.')) return null;
+	// PEP-328: unresolved relative imports must NOT fall through to suffix
+	// matching. Mirrors `pythonImportStrategy` in `configs/python.ts`.
+	if (parsedImport.targetRaw.startsWith(".")) return null;
 
-  // External dotted imports like `django.apps` must not fall through to
-  // generic suffix matching when the repo has unrelated local files such
-  // as `accounts/apps.py`. Mirrors `pythonImportStrategy`'s
-  // `hasRepoCandidate` check: only suffix-match if the leading segment
-  // looks like a local package/module somewhere in-repo.
-  const pathLike = parsedImport.targetRaw.replace(/\./g, '/');
-  if (pathLike.includes('/')) {
-    const [leadingSegment] = pathLike.split('/').filter(Boolean);
-    if (!leadingSegment || !hasRepoCandidate(leadingSegment, ctx.allFilePaths, ctx.fromFile)) {
-      return null;
-    }
-  }
+	// External dotted imports like `django.apps` must not fall through to
+	// generic suffix matching when the repo has unrelated local files such
+	// as `accounts/apps.py`. Mirrors `pythonImportStrategy`'s
+	// `hasRepoCandidate` check: only suffix-match if the leading segment
+	// looks like a local package/module somewhere in-repo.
+	const pathLike = parsedImport.targetRaw.replace(/\./g, "/");
+	if (pathLike.includes("/")) {
+		const [leadingSegment] = pathLike.split("/").filter(Boolean);
+		if (
+			!leadingSegment ||
+			!hasRepoCandidate(leadingSegment, ctx.allFilePaths, ctx.fromFile)
+		) {
+			return null;
+		}
+	}
 
-  // Multi-segment absolute resolve: try exact paths first, then ancestor
-  // walk (mirrors the single-segment ancestor walk in
-  // `resolvePythonImportInternal`), then a suffix match in nested repos.
-  // Using direct `Set.has` + `endsWith` instead of `suffixResolve`'s shared
-  // helper because that helper requires a pre-built `SuffixIndex` to
-  // disambiguate ties — without one it falls back to an O(files) scan that
-  // silently picks the wrong file when the last segment collides across
-  // directories (e.g. `accounts.models` matching `billing/models.py` when
-  // both files exist).
-  return resolveAbsoluteFromFiles(pathLike, ctx.allFilePaths, ctx.fromFile);
+	// Multi-segment absolute resolve: try exact paths first, then ancestor
+	// walk (mirrors the single-segment ancestor walk in
+	// `resolvePythonImportInternal`), then a suffix match in nested repos.
+	// Using direct `Set.has` + `endsWith` instead of `suffixResolve`'s shared
+	// helper because that helper requires a pre-built `SuffixIndex` to
+	// disambiguate ties — without one it falls back to an O(files) scan that
+	// silently picks the wrong file when the last segment collides across
+	// directories (e.g. `accounts.models` matching `billing/models.py` when
+	// both files exist).
+	return resolveAbsoluteFromFiles(pathLike, ctx.allFilePaths, ctx.fromFile);
 }
 
 /**
@@ -102,67 +106,71 @@ export function resolvePythonImportTarget(
  * `backend/services/sync.py` ✓.
  */
 function resolveAbsoluteFromFiles(
-  pathLike: string,
-  allFilePaths: Set<string>,
-  fromFile: string,
+	pathLike: string,
+	allFilePaths: Set<string>,
+	fromFile: string,
 ): string | null {
-  const directFile = `${pathLike}.py`;
-  const directPkg = `${pathLike}/__init__.py`;
+	const directFile = `${pathLike}.py`;
+	const directPkg = `${pathLike}/__init__.py`;
 
-  // Direct hit at workspace root.
-  if (allFilePaths.has(directFile)) return directFile;
-  if (allFilePaths.has(directPkg)) return directPkg;
+	// Direct hit at workspace root.
+	if (allFilePaths.has(directFile)) return directFile;
+	if (allFilePaths.has(directPkg)) return directPkg;
 
-  // Ancestor walk — match the single-segment resolver's behavior at
-  // multi-segment granularity. Closest match wins. Stop at `i > 0` because
-  // `i === 0` would re-check the workspace-root candidates already covered
-  // by the direct check above.
-  const importerDir = fromFile.replace(/\\/g, '/').split('/').slice(0, -1).join('/');
-  if (importerDir) {
-    const dirParts = importerDir.split('/').filter(Boolean);
-    for (let i = dirParts.length; i > 0; i--) {
-      const ancestor = dirParts.slice(0, i).join('/');
-      const prefix = `${ancestor}/`;
-      const candidateFile = `${prefix}${directFile}`;
-      const candidatePkg = `${prefix}${directPkg}`;
-      if (allFilePaths.has(candidateFile)) return candidateFile;
-      if (allFilePaths.has(candidatePkg)) return candidatePkg;
-    }
-  }
+	// Ancestor walk — match the single-segment resolver's behavior at
+	// multi-segment granularity. Closest match wins. Stop at `i > 0` because
+	// `i === 0` would re-check the workspace-root candidates already covered
+	// by the direct check above.
+	const importerDir = fromFile
+		.replace(/\\/g, "/")
+		.split("/")
+		.slice(0, -1)
+		.join("/");
+	if (importerDir) {
+		const dirParts = importerDir.split("/").filter(Boolean);
+		for (let i = dirParts.length; i > 0; i--) {
+			const ancestor = dirParts.slice(0, i).join("/");
+			const prefix = `${ancestor}/`;
+			const candidateFile = `${prefix}${directFile}`;
+			const candidatePkg = `${prefix}${directPkg}`;
+			if (allFilePaths.has(candidateFile)) return candidateFile;
+			if (allFilePaths.has(candidatePkg)) return candidatePkg;
+		}
+	}
 
-  // Suffix-match fallback (preserved for monorepo/nested-repo layouts
-  // that don't share a directory ancestor with the importer).
-  //
-  // Tie-break order when multiple files match the same suffix:
-  //  1. Fewest path segments (shorter, more canonical paths win — `lib/x.py`
-  //     beats `tooling/extras/x.py`).
-  //  2. Lexicographic order over the normalized path (final stable
-  //     tiebreak independent of file-set insertion order).
-  //
-  // Without an explicit tie-break the previous implementation returned
-  // the first match in `Set` iteration order, which depended on file
-  // ingestion order and produced non-deterministic edges across runs in
-  // multi-directory collision repos.
-  const suffixFile = `/${directFile}`;
-  const suffixPkg = `/${directPkg}`;
-  const matches: { raw: string; norm: string }[] = [];
-  for (const raw of allFilePaths) {
-    const norm = raw.replace(/\\/g, '/');
-    if (norm.endsWith(suffixFile) || norm.endsWith(suffixPkg)) {
-      matches.push({ raw, norm });
-    }
-  }
-  if (matches.length === 0) return null;
-  if (matches.length === 1) return matches[0].raw;
-  matches.sort((a, b) => {
-    const aDepth = a.norm.split('/').length;
-    const bDepth = b.norm.split('/').length;
-    if (aDepth !== bDepth) return aDepth - bDepth;
-    if (a.norm < b.norm) return -1;
-    if (a.norm > b.norm) return 1;
-    return 0;
-  });
-  return matches[0].raw;
+	// Suffix-match fallback (preserved for monorepo/nested-repo layouts
+	// that don't share a directory ancestor with the importer).
+	//
+	// Tie-break order when multiple files match the same suffix:
+	//  1. Fewest path segments (shorter, more canonical paths win — `lib/x.py`
+	//     beats `tooling/extras/x.py`).
+	//  2. Lexicographic order over the normalized path (final stable
+	//     tiebreak independent of file-set insertion order).
+	//
+	// Without an explicit tie-break the previous implementation returned
+	// the first match in `Set` iteration order, which depended on file
+	// ingestion order and produced non-deterministic edges across runs in
+	// multi-directory collision repos.
+	const suffixFile = `/${directFile}`;
+	const suffixPkg = `/${directPkg}`;
+	const matches: { raw: string; norm: string }[] = [];
+	for (const raw of allFilePaths) {
+		const norm = raw.replace(/\\/g, "/");
+		if (norm.endsWith(suffixFile) || norm.endsWith(suffixPkg)) {
+			matches.push({ raw, norm });
+		}
+	}
+	if (matches.length === 0) return null;
+	if (matches.length === 1) return matches[0].raw;
+	matches.sort((a, b) => {
+		const aDepth = a.norm.split("/").length;
+		const bDepth = b.norm.split("/").length;
+		if (aDepth !== bDepth) return aDepth - bDepth;
+		if (a.norm < b.norm) return -1;
+		if (a.norm > b.norm) return 1;
+		return 0;
+	});
+	return matches[0].raw;
 }
 
 /**
@@ -187,33 +195,37 @@ function resolveAbsoluteFromFiles(
  * the ancestor walk includes their own parents.
  */
 function hasRepoCandidate(
-  leadingSegment: string,
-  allFilePaths: Set<string>,
-  fromFile: string,
+	leadingSegment: string,
+	allFilePaths: Set<string>,
+	fromFile: string,
 ): boolean {
-  const prefix = `${leadingSegment}/`;
-  const rootFile = `${leadingSegment}.py`;
-  const initFile = `${leadingSegment}/__init__.py`;
+	const prefix = `${leadingSegment}/`;
+	const rootFile = `${leadingSegment}.py`;
+	const initFile = `${leadingSegment}/__init__.py`;
 
-  // Build importer-ancestor prefixes: for `backend/routers/cron.py`,
-  // produces `["backend/routers/services/", "backend/services/"]` for
-  // segment `services` (closest first, root excluded — covered above).
-  const importerDir = fromFile.replace(/\\/g, '/').split('/').slice(0, -1).join('/');
-  const dirParts = importerDir ? importerDir.split('/').filter(Boolean) : [];
-  const ancestorPrefixes: string[] = [];
-  for (let i = dirParts.length; i > 0; i--) {
-    ancestorPrefixes.push(`${dirParts.slice(0, i).join('/')}/${leadingSegment}/`);
-  }
+	// Build importer-ancestor prefixes: for `backend/routers/cron.py`,
+	// produces `["backend/routers/services/", "backend/services/"]` for
+	// segment `services` (closest first, root excluded — covered above).
+	const importerDir = fromFile
+		.replace(/\\/g, "/")
+		.split("/")
+		.slice(0, -1)
+		.join("/");
+	const dirParts = importerDir ? importerDir.split("/").filter(Boolean) : [];
+	const ancestorPrefixes: string[] = [];
+	for (let i = dirParts.length; i > 0; i--) {
+		ancestorPrefixes.push(`${dirParts.slice(0, i).join("/")}/${leadingSegment}/`);
+	}
 
-  for (const raw of allFilePaths) {
-    const f = raw.replace(/\\/g, '/');
-    if (f === rootFile || f === initFile) return true;
-    if (f.startsWith(prefix) && f.endsWith('.py')) return true;
-    if (f.endsWith('.py')) {
-      for (const ap of ancestorPrefixes) {
-        if (f.startsWith(ap)) return true;
-      }
-    }
-  }
-  return false;
+	for (const raw of allFilePaths) {
+		const f = raw.replace(/\\/g, "/");
+		if (f === rootFile || f === initFile) return true;
+		if (f.startsWith(prefix) && f.endsWith(".py")) return true;
+		if (f.endsWith(".py")) {
+			for (const ap of ancestorPrefixes) {
+				if (f.startsWith(ap)) return true;
+			}
+		}
+	}
+	return false;
 }

@@ -178,7 +178,7 @@
     </main>
     <script>
       /* global fetch, document */
-      (async function () {
+      (async () => {
         const tbody = document.querySelector('#per-language tbody');
         const cards = document.getElementById('cards');
         const meta = document.getElementById('meta');
@@ -281,9 +281,7 @@
           return 'bad';
         }
         function escape(s) {
-          return String(s).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-          });
+          return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
       })();
     </script>

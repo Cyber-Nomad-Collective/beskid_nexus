@@ -6,13 +6,13 @@
  */
 
 import type {
-  CaptureMatch,
-  ParsedImport,
-  Scope,
-  ScopeId,
-  ScopeTree,
-  TypeRef,
-} from 'gitnexus-shared';
+	CaptureMatch,
+	ParsedImport,
+	Scope,
+	ScopeId,
+	ScopeTree,
+	TypeRef,
+} from "gitnexus-shared";
 
 // ─── bindingScopeFor ──────────────────────────────────────────────────────
 
@@ -37,37 +37,37 @@ import type {
  * propagation.
  */
 export function tsBindingScopeFor(
-  decl: CaptureMatch,
-  innermost: Scope,
-  tree: ScopeTree,
+	decl: CaptureMatch,
+	innermost: Scope,
+	tree: ScopeTree,
 ): ScopeId | null {
-  // Method return type: hoist to Module (mirrors csharpBindingScopeFor).
-  if (decl['@type-binding.return'] !== undefined) {
-    return walkToScope(innermost, tree, 'Module');
-  }
+	// Method return type: hoist to Module (mirrors csharpBindingScopeFor).
+	if (decl["@type-binding.return"] !== undefined) {
+		return walkToScope(innermost, tree, "Module");
+	}
 
-  // Parameter property (`constructor(public address: Address)`): hoist
-  // to the enclosing Class scope so `user.address` field access
-  // resolves through the class's typeBindings. The regular
-  // @type-binding.parameter binding still fires for the constructor
-  // scope; this one adds a second binding on the class.
-  if (decl['@type-binding.parameter-property'] !== undefined) {
-    return walkToScope(innermost, tree, 'Class');
-  }
+	// Parameter property (`constructor(public address: Address)`): hoist
+	// to the enclosing Class scope so `user.address` field access
+	// resolves through the class's typeBindings. The regular
+	// @type-binding.parameter binding still fires for the constructor
+	// scope; this one adds a second binding on the class.
+	if (decl["@type-binding.parameter-property"] !== undefined) {
+		return walkToScope(innermost, tree, "Class");
+	}
 
-  // `var` declarations: hoist to nearest enclosing Function or Module.
-  const variable = decl['@declaration.variable'];
-  if (variable !== undefined && isVarDeclaration(variable.text)) {
-    return walkToScope(innermost, tree, 'Function', 'Module');
-  }
+	// `var` declarations: hoist to nearest enclosing Function or Module.
+	const variable = decl["@declaration.variable"];
+	if (variable !== undefined && isVarDeclaration(variable.text)) {
+		return walkToScope(innermost, tree, "Function", "Module");
+	}
 
-  // Function declarations are already anchored at their definition
-  // site via `@scope.function`; hoisting is a no-op for them (JS
-  // function hoisting is about visibility before the definition, not
-  // about placing the binding in a different scope). The scope tree
-  // already attaches their name to the enclosing scope. No override
-  // needed.
-  return null;
+	// Function declarations are already anchored at their definition
+	// site via `@scope.function`; hoisting is a no-op for them (JS
+	// function hoisting is about visibility before the definition, not
+	// about placing the binding in a different scope). The scope tree
+	// already attaches their name to the enclosing scope. No override
+	// needed.
+	return null;
 }
 
 /**
@@ -77,30 +77,30 @@ export function tsBindingScopeFor(
  * Module scope — shouldn't happen in well-formed input).
  */
 function walkToScope(
-  from: Scope,
-  tree: ScopeTree,
-  ...kinds: readonly Scope['kind'][]
+	from: Scope,
+	tree: ScopeTree,
+	...kinds: readonly Scope["kind"][]
 ): ScopeId | null {
-  let cur: Scope | undefined = from;
-  const kindSet = new Set(kinds);
-  while (cur !== undefined) {
-    if (kindSet.has(cur.kind)) return cur.id;
-    const parentId: ScopeId | null = cur.parent ?? null;
-    if (parentId === null) break;
-    cur = tree.getScope(parentId);
-  }
-  return null;
+	let cur: Scope | undefined = from;
+	const kindSet = new Set(kinds);
+	while (cur !== undefined) {
+		if (kindSet.has(cur.kind)) return cur.id;
+		const parentId: ScopeId | null = cur.parent ?? null;
+		if (parentId === null) break;
+		cur = tree.getScope(parentId);
+	}
+	return null;
 }
 
 /** `var x = 1;` vs `let x = 1;` / `const x = 1;`. The capture's text
  *  starts at the outer declaration's `startIndex` in source, which is
  *  the keyword's first character — no leading whitespace possible. */
 function isVarDeclaration(captureText: string): boolean {
-  return (
-    captureText.startsWith('var ') ||
-    captureText.startsWith('var\t') ||
-    captureText.startsWith('var\n')
-  );
+	return (
+		captureText.startsWith("var ") ||
+		captureText.startsWith("var\t") ||
+		captureText.startsWith("var\n")
+	);
 }
 
 // ─── importOwningScope ────────────────────────────────────────────────────
@@ -120,11 +120,11 @@ function isVarDeclaration(captureText: string): boolean {
  * (we don't).
  */
 export function tsImportOwningScope(
-  _imp: ParsedImport,
-  _innermost: Scope,
-  _tree: ScopeTree,
+	_imp: ParsedImport,
+	_innermost: Scope,
+	_tree: ScopeTree,
 ): ScopeId | null {
-  return null;
+	return null;
 }
 
 // ─── receiverBinding ──────────────────────────────────────────────────────
@@ -157,6 +157,6 @@ export function tsImportOwningScope(
  * `index.ts`.
  */
 export function tsReceiverBinding(functionScope: Scope): TypeRef | null {
-  if (functionScope.kind !== 'Function') return null;
-  return functionScope.typeBindings.get('this') ?? null;
+	if (functionScope.kind !== "Function") return null;
+	return functionScope.typeBindings.get("this") ?? null;
 }

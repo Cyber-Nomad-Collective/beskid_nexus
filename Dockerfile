@@ -19,16 +19,14 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm@10.17.1
 
-# .npmrc is COPY'd from repository root — CI prepare-secure-dockerfile.sh
-# strips ARG/ENV below and injects NODE_AUTH_TOKEN via BuildKit secret mount.
+# CI uses workspace file: links — no BuildKit secret mounts needed.
+
 COPY .npmrc ./
 RUN mkdir -p gitnexus-shared gitnexus gitnexus-web \
     && cp .npmrc gitnexus-shared/ \
     && cp .npmrc gitnexus/ \
     && cp .npmrc gitnexus-web/
 
-ARG NODE_AUTH_TOKEN
-ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
 COPY --from=web_common package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json /src/beskid_web_common/
 COPY --from=web_common packages /src/beskid_web_common/packages
 RUN pnpm install --dir /src/beskid_web_common --frozen-lockfile

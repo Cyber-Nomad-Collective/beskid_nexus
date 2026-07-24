@@ -1,17 +1,16 @@
-import { useCallback, useState } from 'react';
-import { Check, Copy } from '@/lib/lucide-icons';
-
-import { Button } from '#/components/ui/button';
+import { useCallback, useState } from "react";
+import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from '#/components/ui/dialog';
-import { Input } from '#/components/ui/input';
+} from "#/components/ui/dialog";
+import { Input } from "#/components/ui/input";
+import { Check, Copy } from "@/lib/lucide-icons";
 
-const AUTH_HEADER_TEMPLATE = 'Authorization: Bearer <NEXUS_MCP_AUTH_TOKEN>';
+const AUTH_HEADER_TEMPLATE = "Authorization: Bearer <NEXUS_MCP_AUTH_TOKEN>";
 
 export interface ConnectMcpDialogProps {
 	open: boolean;
@@ -24,11 +23,11 @@ export function ConnectMcpDialog({
 	open,
 	onOpenChange,
 	mcpUrl,
-	docsHref = '/platform-spec/tooling/nexus/contracts-and-edge-cases#mcp',
+	docsHref = "/platform-spec/tooling/nexus/contracts-and-edge-cases#mcp",
 }: ConnectMcpDialogProps) {
-	const [copiedField, setCopiedField] = useState<'url' | 'auth' | null>(null);
+	const [copiedField, setCopiedField] = useState<"url" | "auth" | null>(null);
 
-	const copyText = useCallback(async (text: string, field: 'url' | 'auth') => {
+	const copyText = useCallback(async (text: string, field: "url" | "auth") => {
 		try {
 			await navigator.clipboard.writeText(text);
 			setCopiedField(field);
@@ -44,8 +43,8 @@ export function ConnectMcpDialog({
 				<DialogHeader>
 					<DialogTitle>Connect MCP</DialogTitle>
 					<DialogDescription>
-						Use this Streamable HTTP endpoint from an MCP client. Authentication uses a
-						deployment secret — ask your operator or copy from Coolify env.
+						Use this Streamable HTTP endpoint from an MCP client. Authentication uses
+						a deployment secret — ask your operator or copy from Coolify env.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -55,15 +54,20 @@ export function ConnectMcpDialog({
 							Endpoint
 						</label>
 						<div className="flex gap-2">
-							<Input id="mcp-endpoint" readOnly value={mcpUrl} className="font-mono text-xs" />
+							<Input
+								id="mcp-endpoint"
+								readOnly
+								value={mcpUrl}
+								className="font-mono text-xs"
+							/>
 							<Button
 								type="button"
 								variant="outline"
 								size="icon"
 								title="Copy endpoint URL"
-								onClick={() => void copyText(mcpUrl, 'url')}
+								onClick={() => void copyText(mcpUrl, "url")}
 							>
-								{copiedField === 'url' ? (
+								{copiedField === "url" ? (
 									<Check className="size-4" />
 								) : (
 									<Copy className="size-4" />
@@ -88,9 +92,9 @@ export function ConnectMcpDialog({
 								variant="outline"
 								size="icon"
 								title="Copy authorization header"
-								onClick={() => void copyText(AUTH_HEADER_TEMPLATE, 'auth')}
+								onClick={() => void copyText(AUTH_HEADER_TEMPLATE, "auth")}
 							>
-								{copiedField === 'auth' ? (
+								{copiedField === "auth" ? (
 									<Check className="size-4" />
 								) : (
 									<Copy className="size-4" />
@@ -98,13 +102,16 @@ export function ConnectMcpDialog({
 							</Button>
 						</div>
 						<p className="text-xs text-muted-foreground">
-							Replace <code className="font-mono">&lt;NEXUS_MCP_AUTH_TOKEN&gt;</code> with the
-							value from your Nexus deployment environment.
+							Replace <code className="font-mono">&lt;NEXUS_MCP_AUTH_TOKEN&gt;</code>{" "}
+							with the value from your Nexus deployment environment.
 						</p>
 					</div>
 
 					<p className="text-sm">
-						<a href={docsHref} className="text-primary underline-offset-2 hover:underline">
+						<a
+							href={docsHref}
+							className="text-primary underline-offset-2 hover:underline"
+						>
 							Platform spec: MCP connect
 						</a>
 					</p>

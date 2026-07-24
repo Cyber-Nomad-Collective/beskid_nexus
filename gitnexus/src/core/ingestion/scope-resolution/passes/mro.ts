@@ -19,12 +19,12 @@
  * `parentsByDefId`) so C3 implementations have what they need.
  */
 
-import type { ParsedFile } from 'gitnexus-shared';
-import type { KnowledgeGraph } from '../../../graph/types.js';
-import type { GraphNodeLookup } from '../graph-bridge/node-lookup.js';
-import type { LinearizeStrategy } from '../contract/scope-resolver.js';
-import { resolveDefGraphId } from '../graph-bridge/ids.js';
-import { isClassLike } from '../scope/walkers.js';
+import type { ParsedFile } from "gitnexus-shared";
+import type { KnowledgeGraph } from "../../../graph/types.js";
+import type { LinearizeStrategy } from "../contract/scope-resolver.js";
+import { resolveDefGraphId } from "../graph-bridge/ids.js";
+import type { GraphNodeLookup } from "../graph-bridge/node-lookup.js";
+import { isClassLike } from "../scope/walkers.js";
 
 /**
  * Build an MRO map keyed by scope-resolution Class `DefId`.
@@ -37,55 +37,55 @@ import { isClassLike } from '../scope/walkers.js';
  *   3. For each Class def, ask `linearize` for its ancestor order.
  */
 export function buildMro(
-  graph: KnowledgeGraph,
-  parsedFiles: readonly ParsedFile[],
-  nodeLookup: GraphNodeLookup,
-  linearize: LinearizeStrategy,
+	graph: KnowledgeGraph,
+	parsedFiles: readonly ParsedFile[],
+	nodeLookup: GraphNodeLookup,
+	linearize: LinearizeStrategy,
 ): Map<string /* DefId */, string[] /* DefId[] */> {
-  // Step 1: parentsByGraphId — typed iterator skips the per-edge type
-  // check and the millions of CALLS/ACCESSES/IMPORTS/DEFINES edges
-  // that aren't relevant to MRO.
-  const parentsByGraphId = new Map<string, string[]>();
-  for (const rel of graph.iterRelationshipsByType('EXTENDS')) {
-    let list = parentsByGraphId.get(rel.sourceId);
-    if (list === undefined) {
-      list = [];
-      parentsByGraphId.set(rel.sourceId, list);
-    }
-    list.push(rel.targetId);
-  }
+	// Step 1: parentsByGraphId — typed iterator skips the per-edge type
+	// check and the millions of CALLS/ACCESSES/IMPORTS/DEFINES edges
+	// that aren't relevant to MRO.
+	const parentsByGraphId = new Map<string, string[]>();
+	for (const rel of graph.iterRelationshipsByType("EXTENDS")) {
+		let list = parentsByGraphId.get(rel.sourceId);
+		if (list === undefined) {
+			list = [];
+			parentsByGraphId.set(rel.sourceId, list);
+		}
+		list.push(rel.targetId);
+	}
 
-  // Step 2: defIdByGraphId — translate graph ids to scope-resolution DefIds.
-  const defIdByGraphId = new Map<string, string>();
-  for (const parsed of parsedFiles) {
-    for (const def of parsed.localDefs) {
-      if (!isClassLike(def.type)) continue;
-      const graphId = resolveDefGraphId(parsed.filePath, def, nodeLookup);
-      if (graphId !== undefined) defIdByGraphId.set(graphId, def.nodeId);
-    }
-  }
+	// Step 2: defIdByGraphId — translate graph ids to scope-resolution DefIds.
+	const defIdByGraphId = new Map<string, string>();
+	for (const parsed of parsedFiles) {
+		for (const def of parsed.localDefs) {
+			if (!isClassLike(def.type)) continue;
+			const graphId = resolveDefGraphId(parsed.filePath, def, nodeLookup);
+			if (graphId !== undefined) defIdByGraphId.set(graphId, def.nodeId);
+		}
+	}
 
-  // Step 2b: invert parentsByGraphId into parentsByDefId — the
-  // strategy works in DefId space.
-  const parentsByDefId = new Map<string, string[]>();
-  for (const [childGraphId, parents] of parentsByGraphId) {
-    const childDefId = defIdByGraphId.get(childGraphId);
-    if (childDefId === undefined) continue;
-    const parentDefIds: string[] = [];
-    for (const p of parents) {
-      const pd = defIdByGraphId.get(p);
-      if (pd !== undefined) parentDefIds.push(pd);
-    }
-    parentsByDefId.set(childDefId, parentDefIds);
-  }
+	// Step 2b: invert parentsByGraphId into parentsByDefId — the
+	// strategy works in DefId space.
+	const parentsByDefId = new Map<string, string[]>();
+	for (const [childGraphId, parents] of parentsByGraphId) {
+		const childDefId = defIdByGraphId.get(childGraphId);
+		if (childDefId === undefined) continue;
+		const parentDefIds: string[] = [];
+		for (const p of parents) {
+			const pd = defIdByGraphId.get(p);
+			if (pd !== undefined) parentDefIds.push(pd);
+		}
+		parentsByDefId.set(childDefId, parentDefIds);
+	}
 
-  // Step 3: linearize per class.
-  const mroByDefId = new Map<string, string[]>();
-  for (const defId of defIdByGraphId.values()) {
-    const directParents = parentsByDefId.get(defId) ?? [];
-    mroByDefId.set(defId, linearize(defId, directParents, parentsByDefId));
-  }
-  return mroByDefId;
+	// Step 3: linearize per class.
+	const mroByDefId = new Map<string, string[]>();
+	for (const defId of defIdByGraphId.values()) {
+		const directParents = parentsByDefId.get(defId) ?? [];
+		mroByDefId.set(defId, linearize(defId, directParents, parentsByDefId));
+	}
+	return mroByDefId;
 }
 
 /**
@@ -94,17 +94,21 @@ export function buildMro(
  * simplified MRO. Multi-inheritance diamond hierarchies need a real
  * C3 implementation; per-language overrides land here.
  */
-export const defaultLinearize: LinearizeStrategy = (_classDefId, directParents, parentsByDefId) => {
-  const ancestors: string[] = [];
-  const visited = new Set<string>();
-  const queue: string[] = [...directParents];
-  for (;;) {
-    const cur = queue.shift();
-    if (cur === undefined) break;
-    if (visited.has(cur)) continue;
-    visited.add(cur);
-    ancestors.push(cur);
-    for (const p of parentsByDefId.get(cur) ?? []) queue.push(p);
-  }
-  return ancestors;
+export const defaultLinearize: LinearizeStrategy = (
+	_classDefId,
+	directParents,
+	parentsByDefId,
+) => {
+	const ancestors: string[] = [];
+	const visited = new Set<string>();
+	const queue: string[] = [...directParents];
+	for (;;) {
+		const cur = queue.shift();
+		if (cur === undefined) break;
+		if (visited.has(cur)) continue;
+		visited.add(cur);
+		ancestors.push(cur);
+		for (const p of parentsByDefId.get(cur) ?? []) queue.push(p);
+	}
+	return ancestors;
 };

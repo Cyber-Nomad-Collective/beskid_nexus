@@ -1,9 +1,9 @@
 export class User {
-  save(): boolean {
-    return true;
-  }
+	save(): boolean {
+		return true;
+	}
 
-  greet(msg: string): void {
-    console.log(msg);
-  }
+	greet(msg: string): void {
+		console.log(msg);
+	}
 }

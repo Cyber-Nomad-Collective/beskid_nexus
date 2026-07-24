@@ -8,7 +8,7 @@
  * query text directly — that's the whole point of the split.
  */
 
-export type Broker = 'kafka' | 'rabbitmq' | 'nats';
+export type Broker = "kafka" | "rabbitmq" | "nats";
 
 /**
  * Per-pattern payload every topic plugin attaches to its query. Whatever
@@ -19,9 +19,9 @@ export type Broker = 'kafka' | 'rabbitmq' | 'nats';
  * single query uniquely identifies its broker/role/confidence triple.
  */
 export interface TopicMeta {
-  role: 'provider' | 'consumer';
-  broker: Broker;
-  confidence: number;
-  /** Short human-readable label of the API being detected. */
-  symbolName: string;
+	role: "provider" | "consumer";
+	broker: Broker;
+	confidence: number;
+	/** Short human-readable label of the API being detected. */
+	symbolName: string;
 }

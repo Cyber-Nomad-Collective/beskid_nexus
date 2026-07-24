@@ -1,4 +1,4 @@
-import { dirname, join } from 'path';
+import { dirname, join } from "path";
 
 /**
  * Resolve a C #include path to a file in the workspace.
@@ -14,51 +14,54 @@ import { dirname, join } from 'path';
  *    of filesystem iteration order.
  */
 export function resolveCImportTarget(
-  targetRaw: string,
-  fromFile: string,
-  allFilePaths: ReadonlySet<string>,
+	targetRaw: string,
+	fromFile: string,
+	allFilePaths: ReadonlySet<string>,
 ): string | null {
-  if (!targetRaw) return null;
+	if (!targetRaw) return null;
 
-  const normalizedTarget = targetRaw.replace(/\\/g, '/');
+	const normalizedTarget = targetRaw.replace(/\\/g, "/");
 
-  // Same-directory sibling first: mirrors the C compiler's #include "…"
-  // relative-lookup semantics where the directory of the including
-  // file is searched before the include-path list.
-  if (fromFile) {
-    const siblingRaw = join(dirname(fromFile), targetRaw);
-    const sibling = siblingRaw.replace(/\\/g, '/');
-    if (allFilePaths.has(sibling)) return sibling;
-    // When targetRaw contains backslashes, the normalized form may
-    // resolve to a different sibling path — try it as well.
-    if (targetRaw !== normalizedTarget) {
-      const siblingAlt = join(dirname(fromFile), normalizedTarget);
-      const siblingAltNorm = siblingAlt.replace(/\\/g, '/');
-      if (allFilePaths.has(siblingAltNorm)) return siblingAltNorm;
-    }
-  }
+	// Same-directory sibling first: mirrors the C compiler's #include "…"
+	// relative-lookup semantics where the directory of the including
+	// file is searched before the include-path list.
+	if (fromFile) {
+		const siblingRaw = join(dirname(fromFile), targetRaw);
+		const sibling = siblingRaw.replace(/\\/g, "/");
+		if (allFilePaths.has(sibling)) return sibling;
+		// When targetRaw contains backslashes, the normalized form may
+		// resolve to a different sibling path — try it as well.
+		if (targetRaw !== normalizedTarget) {
+			const siblingAlt = join(dirname(fromFile), normalizedTarget);
+			const siblingAltNorm = siblingAlt.replace(/\\/g, "/");
+			if (allFilePaths.has(siblingAltNorm)) return siblingAltNorm;
+		}
+	}
 
-  // Exact match (path as-is in the workspace)
-  if (allFilePaths.has(normalizedTarget)) return normalizedTarget;
+	// Exact match (path as-is in the workspace)
+	if (allFilePaths.has(normalizedTarget)) return normalizedTarget;
 
-  // Suffix match: find files ending with /targetRaw or equal to targetRaw
-  const suffix = '/' + normalizedTarget;
-  let bestMatch: string | null = null;
-  let bestDepth = Infinity;
-  let bestNormalized = '';
+	// Suffix match: find files ending with /targetRaw or equal to targetRaw
+	const suffix = "/" + normalizedTarget;
+	let bestMatch: string | null = null;
+	let bestDepth = Infinity;
+	let bestNormalized = "";
 
-  for (const filePath of allFilePaths) {
-    const normalized = filePath.replace(/\\/g, '/');
-    if (normalized === normalizedTarget || normalized.endsWith(suffix)) {
-      // Prefer shortest path (closest match)
-      const depth = normalized.split('/').length;
-      if (depth < bestDepth || (depth === bestDepth && normalized < bestNormalized)) {
-        bestDepth = depth;
-        bestMatch = filePath;
-        bestNormalized = normalized;
-      }
-    }
-  }
+	for (const filePath of allFilePaths) {
+		const normalized = filePath.replace(/\\/g, "/");
+		if (normalized === normalizedTarget || normalized.endsWith(suffix)) {
+			// Prefer shortest path (closest match)
+			const depth = normalized.split("/").length;
+			if (
+				depth < bestDepth ||
+				(depth === bestDepth && normalized < bestNormalized)
+			) {
+				bestDepth = depth;
+				bestMatch = filePath;
+				bestNormalized = normalized;
+			}
+		}
+	}
 
-  return bestMatch;
+	return bestMatch;
 }

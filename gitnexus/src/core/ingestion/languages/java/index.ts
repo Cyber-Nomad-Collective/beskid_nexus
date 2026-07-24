@@ -21,10 +21,20 @@
  *   - `cache-stats.ts`         — PROF_SCOPE_RESOLUTION cache hit/miss counters
  */
 
-export { emitJavaScopeCaptures } from './captures.js';
-export { getJavaCaptureCacheStats, resetJavaCaptureCacheStats } from './cache-stats.js';
-export { interpretJavaImport, interpretJavaTypeBinding } from './interpret.js';
-export { javaMergeBindings } from './merge-bindings.js';
-export { javaArityCompatibility } from './arity.js';
-export { resolveJavaImportTarget, type JavaResolveContext } from './import-target.js';
-export { javaBindingScopeFor, javaImportOwningScope, javaReceiverBinding } from './simple-hooks.js';
+export { javaArityCompatibility } from "./arity.js";
+export {
+	getJavaCaptureCacheStats,
+	resetJavaCaptureCacheStats,
+} from "./cache-stats.js";
+export { emitJavaScopeCaptures } from "./captures.js";
+export {
+	type JavaResolveContext,
+	resolveJavaImportTarget,
+} from "./import-target.js";
+export { interpretJavaImport, interpretJavaTypeBinding } from "./interpret.js";
+export { javaMergeBindings } from "./merge-bindings.js";
+export {
+	javaBindingScopeFor,
+	javaImportOwningScope,
+	javaReceiverBinding,
+} from "./simple-hooks.js";

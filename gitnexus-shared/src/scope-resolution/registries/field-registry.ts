@@ -12,32 +12,36 @@
  *     `explicitReceiver` and `ownerScopedContributor` knobs are.
  */
 
-import type { Resolution, ScopeId } from '../types.js';
-import { lookupCore, type CoreLookupParams } from './lookup-core.js';
-import type { OwnerScopedContributor, RegistryContext } from './context.js';
-import { FIELD_KINDS } from './context.js';
+import type { Resolution, ScopeId } from "../types.js";
+import type { OwnerScopedContributor, RegistryContext } from "./context.js";
+import { FIELD_KINDS } from "./context.js";
+import { type CoreLookupParams, lookupCore } from "./lookup-core.js";
 
 export interface FieldLookupOptions {
-  readonly explicitReceiver?: { readonly name: string };
-  readonly ownerScopedContributor?: OwnerScopedContributor;
+	readonly explicitReceiver?: { readonly name: string };
+	readonly ownerScopedContributor?: OwnerScopedContributor;
 }
 
 export interface FieldRegistry {
-  lookup(name: string, scope: ScopeId, options?: FieldLookupOptions): readonly Resolution[];
+	lookup(
+		name: string,
+		scope: ScopeId,
+		options?: FieldLookupOptions,
+	): readonly Resolution[];
 }
 
 export function buildFieldRegistry(ctx: RegistryContext): FieldRegistry {
-  return {
-    lookup(name: string, scope: ScopeId, options: FieldLookupOptions = {}) {
-      const params: CoreLookupParams = {
-        acceptedKinds: FIELD_KINDS,
-        useReceiverTypeBinding: true,
-        ownerScopedContributor: options.ownerScopedContributor ?? null,
-        ...(options.explicitReceiver !== undefined
-          ? { explicitReceiver: options.explicitReceiver }
-          : {}),
-      };
-      return lookupCore(name, scope, params, ctx);
-    },
-  };
+	return {
+		lookup(name: string, scope: ScopeId, options: FieldLookupOptions = {}) {
+			const params: CoreLookupParams = {
+				acceptedKinds: FIELD_KINDS,
+				useReceiverTypeBinding: true,
+				ownerScopedContributor: options.ownerScopedContributor ?? null,
+				...(options.explicitReceiver !== undefined
+					? { explicitReceiver: options.explicitReceiver }
+					: {}),
+			};
+			return lookupCore(name, scope, params, ctx);
+		},
+	};
 }

@@ -1,22 +1,22 @@
 export class Address {
-  city: string;
+	city: string;
 
-  save(): void {
-    // persist address
-  }
+	save(): void {
+		// persist address
+	}
 }
 
 export class User {
-  #secret: string;
+	#secret: string;
 
-  constructor(
-    public name: string,
-    public address: Address,
-  ) {
-    this.#secret = 'hidden';
-  }
+	constructor(
+		public name: string,
+		public address: Address,
+	) {
+		this.#secret = "hidden";
+	}
 
-  greet(): string {
-    return this.name;
-  }
+	greet(): string {
+		return this.name;
+	}
 }

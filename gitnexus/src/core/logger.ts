@@ -29,31 +29,36 @@
  *   production code logged. See `gitnexus/test/unit/logger.test.ts` for the
  *   pattern.
  */
-import pino, { type Logger, type LoggerOptions, type DestinationStream } from 'pino';
-import { Writable } from 'node:stream';
-import { createRequire } from 'node:module';
+
+import { createRequire } from "node:module";
+import { Writable } from "node:stream";
+import pino, {
+	type DestinationStream,
+	type Logger,
+	type LoggerOptions,
+} from "pino";
 
 export interface CreateLoggerOptions {
-  /** When set, this env var (truthy at construction time) bumps level to 'debug'. */
-  debugEnvVar?: string;
-  /** Override destination stream — primarily for tests. */
-  destination?: DestinationStream;
+	/** When set, this env var (truthy at construction time) bumps level to 'debug'. */
+	debugEnvVar?: string;
+	/** Override destination stream — primarily for tests. */
+	destination?: DestinationStream;
 }
 
 function isTruthyEnv(value: string | undefined): boolean {
-  if (!value) return false;
-  const v = value.toLowerCase();
-  return v !== '' && v !== '0' && v !== 'false' && v !== 'no' && v !== 'off';
+	if (!value) return false;
+	const v = value.toLowerCase();
+	return v !== "" && v !== "0" && v !== "false" && v !== "no" && v !== "off";
 }
 
 function shouldUsePretty(): boolean {
-  // Logger writes to stderr (fd 2) so CLI data on stdout (fd 1) stays clean.
-  // Pretty-print only when stderr is a TTY and not in CI/test environments.
-  return (
-    process.stderr.isTTY === true &&
-    !isTruthyEnv(process.env.CI) &&
-    !isTruthyEnv(process.env.VITEST)
-  );
+	// Logger writes to stderr (fd 2) so CLI data on stdout (fd 1) stays clean.
+	// Pretty-print only when stderr is a TTY and not in CI/test environments.
+	return (
+		process.stderr.isTTY === true &&
+		!isTruthyEnv(process.env.CI) &&
+		!isTruthyEnv(process.env.VITEST)
+	);
 }
 
 /**
@@ -81,9 +86,9 @@ function shouldUsePretty(): boolean {
 let _dest: ReturnType<typeof pino.destination> | undefined;
 
 function defaultDestination(): DestinationStream {
-  if (_dest) return _dest;
-  _dest = pino.destination({ dest: 2, sync: false });
-  return _dest;
+	if (_dest) return _dest;
+	_dest = pino.destination({ dest: 2, sync: false });
+	return _dest;
 }
 
 /**
@@ -95,14 +100,14 @@ function defaultDestination(): DestinationStream {
  * test mode (tests use an in-memory destination).
  */
 export function flushLoggerSync(): void {
-  if (!_dest) return;
-  try {
-    _dest.flushSync();
-  } catch {
-    // Defend against a destination that has already been closed (e.g.,
-    // double-flush on rapid shutdown). Losing the flush attempt is the
-    // correct trade-off vs. throwing during shutdown.
-  }
+	if (!_dest) return;
+	try {
+		_dest.flushSync();
+	} catch {
+		// Defend against a destination that has already been closed (e.g.,
+		// double-flush on rapid shutdown). Losing the flush attempt is the
+		// correct trade-off vs. throwing during shutdown.
+	}
 }
 
 /**
@@ -112,12 +117,12 @@ export function flushLoggerSync(): void {
  */
 let _flushHookInstalled = false;
 function installFlushHook(): void {
-  if (_flushHookInstalled) return;
-  if (isTruthyEnv(process.env.VITEST)) return;
-  _flushHookInstalled = true;
-  process.on('beforeExit', () => {
-    flushLoggerSync();
-  });
+	if (_flushHookInstalled) return;
+	if (isTruthyEnv(process.env.VITEST)) return;
+	_flushHookInstalled = true;
+	process.on("beforeExit", () => {
+		flushLoggerSync();
+	});
 }
 
 /**
@@ -137,20 +142,20 @@ let _prettyAvailable: boolean | null = null;
 const _require = createRequire(import.meta.url);
 
 function isPrettyAvailable(): boolean {
-  if (_prettyAvailable !== null) return _prettyAvailable;
-  try {
-    _require.resolve('pino-pretty');
-    _prettyAvailable = true;
-  } catch {
-    _prettyAvailable = false;
-    // One-time stderr warning so operators learn why TTY output is plain
-    // NDJSON instead of pretty-printed. Use realStderrWrite-style direct
-    // write — going through `logger` here would recurse.
-    process.stderr.write(
-      '[gitnexus:logger] pino-pretty unavailable; falling back to NDJSON on stderr\n',
-    );
-  }
-  return _prettyAvailable;
+	if (_prettyAvailable !== null) return _prettyAvailable;
+	try {
+		_require.resolve("pino-pretty");
+		_prettyAvailable = true;
+	} catch {
+		_prettyAvailable = false;
+		// One-time stderr warning so operators learn why TTY output is plain
+		// NDJSON instead of pretty-printed. Use realStderrWrite-style direct
+		// write — going through `logger` here would recurse.
+		process.stderr.write(
+			"[gitnexus:logger] pino-pretty unavailable; falling back to NDJSON on stderr\n",
+		);
+	}
+	return _prettyAvailable;
 }
 
 /**
@@ -158,7 +163,7 @@ function isPrettyAvailable(): boolean {
  * unit tests exercise both resolve outcomes within the same vitest worker.
  */
 export function _resetPrettyAvailableCache(): void {
-  _prettyAvailable = null;
+	_prettyAvailable = null;
 }
 
 /**
@@ -166,20 +171,22 @@ export function _resetPrettyAvailableCache(): void {
  * tests can exercise the probe path without going through `shouldUsePretty()`
  * (which is structurally false under vitest).
  */
-export function _tryBuildPrettyTransport(): LoggerOptions['transport'] | undefined {
-  if (!isPrettyAvailable()) return undefined;
-  return {
-    target: 'pino-pretty',
-    options: {
-      // Route to stderr (fd 2) so pretty output doesn't contaminate
-      // CLI tool data on stdout (fd 1). pino-pretty's default is fd 1,
-      // which would interleave with `gitnexus query | jq` output.
-      destination: 2,
-      colorize: true,
-      translateTime: 'SYS:HH:MM:ss.l',
-      ignore: 'pid,hostname',
-    },
-  };
+export function _tryBuildPrettyTransport():
+	| LoggerOptions["transport"]
+	| undefined {
+	if (!isPrettyAvailable()) return undefined;
+	return {
+		target: "pino-pretty",
+		options: {
+			// Route to stderr (fd 2) so pretty output doesn't contaminate
+			// CLI tool data on stdout (fd 1). pino-pretty's default is fd 1,
+			// which would interleave with `gitnexus query | jq` output.
+			destination: 2,
+			colorize: true,
+			translateTime: "SYS:HH:MM:ss.l",
+			ignore: "pid,hostname",
+		},
+	};
 }
 
 /**
@@ -187,26 +194,34 @@ export function _tryBuildPrettyTransport(): LoggerOptions['transport'] | undefin
  * Anything else is silently ignored at runtime; we narrow here so a typo in
  * the env var produces the documented default rather than masking the issue.
  */
-const PINO_LEVELS = new Set(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']);
+const PINO_LEVELS = new Set([
+	"fatal",
+	"error",
+	"warn",
+	"info",
+	"debug",
+	"trace",
+	"silent",
+]);
 
 function resolveBaseLevel(): string {
-  const fromEnv = process.env.GITNEXUS_LOG_LEVEL;
-  if (fromEnv && PINO_LEVELS.has(fromEnv.toLowerCase())) {
-    return fromEnv.toLowerCase();
-  }
-  return 'info';
+	const fromEnv = process.env.GITNEXUS_LOG_LEVEL;
+	if (fromEnv && PINO_LEVELS.has(fromEnv.toLowerCase())) {
+		return fromEnv.toLowerCase();
+	}
+	return "info";
 }
 
 function buildBaseOptions(): LoggerOptions {
-  const opts: LoggerOptions = {
-    level: resolveBaseLevel(),
-    base: { service: 'gitnexus' },
-  };
-  if (shouldUsePretty()) {
-    const transport = _tryBuildPrettyTransport();
-    if (transport) opts.transport = transport;
-  }
-  return opts;
+	const opts: LoggerOptions = {
+		level: resolveBaseLevel(),
+		base: { service: "gitnexus" },
+	};
+	if (shouldUsePretty()) {
+		const transport = _tryBuildPrettyTransport();
+		if (transport) opts.transport = transport;
+	}
+	return opts;
 }
 
 /**
@@ -215,31 +230,40 @@ function buildBaseOptions(): LoggerOptions {
  * set and truthy at call time, the child runs at 'debug' level.
  */
 export function createLogger(name: string, opts?: CreateLoggerOptions): Logger {
-  const debugRequested = opts?.debugEnvVar ? isTruthyEnv(process.env[opts.debugEnvVar]) : false;
+	const debugRequested = opts?.debugEnvVar
+		? isTruthyEnv(process.env[opts.debugEnvVar])
+		: false;
 
-  if (opts?.destination) {
-    return pino(
-      { level: debugRequested ? 'debug' : 'info', base: { service: 'gitnexus' }, name },
-      opts.destination,
-    );
-  }
+	if (opts?.destination) {
+		return pino(
+			{
+				level: debugRequested ? "debug" : "info",
+				base: { service: "gitnexus" },
+				name,
+			},
+			opts.destination,
+		);
+	}
 
-  const base = buildBaseOptions();
-  // When using a transport (pino-pretty), pino manages the destination
-  // internally and we cannot pass one explicitly. When transport is absent,
-  // route to stderr so stdout stays clean for CLI data output.
-  let root: Logger;
-  if (base.transport) {
-    root = pino({ ...base, level: debugRequested ? 'debug' : base.level });
-  } else {
-    root = pino({ ...base, level: debugRequested ? 'debug' : base.level }, defaultDestination());
-    // The default destination is buffered (`sync: false`); register the
-    // graceful-exit flush hook now that we know the destination will be
-    // used. Idempotent — runs at most once per process. Skipped under
-    // VITEST so test cleanup doesn't fight `_captureLogger`.
-    installFlushHook();
-  }
-  return root.child({ name });
+	const base = buildBaseOptions();
+	// When using a transport (pino-pretty), pino manages the destination
+	// internally and we cannot pass one explicitly. When transport is absent,
+	// route to stderr so stdout stays clean for CLI data output.
+	let root: Logger;
+	if (base.transport) {
+		root = pino({ ...base, level: debugRequested ? "debug" : base.level });
+	} else {
+		root = pino(
+			{ ...base, level: debugRequested ? "debug" : base.level },
+			defaultDestination(),
+		);
+		// The default destination is buffered (`sync: false`); register the
+		// graceful-exit flush hook now that we know the destination will be
+		// used. Idempotent — runs at most once per process. Skipped under
+		// VITEST so test cleanup doesn't fight `_captureLogger`.
+		installFlushHook();
+	}
+	return root.child({ name });
 }
 
 /* ------------------------------------------------------------------ */
@@ -250,15 +274,15 @@ let _activeDestination: DestinationStream | undefined;
 let _cached: Logger | undefined;
 
 function _getInner(): Logger {
-  if (_cached) return _cached;
-  // Always go through createLogger so future defaults (serializers, redaction,
-  // formatters) apply uniformly. The destination override is honored when set
-  // by `_captureLogger()` below.
-  _cached = createLogger(
-    'gitnexus',
-    _activeDestination ? { destination: _activeDestination } : undefined,
-  );
-  return _cached;
+	if (_cached) return _cached;
+	// Always go through createLogger so future defaults (serializers, redaction,
+	// formatters) apply uniformly. The destination override is honored when set
+	// by `_captureLogger()` below.
+	_cached = createLogger(
+		"gitnexus",
+		_activeDestination ? { destination: _activeDestination } : undefined,
+	);
+	return _cached;
 }
 
 /**
@@ -267,16 +291,16 @@ function _getInner(): Logger {
  * that already imported the singleton at module-load time.
  */
 export const logger = new Proxy({} as Logger, {
-  get(_target, prop) {
-    const inner = _getInner();
-    // Reflect.get keeps symbol-keyed lookups (e.g. Symbol.toPrimitive) intact;
-    // a `prop as string` cast would silently coerce them to the wrong key.
-    const value = Reflect.get(inner as object, prop, inner);
-    if (typeof value === 'function') {
-      return (value as (...a: unknown[]) => unknown).bind(inner);
-    }
-    return value;
-  },
+	get(_target, prop) {
+		const inner = _getInner();
+		// Reflect.get keeps symbol-keyed lookups (e.g. Symbol.toPrimitive) intact;
+		// a `prop as string` cast would silently coerce them to the wrong key.
+		const value = Reflect.get(inner as object, prop, inner);
+		if (typeof value === "function") {
+			return (value as (...a: unknown[]) => unknown).bind(inner);
+		}
+		return value;
+	},
 }) as Logger;
 
 /**
@@ -288,11 +312,11 @@ export const logger = new Proxy({} as Logger, {
  * results without inline `Record<string, unknown>` casts.
  */
 export interface PinoLogRecord {
-  level: number;
-  time: number;
-  msg: string;
-  name?: string;
-  [key: string]: unknown;
+	level: number;
+	time: number;
+	msg: string;
+	name?: string;
+	[key: string]: unknown;
 }
 
 /**
@@ -305,28 +329,32 @@ export interface PinoLogRecord {
  * here — so the surface is intentionally small.
  */
 export class MemoryWritable extends Writable {
-  chunks: string[] = [];
-  _write(chunk: Buffer | string, _enc: BufferEncoding, cb: (err?: Error | null) => void): void {
-    this.chunks.push(typeof chunk === 'string' ? chunk : chunk.toString('utf-8'));
-    cb();
-  }
-  /** Concatenate every captured write back into a single string. */
-  text(): string {
-    return this.chunks.join('');
-  }
-  /** Parse captured writes as one NDJSON record per non-empty line. */
-  records(): PinoLogRecord[] {
-    return this.text()
-      .split('\n')
-      .filter((l) => l.length > 0)
-      .map((l) => JSON.parse(l) as PinoLogRecord);
-  }
+	chunks: string[] = [];
+	_write(
+		chunk: Buffer | string,
+		_enc: BufferEncoding,
+		cb: (err?: Error | null) => void,
+	): void {
+		this.chunks.push(typeof chunk === "string" ? chunk : chunk.toString("utf-8"));
+		cb();
+	}
+	/** Concatenate every captured write back into a single string. */
+	text(): string {
+		return this.chunks.join("");
+	}
+	/** Parse captured writes as one NDJSON record per non-empty line. */
+	records(): PinoLogRecord[] {
+		return this.text()
+			.split("\n")
+			.filter((l) => l.length > 0)
+			.map((l) => JSON.parse(l) as PinoLogRecord);
+	}
 }
 
 export interface LoggerCapture {
-  records(): PinoLogRecord[];
-  text(): string;
-  restore(): void;
+	records(): PinoLogRecord[];
+	text(): string;
+	restore(): void;
 }
 
 /**
@@ -346,30 +374,30 @@ export interface LoggerCapture {
  * Throws if a previous capture is still active — see the body for context.
  */
 export function _captureLogger(): LoggerCapture {
-  // Guard against double-capture: forgetting `restore()` between two
-  // `_captureLogger()` calls silently abandoned the previous capture and
-  // corrupted logger state for the rest of the vitest worker. Throwing here
-  // surfaces the bug at the moment of misuse instead of as inscrutable
-  // missing-records assertions in unrelated tests.
-  if (_activeDestination !== undefined) {
-    throw new Error(
-      '_captureLogger: a previous capture is still active — call restore() before starting a new one.',
-    );
-  }
-  const w = new MemoryWritable();
-  _activeDestination = w;
-  _cached = undefined;
-  return {
-    records: () =>
-      w.chunks
-        .join('')
-        .split('\n')
-        .filter((l) => l.length > 0)
-        .map((l) => JSON.parse(l) as PinoLogRecord),
-    text: () => w.chunks.join(''),
-    restore: () => {
-      _activeDestination = undefined;
-      _cached = undefined;
-    },
-  };
+	// Guard against double-capture: forgetting `restore()` between two
+	// `_captureLogger()` calls silently abandoned the previous capture and
+	// corrupted logger state for the rest of the vitest worker. Throwing here
+	// surfaces the bug at the moment of misuse instead of as inscrutable
+	// missing-records assertions in unrelated tests.
+	if (_activeDestination !== undefined) {
+		throw new Error(
+			"_captureLogger: a previous capture is still active — call restore() before starting a new one.",
+		);
+	}
+	const w = new MemoryWritable();
+	_activeDestination = w;
+	_cached = undefined;
+	return {
+		records: () =>
+			w.chunks
+				.join("")
+				.split("\n")
+				.filter((l) => l.length > 0)
+				.map((l) => JSON.parse(l) as PinoLogRecord),
+		text: () => w.chunks.join(""),
+		restore: () => {
+			_activeDestination = undefined;
+			_cached = undefined;
+		},
+	};
 }

@@ -60,13 +60,23 @@
  * `test/integration/resolvers/php.test.ts`.
  */
 
-export { emitPhpScopeCaptures } from './captures.js';
-export { getPhpCaptureCacheStats, resetPhpCaptureCacheStats } from './cache-stats.js';
-export { interpretPhpImport, interpretPhpTypeBinding } from './interpret.js';
-export { phpMergeBindings } from './merge-bindings.js';
-export { phpArityCompatibility } from './arity.js';
-export { resolvePhpImportTarget, type PhpResolveContext } from './import-target.js';
-export { phpBindingScopeFor, phpImportOwningScope, phpReceiverBinding } from './simple-hooks.js';
+export { phpArityCompatibility } from "./arity.js";
+export {
+	getPhpCaptureCacheStats,
+	resetPhpCaptureCacheStats,
+} from "./cache-stats.js";
+export { emitPhpScopeCaptures } from "./captures.js";
+export {
+	type PhpResolveContext,
+	resolvePhpImportTarget,
+} from "./import-target.js";
+export { interpretPhpImport, interpretPhpTypeBinding } from "./interpret.js";
+export { phpMergeBindings } from "./merge-bindings.js";
+export {
+	phpBindingScopeFor,
+	phpImportOwningScope,
+	phpReceiverBinding,
+} from "./simple-hooks.js";
 // NOTE: phpScopeResolver is intentionally NOT re-exported from this barrel.
 // Importing it here would create a circular dependency:
 //   php.ts → php/index.js → php/scope-resolver.js → ../php.js

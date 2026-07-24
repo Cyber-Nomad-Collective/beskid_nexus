@@ -12,9 +12,9 @@
  * (include/extend/prepend expressed as method calls).
  */
 
-import type { SupportedLanguages } from 'gitnexus-shared';
-import type { SyntaxNode } from './utils/ast-helpers.js';
-import type { CaptureMap } from './language-provider.js';
+import type { SupportedLanguages } from "gitnexus-shared";
+import type { CaptureMap } from "./language-provider.js";
+import type { SyntaxNode } from "./utils/ast-helpers.js";
 
 // ---------------------------------------------------------------------------
 // Extracted result
@@ -26,10 +26,10 @@ import type { CaptureMap } from './language-provider.js';
  * pipeline (heritage-processor.ts / heritage-map.ts).
  */
 export interface HeritageInfo {
-  className: string;
-  parentName: string;
-  /** 'extends' | 'implements' | 'trait-impl' | 'include' | 'extend' | 'prepend' */
-  kind: string;
+	className: string;
+	parentName: string;
+	/** 'extends' | 'implements' | 'trait-impl' | 'include' | 'extend' | 'prepend' */
+	kind: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,8 +37,8 @@ export interface HeritageInfo {
 // ---------------------------------------------------------------------------
 
 export interface HeritageExtractorContext {
-  filePath: string;
-  language: SupportedLanguages;
+	filePath: string;
+	language: SupportedLanguages;
 }
 
 // ---------------------------------------------------------------------------
@@ -46,32 +46,35 @@ export interface HeritageExtractorContext {
 // ---------------------------------------------------------------------------
 
 export interface HeritageExtractor {
-  readonly language: SupportedLanguages;
+	readonly language: SupportedLanguages;
 
-  /**
-   * Extract heritage records from tree-sitter @heritage.* captures.
-   *
-   * @param captureMap  The capture map from a single tree-sitter match
-   * @param context     File path and language context
-   * @returns Array of heritage records (may be empty if captures don't match)
-   */
-  extract(captureMap: CaptureMap, context: HeritageExtractorContext): HeritageInfo[];
+	/**
+	 * Extract heritage records from tree-sitter @heritage.* captures.
+	 *
+	 * @param captureMap  The capture map from a single tree-sitter match
+	 * @param context     File path and language context
+	 * @returns Array of heritage records (may be empty if captures don't match)
+	 */
+	extract(
+		captureMap: CaptureMap,
+		context: HeritageExtractorContext,
+	): HeritageInfo[];
 
-  /**
-   * Extract heritage from a call node (for languages where heritage is
-   * expressed as method calls, e.g., Ruby include/extend/prepend).
-   *
-   * @param calledName  The method name (e.g. 'include', 'extend', 'prepend')
-   * @param callNode    The tree-sitter call AST node
-   * @param context     File path and language context
-   * @returns Heritage records if the call is heritage-related, or null to
-   *          fall through to the call router / normal call handling.
-   */
-  extractFromCall?(
-    calledName: string,
-    callNode: SyntaxNode,
-    context: HeritageExtractorContext,
-  ): HeritageInfo[] | null;
+	/**
+	 * Extract heritage from a call node (for languages where heritage is
+	 * expressed as method calls, e.g., Ruby include/extend/prepend).
+	 *
+	 * @param calledName  The method name (e.g. 'include', 'extend', 'prepend')
+	 * @param callNode    The tree-sitter call AST node
+	 * @param context     File path and language context
+	 * @returns Heritage records if the call is heritage-related, or null to
+	 *          fall through to the call router / normal call handling.
+	 */
+	extractFromCall?(
+		calledName: string,
+		callNode: SyntaxNode,
+		context: HeritageExtractorContext,
+	): HeritageInfo[] | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -79,26 +82,30 @@ export interface HeritageExtractor {
 // ---------------------------------------------------------------------------
 
 export interface HeritageExtractionConfig {
-  language: SupportedLanguages;
+	language: SupportedLanguages;
 
-  /**
-   * Called for heritage.extends captures.  Return true to skip this extends
-   * capture.  Used by Go to skip named struct fields that match the
-   * field_declaration pattern but are not anonymous embeddings.
-   *
-   * Default: never skip (all extends captures are valid).
-   */
-  shouldSkipExtends?: (extendsNode: SyntaxNode) => boolean;
+	/**
+	 * Called for heritage.extends captures.  Return true to skip this extends
+	 * capture.  Used by Go to skip named struct fields that match the
+	 * field_declaration pattern but are not anonymous embeddings.
+	 *
+	 * Default: never skip (all extends captures are valid).
+	 */
+	shouldSkipExtends?: (extendsNode: SyntaxNode) => boolean;
 
-  /**
-   * Call-based heritage extraction for languages where heritage is expressed
-   * as method calls (e.g., Ruby include/extend/prepend).
-   *
-   * callNames: set of method names that trigger heritage extraction.
-   * extract:   extract heritage items from the call node + method name.
-   */
-  callBasedHeritage?: {
-    readonly callNames: ReadonlySet<string>;
-    extract(calledName: string, callNode: SyntaxNode, filePath: string): HeritageInfo[];
-  };
+	/**
+	 * Call-based heritage extraction for languages where heritage is expressed
+	 * as method calls (e.g., Ruby include/extend/prepend).
+	 *
+	 * callNames: set of method names that trigger heritage extraction.
+	 * extract:   extract heritage items from the call node + method name.
+	 */
+	callBasedHeritage?: {
+		readonly callNames: ReadonlySet<string>;
+		extract(
+			calledName: string,
+			callNode: SyntaxNode,
+			filePath: string,
+		): HeritageInfo[];
+	};
 }

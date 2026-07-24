@@ -2,12 +2,14 @@
  * @class
  */
 class User {
-  save() {}
+	save() {}
 }
 
 /**
  * @returns {User[]}
  */
-function getUsers() { return []; }
+function getUsers() {
+	return [];
+}
 
 module.exports = { User, getUsers };

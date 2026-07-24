@@ -10,117 +10,120 @@
  *  4. Rewrite bare 'gitnexus-shared' specifiers → relative paths
  *  5. Build gitnexus-web (bun) and copy → web/
  */
-import { execSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
+import { execSync } from "node:child_process";
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '..');
-const SHARED_ROOT = path.resolve(ROOT, '..', 'gitnexus-shared');
-const DIST = path.join(ROOT, 'dist');
-const SHARED_DEST = path.join(DIST, '_shared');
-const require = createRequire(path.join(ROOT, 'package.json'));
+const ROOT = path.resolve(__dirname, "..");
+const SHARED_ROOT = path.resolve(ROOT, "..", "gitnexus-shared");
+const DIST = path.join(ROOT, "dist");
+const SHARED_DEST = path.join(DIST, "_shared");
+const require = createRequire(path.join(ROOT, "package.json"));
 
 const run = (cmd, cwd) => {
-  execSync(cmd, { cwd, stdio: 'inherit', timeout: 120_000, shell: true });
+	execSync(cmd, { cwd, stdio: "inherit", timeout: 120_000, shell: true });
 };
 
 function resolveAuthClientRoot() {
-  const candidate = path.join(ROOT, 'node_modules', '@beskid', 'auth-client');
-  if (fs.existsSync(path.join(candidate, 'package.json'))) {
-    return candidate;
-  }
-  try {
-    const entry = require.resolve('@beskid/auth-client');
-    let dir = path.dirname(entry);
-    while (dir !== path.dirname(dir)) {
-      if (fs.existsSync(path.join(dir, 'package.json'))) {
-        return dir;
-      }
-      dir = path.dirname(dir);
-    }
-  } catch {
-    return null;
-  }
-  return null;
+	const candidate = path.join(ROOT, "node_modules", "@beskid", "auth-client");
+	if (fs.existsSync(path.join(candidate, "package.json"))) {
+		return candidate;
+	}
+	try {
+		const entry = require.resolve("@beskid/auth-client");
+		let dir = path.dirname(entry);
+		while (dir !== path.dirname(dir)) {
+			if (fs.existsSync(path.join(dir, "package.json"))) {
+				return dir;
+			}
+			dir = path.dirname(dir);
+		}
+	} catch {
+		return null;
+	}
+	return null;
 }
 
 // ── 0. Build @beskid/auth-client when installed from source without dist ──
 const authClientRoot = resolveAuthClientRoot();
 if (
-  authClientRoot &&
-  !fs.existsSync(path.join(authClientRoot, 'dist/index.js'))
+	authClientRoot &&
+	!fs.existsSync(path.join(authClientRoot, "dist/index.js"))
 ) {
-  console.log('[build] compiling @beskid/auth-client…');
-  run('bun run build', authClientRoot);
+	console.log("[build] compiling @beskid/auth-client…");
+	run("bun run build", authClientRoot);
 }
 
 // ── 1. Build gitnexus-shared ───────────────────────────────────────
-console.log('[build] compiling gitnexus-shared…');
-run('bun run build', SHARED_ROOT);
+console.log("[build] compiling gitnexus-shared…");
+run("bun run build", SHARED_ROOT);
 
 // ── 2. Build gitnexus ──────────────────────────────────────────────
-console.log('[build] compiling gitnexus…');
-run('bunx tsc', ROOT);
+console.log("[build] compiling gitnexus…");
+run("bunx tsc", ROOT);
 
 // ── 3. Copy shared dist ────────────────────────────────────────────
-console.log('[build] copying shared module into dist/_shared…');
-fs.cpSync(path.join(SHARED_ROOT, 'dist'), SHARED_DEST, { recursive: true });
+console.log("[build] copying shared module into dist/_shared…");
+fs.cpSync(path.join(SHARED_ROOT, "dist"), SHARED_DEST, { recursive: true });
 
 // ── 4. Rewrite imports ─────────────────────────────────────────────
-console.log('[build] rewriting gitnexus-shared imports…');
+console.log("[build] rewriting gitnexus-shared imports…");
 let rewritten = 0;
 
 function rewriteFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-  if (!content.includes('gitnexus-shared')) return;
+	const content = fs.readFileSync(filePath, "utf-8");
+	if (!content.includes("gitnexus-shared")) return;
 
-  const relDir = path.relative(path.dirname(filePath), SHARED_DEST);
-  const relImport = relDir.split(path.sep).join('/') + '/index.js';
+	const relDir = path.relative(path.dirname(filePath), SHARED_DEST);
+	const relImport = relDir.split(path.sep).join("/") + "/index.js";
 
-  const updated = content
-    .replace(/from\s+['"]gitnexus-shared['"]/g, `from '${relImport}'`)
-    .replace(/import\(\s*['"]gitnexus-shared['"]\s*\)/g, `import('${relImport}')`);
+	const updated = content
+		.replace(/from\s+['"]gitnexus-shared['"]/g, `from '${relImport}'`)
+		.replace(
+			/import\(\s*['"]gitnexus-shared['"]\s*\)/g,
+			`import('${relImport}')`,
+		);
 
-  if (updated !== content) {
-    fs.writeFileSync(filePath, updated);
-    rewritten++;
-  }
+	if (updated !== content) {
+		fs.writeFileSync(filePath, updated);
+		rewritten++;
+	}
 }
 
 function walk(dir, extensions, cb) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      walk(full, extensions, cb);
-    } else if (extensions.some((ext) => entry.name.endsWith(ext))) {
-      cb(full);
-    }
-  }
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			walk(full, extensions, cb);
+		} else if (extensions.some((ext) => entry.name.endsWith(ext))) {
+			cb(full);
+		}
+	}
 }
 
-walk(DIST, ['.js', '.d.ts'], rewriteFile);
+walk(DIST, [".js", ".d.ts"], rewriteFile);
 
 // ── 5. Make CLI entry executable ────────────────────────────────────
-const cliEntry = path.join(DIST, 'cli', 'index.js');
+const cliEntry = path.join(DIST, "cli", "index.js");
 if (fs.existsSync(cliEntry)) fs.chmodSync(cliEntry, 0o755);
 
 // ── 6. Build & copy web UI ──────────────────────────────────────────
-const WEB_ROOT = path.resolve(ROOT, '..', 'gitnexus-web');
-const WEB_DEST = path.join(DIST, '..', 'web');
+const WEB_ROOT = path.resolve(ROOT, "..", "gitnexus-web");
+const WEB_DEST = path.join(DIST, "..", "web");
 
-if (fs.existsSync(path.join(WEB_ROOT, 'package.json'))) {
-  console.log('[build] building gitnexus-web…');
-  run('bun install --frozen-lockfile', WEB_ROOT);
-  run('bun run build', WEB_ROOT);
+if (fs.existsSync(path.join(WEB_ROOT, "package.json"))) {
+	console.log("[build] building gitnexus-web…");
+	run("bun install --frozen-lockfile", WEB_ROOT);
+	run("bun run build", WEB_ROOT);
 
-  fs.rmSync(WEB_DEST, { recursive: true, force: true });
-  fs.cpSync(path.join(WEB_ROOT, 'dist'), WEB_DEST, { recursive: true });
-  console.log('[build] copied web UI → gitnexus/web/');
+	fs.rmSync(WEB_DEST, { recursive: true, force: true });
+	fs.cpSync(path.join(WEB_ROOT, "dist"), WEB_DEST, { recursive: true });
+	console.log("[build] copied web UI → gitnexus/web/");
 } else {
-  console.log('[build] skipping web UI (gitnexus-web not found)');
+	console.log("[build] skipping web UI (gitnexus-web not found)");
 }
 
 console.log(`[build] done — rewrote ${rewritten} files.`);

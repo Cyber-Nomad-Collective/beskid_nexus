@@ -1,28 +1,28 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@shared/*": ["../shared/*"],
-      "#beskid-theme-css": ["./src/styles/beskid-fallback-theme.css"],
-      "#beskid-hub-css": ["./src/stubs/beskid-hub-stub.css"]
-    },
-    "types": ["vite/client"]
-  },
-  "include": ["src", "../shared"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+	"compilerOptions": {
+		"target": "ESNext",
+		"useDefineForClassFields": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"strict": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@shared/*": ["../shared/*"],
+			"#beskid-theme-css": ["./src/styles/beskid-fallback-theme.css"],
+			"#beskid-hub-css": ["./src/stubs/beskid-hub-stub.css"]
+		},
+		"types": ["vite/client"]
+	},
+	"include": ["src", "../shared"],
+	"exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }

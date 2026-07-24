@@ -1,16 +1,16 @@
-import * as path from 'node:path';
-import type { CompiledPatterns } from '../tree-sitter-scanner.js';
-import type { TopicMeta } from './types.js';
-import { JAVA_TOPIC_PROVIDER } from './java.js';
-import { GO_TOPIC_PROVIDER } from './go.js';
-import { PYTHON_TOPIC_PROVIDER } from './python.js';
+import * as path from "node:path";
+import type { CompiledPatterns } from "../tree-sitter-scanner.js";
+import { GO_TOPIC_PROVIDER } from "./go.js";
+import { JAVA_TOPIC_PROVIDER } from "./java.js";
 import {
-  JAVASCRIPT_TOPIC_PROVIDER,
-  TYPESCRIPT_TOPIC_PROVIDER,
-  TSX_TOPIC_PROVIDER,
-} from './node.js';
+	JAVASCRIPT_TOPIC_PROVIDER,
+	TSX_TOPIC_PROVIDER,
+	TYPESCRIPT_TOPIC_PROVIDER,
+} from "./node.js";
+import { PYTHON_TOPIC_PROVIDER } from "./python.js";
+import type { TopicMeta } from "./types.js";
 
-export type { TopicMeta, Broker } from './types.js';
+export type { Broker, TopicMeta } from "./types.js";
 
 /**
  * File-extension → compiled-plugin registry for topic extraction. The
@@ -23,13 +23,13 @@ export type { TopicMeta, Broker } from './types.js';
  * `topic-extractor.ts` are required.
  */
 const REGISTRY: Record<string, CompiledPatterns<TopicMeta>> = {
-  '.java': JAVA_TOPIC_PROVIDER,
-  '.go': GO_TOPIC_PROVIDER,
-  '.py': PYTHON_TOPIC_PROVIDER,
-  '.js': JAVASCRIPT_TOPIC_PROVIDER,
-  '.jsx': JAVASCRIPT_TOPIC_PROVIDER,
-  '.ts': TYPESCRIPT_TOPIC_PROVIDER,
-  '.tsx': TSX_TOPIC_PROVIDER,
+	".java": JAVA_TOPIC_PROVIDER,
+	".go": GO_TOPIC_PROVIDER,
+	".py": PYTHON_TOPIC_PROVIDER,
+	".js": JAVASCRIPT_TOPIC_PROVIDER,
+	".jsx": JAVASCRIPT_TOPIC_PROVIDER,
+	".ts": TYPESCRIPT_TOPIC_PROVIDER,
+	".tsx": TSX_TOPIC_PROVIDER,
 };
 
 /**
@@ -37,13 +37,15 @@ const REGISTRY: Record<string, CompiledPatterns<TopicMeta>> = {
  * language to the registry also widens the glob automatically via a
  * single edit.
  */
-export const TOPIC_SCAN_GLOB = '**/*.{ts,tsx,js,jsx,java,go,py}';
+export const TOPIC_SCAN_GLOB = "**/*.{ts,tsx,js,jsx,java,go,py}";
 
 /**
  * Return the compiled provider registered for the given file's
  * extension, or `undefined` if the extension is not registered.
  */
-export function getProviderForFile(rel: string): CompiledPatterns<TopicMeta> | undefined {
-  const ext = path.extname(rel).toLowerCase();
-  return REGISTRY[ext];
+export function getProviderForFile(
+	rel: string,
+): CompiledPatterns<TopicMeta> | undefined {
+	const ext = path.extname(rel).toLowerCase();
+	return REGISTRY[ext];
 }

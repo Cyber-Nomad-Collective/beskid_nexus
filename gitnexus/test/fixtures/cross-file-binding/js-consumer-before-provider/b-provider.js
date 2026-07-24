@@ -1,7 +1,7 @@
 export class User {
-  save() {}
+	save() {}
 }
 
 export function getUser() {
-  return new User();
+	return new User();
 }

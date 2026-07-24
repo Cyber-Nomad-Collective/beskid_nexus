@@ -1,3 +1,3 @@
 export class Greeting {
-  save(): void {}
+	save(): void {}
 }

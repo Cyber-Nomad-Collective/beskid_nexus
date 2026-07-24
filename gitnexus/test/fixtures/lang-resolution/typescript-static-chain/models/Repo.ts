@@ -1,3 +1,3 @@
 export class Repo {
-  save(): void {}
+	save(): void {}
 }

@@ -1,8 +1,8 @@
-import { BaseModel } from './Base';
+import { BaseModel } from "./Base";
 
 export class User extends BaseModel {
-  save(): boolean {
-    super.save();
-    return true;
-  }
+	save(): boolean {
+		super.save();
+		return true;
+	}
 }

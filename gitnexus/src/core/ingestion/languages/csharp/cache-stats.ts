@@ -7,24 +7,24 @@
  * the hot path in `captures.ts` stays branch-free.
  */
 
-const PROF = process.env.PROF_SCOPE_RESOLUTION === '1';
+const PROF = process.env.PROF_SCOPE_RESOLUTION === "1";
 
 let CACHE_HITS = 0;
 let CACHE_MISSES = 0;
 
 export function recordCacheHit(): void {
-  if (PROF) CACHE_HITS++;
+	if (PROF) CACHE_HITS++;
 }
 
 export function recordCacheMiss(): void {
-  if (PROF) CACHE_MISSES++;
+	if (PROF) CACHE_MISSES++;
 }
 
 export function getCsharpCaptureCacheStats(): { hits: number; misses: number } {
-  return { hits: CACHE_HITS, misses: CACHE_MISSES };
+	return { hits: CACHE_HITS, misses: CACHE_MISSES };
 }
 
 export function resetCsharpCaptureCacheStats(): void {
-  CACHE_HITS = 0;
-  CACHE_MISSES = 0;
+	CACHE_HITS = 0;
+	CACHE_MISSES = 0;
 }

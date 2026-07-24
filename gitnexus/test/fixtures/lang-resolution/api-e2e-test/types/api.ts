@@ -1,4 +1,4 @@
 export interface ApiResponse<T> {
-  data: T;
-  pagination?: { page: number; total: number };
+	data: T;
+	pagination?: { page: number; total: number };
 }

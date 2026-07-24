@@ -1,1 +1,3 @@
-export function helper12() { return 12; }
+export function helper12() {
+	return 12;
+}

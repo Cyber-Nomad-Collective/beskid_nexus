@@ -15,34 +15,40 @@
  * Kept as a standalone file (no LocalBackend import) so it does not depend
  * on the LadybugDB native binding being available in the test environment.
  */
-import { describe, it, expect } from 'vitest';
-import fs from 'fs';
-import path from 'path';
 
-const SOURCE_PATH = path.join(__dirname, '../../src/mcp/local/local-backend.ts');
+import fs from "fs";
+import path from "path";
+import { describe, expect, it } from "vitest";
 
-describe('local-backend: execFileSync maxBuffer regression', () => {
-  const source = fs.readFileSync(SOURCE_PATH, 'utf-8');
+const SOURCE_PATH = path.join(
+	__dirname,
+	"../../src/mcp/local/local-backend.ts",
+);
 
-  it('every stdout-capturing execFileSync call passes maxBuffer', () => {
-    // Match each `execFileSync(...)` call. The local-backend.ts call sites use
-    // a single trailing options object literal, so a non-greedy match up to the
-    // closing `)` of the statement is sufficient.
-    const callRe = /execFileSync\s*\(([\s\S]*?)\)\s*;/g;
-    const offenders: string[] = [];
-    let match: RegExpExecArray | null;
-    while ((match = callRe.exec(source)) !== null) {
-      const args = match[1];
-      // Only stdout-capturing calls (encoding set) are at risk of ENOBUFS.
-      if (!/encoding\s*:/.test(args)) continue;
-      if (!/maxBuffer\s*:/.test(args)) {
-        const lineNo = source.slice(0, match.index).split('\n').length;
-        offenders.push(`line ${lineNo}: ${args.replace(/\s+/g, ' ').slice(0, 160)}`);
-      }
-    }
-    expect(
-      offenders,
-      `execFileSync calls missing explicit maxBuffer (ENOBUFS risk):\n${offenders.join('\n')}`,
-    ).toEqual([]);
-  });
+describe("local-backend: execFileSync maxBuffer regression", () => {
+	const source = fs.readFileSync(SOURCE_PATH, "utf-8");
+
+	it("every stdout-capturing execFileSync call passes maxBuffer", () => {
+		// Match each `execFileSync(...)` call. The local-backend.ts call sites use
+		// a single trailing options object literal, so a non-greedy match up to the
+		// closing `)` of the statement is sufficient.
+		const callRe = /execFileSync\s*\(([\s\S]*?)\)\s*;/g;
+		const offenders: string[] = [];
+		let match: RegExpExecArray | null;
+		while ((match = callRe.exec(source)) !== null) {
+			const args = match[1];
+			// Only stdout-capturing calls (encoding set) are at risk of ENOBUFS.
+			if (!/encoding\s*:/.test(args)) continue;
+			if (!/maxBuffer\s*:/.test(args)) {
+				const lineNo = source.slice(0, match.index).split("\n").length;
+				offenders.push(
+					`line ${lineNo}: ${args.replace(/\s+/g, " ").slice(0, 160)}`,
+				);
+			}
+		}
+		expect(
+			offenders,
+			`execFileSync calls missing explicit maxBuffer (ENOBUFS risk):\n${offenders.join("\n")}`,
+		).toEqual([]);
+	});
 });

@@ -1,26 +1,26 @@
 class Address {
-  city = '';
+	city = "";
 
-  save() {
-    // persist address
-  }
+	save() {
+		// persist address
+	}
 }
 
 class User {
-  name = '';
-  address = new Address();
+	name = "";
+	address = new Address();
 
-  greet() {
-    return this.name;
-  }
+	greet() {
+		return this.name;
+	}
 }
 
 class Config {
-  static DEFAULT = new Config();
+	static DEFAULT = new Config();
 
-  validate() {
-    return true;
-  }
+	validate() {
+		return true;
+	}
 }
 
 module.exports = { Address, User, Config };

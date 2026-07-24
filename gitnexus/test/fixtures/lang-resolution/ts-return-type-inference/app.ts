@@ -1,11 +1,11 @@
-import { getUser, fetchUserAsync } from './service';
+import { fetchUserAsync, getUser } from "./service";
 
 function processUser() {
-  const user = getUser('alice');
-  user.save();
+	const user = getUser("alice");
+	user.save();
 }
 
 async function processUserAsync() {
-  const user = await fetchUserAsync('bob');
-  user.save();
+	const user = await fetchUserAsync("bob");
+	user.save();
 }

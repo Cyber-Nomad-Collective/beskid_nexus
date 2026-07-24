@@ -8,7 +8,7 @@
  */
 
 /** Whether we're running in development mode (enables verbose console logging). */
-export const isDev = process.env.NODE_ENV === 'development';
+export const isDev = process.env.NODE_ENV === "development";
 
 /**
  * Whether scope-resolution dev validators (e.g. `validateBindingsImmutability`)
@@ -20,6 +20,9 @@ export const isDev = process.env.NODE_ENV === 'development';
  * Read every call (not memoized) so test setups using `vi.stubEnv` work.
  */
 export const isSemanticModelValidatorEnabled = (): boolean => {
-  if (process.env.VALIDATE_SEMANTIC_MODEL === '0') return false;
-  return process.env.NODE_ENV === 'development' || process.env.VALIDATE_SEMANTIC_MODEL === '1';
+	if (process.env.VALIDATE_SEMANTIC_MODEL === "0") return false;
+	return (
+		process.env.NODE_ENV === "development" ||
+		process.env.VALIDATE_SEMANTIC_MODEL === "1"
+	);
 };

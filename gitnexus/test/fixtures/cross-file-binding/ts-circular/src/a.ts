@@ -1,8 +1,8 @@
-import { getB } from './b';
+import { getB } from "./b";
 export class A {
-  doA(): void {}
+	doA(): void {}
 }
 export function processA() {
-  const b = getB();
-  b.doB();
+	const b = getB();
+	b.doB();
 }

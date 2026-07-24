@@ -12,18 +12,18 @@
  * resolving callsite file → enclosing module).
  */
 
-import type { ScopeId } from './types.js';
+import type { ScopeId } from "./types.js";
 
 export interface ModuleScopeIndex {
-  readonly byFilePath: ReadonlyMap<string, ScopeId>;
-  readonly size: number;
-  get(filePath: string): ScopeId | undefined;
-  has(filePath: string): boolean;
+	readonly byFilePath: ReadonlyMap<string, ScopeId>;
+	readonly size: number;
+	get(filePath: string): ScopeId | undefined;
+	has(filePath: string): boolean;
 }
 
 export interface ModuleScopeEntry {
-  readonly filePath: string;
-  readonly moduleScopeId: ScopeId;
+	readonly filePath: string;
+	readonly moduleScopeId: ScopeId;
 }
 
 /**
@@ -46,28 +46,30 @@ export interface ModuleScopeEntry {
  *
  * Pure function — safe to call repeatedly; no side effects.
  */
-export function buildModuleScopeIndex(entries: readonly ModuleScopeEntry[]): ModuleScopeIndex {
-  const byFilePath = new Map<string, ScopeId>();
-  for (const { filePath, moduleScopeId } of entries) {
-    if (byFilePath.has(filePath)) continue; // first-write-wins
-    byFilePath.set(filePath, moduleScopeId);
-  }
-  return wrapIndex(byFilePath);
+export function buildModuleScopeIndex(
+	entries: readonly ModuleScopeEntry[],
+): ModuleScopeIndex {
+	const byFilePath = new Map<string, ScopeId>();
+	for (const { filePath, moduleScopeId } of entries) {
+		if (byFilePath.has(filePath)) continue; // first-write-wins
+		byFilePath.set(filePath, moduleScopeId);
+	}
+	return wrapIndex(byFilePath);
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
 
 function wrapIndex(byFilePath: Map<string, ScopeId>): ModuleScopeIndex {
-  return {
-    byFilePath,
-    get size() {
-      return byFilePath.size;
-    },
-    get(filePath: string): ScopeId | undefined {
-      return byFilePath.get(filePath);
-    },
-    has(filePath: string): boolean {
-      return byFilePath.has(filePath);
-    },
-  };
+	return {
+		byFilePath,
+		get size() {
+			return byFilePath.size;
+		},
+		get(filePath: string): ScopeId | undefined {
+			return byFilePath.get(filePath);
+		},
+		has(filePath: string): boolean {
+			return byFilePath.has(filePath);
+		},
+	};
 }

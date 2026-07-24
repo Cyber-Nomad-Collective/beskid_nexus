@@ -10,20 +10,22 @@
 type StateCreator<T> = (set: (next: Partial<T>) => void) => T;
 
 export const create = <T>() => {
-  return (initializer: (...wrappers: never[]) => StateCreator<T>): T => {
-    return initializer()(() => {
-      /* runtime no-op for this fixture */
-    });
-  };
+	return (initializer: (...wrappers: never[]) => StateCreator<T>): T => {
+		return initializer()(() => {
+			/* runtime no-op for this fixture */
+		});
+	};
 };
 
-export const persist = <T>(creator: StateCreator<T>): StateCreator<T> => creator;
+export const persist = <T>(creator: StateCreator<T>): StateCreator<T> =>
+	creator;
 
-export const devtools = <T>(creator: StateCreator<T>): StateCreator<T> => creator;
+export const devtools = <T>(creator: StateCreator<T>): StateCreator<T> =>
+	creator;
 
 interface Counter {
-  readonly count: number;
-  readonly bump: () => void;
+	readonly count: number;
+	readonly bump: () => void;
 }
 
 // The classic Zustand shape:
@@ -37,10 +39,10 @@ interface Counter {
 // its def attached to its own scope and HOF-wrapped declarations
 // participate in the call graph normally.
 export const useStore = create<Counter>()(
-  devtools(
-    persist((set) => ({
-      count: 0,
-      bump: () => set({ count: 1 }),
-    })),
-  ),
+	devtools(
+		persist((set) => ({
+			count: 0,
+			bump: () => set({ count: 1 }),
+		})),
+	),
 );

@@ -26,88 +26,91 @@
  *     here there is no pipeline, so no conflation.)
  */
 
-import fs from 'fs/promises';
-import { logger } from '../core/logger.js';
-import { cliError } from './cli-message.js';
+import fs from "fs/promises";
+import { logger } from "../core/logger.js";
 import {
-  readRegistry,
-  resolveRegistryEntry,
-  assertSafeStoragePath,
-  unregisterRepo,
-  RegistryNotFoundError,
-  RegistryAmbiguousTargetError,
-  UnsafeStoragePathError,
-} from '../storage/repo-manager.js';
+	assertSafeStoragePath,
+	RegistryAmbiguousTargetError,
+	RegistryNotFoundError,
+	readRegistry,
+	resolveRegistryEntry,
+	UnsafeStoragePathError,
+	unregisterRepo,
+} from "../storage/repo-manager.js";
+import { cliError } from "./cli-message.js";
 
-export const removeCommand = async (target: string, options?: { force?: boolean }) => {
-  // Read the registry snapshot once and pass it to the resolver — this
-  // lets us render the "before" state in the dry-run path without a
-  // second disk read.
-  const entries = await readRegistry();
+export const removeCommand = async (
+	target: string,
+	options?: { force?: boolean },
+) => {
+	// Read the registry snapshot once and pass it to the resolver — this
+	// lets us render the "before" state in the dry-run path without a
+	// second disk read.
+	const entries = await readRegistry();
 
-  let entry;
-  try {
-    entry = resolveRegistryEntry(entries, target);
-  } catch (err) {
-    if (err instanceof RegistryNotFoundError) {
-      // Idempotent: missing target is a no-op warning, not an error.
-      // The `availableNames` hint comes from the error itself so users
-      // can see what they might have meant.
-      logger.warn(`Nothing to remove: ${err.message}`);
-      return;
-    }
-    if (err instanceof RegistryAmbiguousTargetError) {
-      // Duplicate aliases are allowed via --allow-duplicate-name (#829);
-      // refuse to guess which one the user meant — surface the full list
-      // and exit non-zero so scripts don't silently pick the wrong repo.
-      cliError(`Error: ${err.message}`);
-      process.exit(1);
-    }
-    throw err;
-  }
+	let entry;
+	try {
+		entry = resolveRegistryEntry(entries, target);
+	} catch (err) {
+		if (err instanceof RegistryNotFoundError) {
+			// Idempotent: missing target is a no-op warning, not an error.
+			// The `availableNames` hint comes from the error itself so users
+			// can see what they might have meant.
+			logger.warn(`Nothing to remove: ${err.message}`);
+			return;
+		}
+		if (err instanceof RegistryAmbiguousTargetError) {
+			// Duplicate aliases are allowed via --allow-duplicate-name (#829);
+			// refuse to guess which one the user meant — surface the full list
+			// and exit non-zero so scripts don't silently pick the wrong repo.
+			cliError(`Error: ${err.message}`);
+			process.exit(1);
+		}
+		throw err;
+	}
 
-  // Confirmation gate — same shape as `clean`. Default is a dry-run
-  // that describes what would be deleted; `--force` actually deletes.
-  if (!options?.force) {
-    console.log(`This will delete the GitNexus index for: ${entry.name}`);
-    console.log(`   Path:    ${entry.path}`);
-    console.log(`   Storage: ${entry.storagePath}`);
-    console.log('\nRun with --force to confirm deletion.');
-    return;
-  }
+	// Confirmation gate — same shape as `clean`. Default is a dry-run
+	// that describes what would be deleted; `--force` actually deletes.
+	if (!options?.force) {
+		console.log(`This will delete the GitNexus index for: ${entry.name}`);
+		console.log(`   Path:    ${entry.path}`);
+		console.log(`   Storage: ${entry.storagePath}`);
+		console.log("\nRun with --force to confirm deletion.");
+		return;
+	}
 
-  // Safety guard (#1003 review — @magyargergo): refuse to proceed if
-  // the registry entry's `storagePath` isn't the canonical
-  // `<entry.path>/.gitnexus` subfolder. `~/.gitnexus/registry.json` is
-  // user-writable, so a corrupted or hand-edited entry could point
-  // storagePath at the repo root, an empty string (→ cwd), a parent
-  // dir, or anywhere else; `fs.rm(recursive: true, force: true)` on
-  // any of those would be a runtime disaster. Bail before touching
-  // disk, with an actionable hint for recovering a broken registry.
-  try {
-    assertSafeStoragePath(entry);
-  } catch (err) {
-    if (err instanceof UnsafeStoragePathError) {
-      cliError(`Error: ${err.message}`);
-      process.exit(1);
-    }
-    throw err;
-  }
+	// Safety guard (#1003 review — @magyargergo): refuse to proceed if
+	// the registry entry's `storagePath` isn't the canonical
+	// `<entry.path>/.gitnexus` subfolder. `~/.gitnexus/registry.json` is
+	// user-writable, so a corrupted or hand-edited entry could point
+	// storagePath at the repo root, an empty string (→ cwd), a parent
+	// dir, or anywhere else; `fs.rm(recursive: true, force: true)` on
+	// any of those would be a runtime disaster. Bail before touching
+	// disk, with an actionable hint for recovering a broken registry.
+	try {
+		assertSafeStoragePath(entry);
+	} catch (err) {
+		if (err instanceof UnsafeStoragePathError) {
+			cliError(`Error: ${err.message}`);
+			process.exit(1);
+		}
+		throw err;
+	}
 
-  // Deletion order: fs.rm first, then unregister. If fs.rm fails mid-way,
-  // the registry entry stays so the user can retry. If fs.rm succeeds but
-  // unregister throws (e.g. ENOSPC on registry write), the entry becomes
-  // orphaned — `listRegisteredRepos({ validate: true })` prunes those on
-  // next read, so the failure is self-healing.
-  try {
-    await fs.rm(entry.storagePath, { recursive: true, force: true });
-    await unregisterRepo(entry.path);
-    console.log(`Removed: ${entry.name}`);
-    console.log(`   Path:    ${entry.path}`);
-    console.log(`   Storage: ${entry.storagePath}`);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    cliError(`Failed to remove ${entry.name}: ${msg}`, { err });
-    process.exit(1);
-  }
+	// Deletion order: fs.rm first, then unregister. If fs.rm fails mid-way,
+	// the registry entry stays so the user can retry. If fs.rm succeeds but
+	// unregister throws (e.g. ENOSPC on registry write), the entry becomes
+	// orphaned — `listRegisteredRepos({ validate: true })` prunes those on
+	// next read, so the failure is self-healing.
+	try {
+		await fs.rm(entry.storagePath, { recursive: true, force: true });
+		await unregisterRepo(entry.path);
+		console.log(`Removed: ${entry.name}`);
+		console.log(`   Path:    ${entry.path}`);
+		console.log(`   Storage: ${entry.storagePath}`);
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : String(err);
+		cliError(`Failed to remove ${entry.name}: ${msg}`, { err });
+		process.exit(1);
+	}
 };

@@ -1,23 +1,29 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FolderGit2, Loader2, RefreshCw, Settings2, Sparkles, Trash2 } from '@/lib/lucide-icons';
 import {
 	defineSettingsRegistry,
 	SettingsDialog,
-} from '@beskid/ui-react/settings';
-
-import { Button } from '#/components/ui/button';
-import { Input } from '#/components/ui/input';
-import { Textarea } from '#/components/ui/textarea';
+} from "@beskid/ui-react/settings";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import { Textarea } from "#/components/ui/textarea";
 import {
+	FolderGit2,
+	Loader2,
+	RefreshCw,
+	Settings2,
+	Sparkles,
+	Trash2,
+} from "@/lib/lucide-icons";
+import {
+	type AuthUser,
 	analyzeCatalogEntry,
+	type CatalogEntry,
 	createCatalogEntry,
 	deleteCatalogEntry,
 	fetchAdminCatalog,
 	fetchOpenRouterSettings,
 	updateOpenRouterSettings,
-	type AuthUser,
-	type CatalogEntry,
-} from '../services/nexus-api';
+} from "../services/nexus-api";
 
 type NexusSettingsValues = {
 	apiKey: string;
@@ -37,13 +43,16 @@ function RepositoriesPanel({
 	const [entries, setEntries] = useState<CatalogEntry[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [displayName, setDisplayName] = useState('');
-	const [description, setDescription] = useState('');
-	const [gitUrl, setGitUrl] = useState('');
+	const [displayName, setDisplayName] = useState("");
+	const [description, setDescription] = useState("");
+	const [gitUrl, setGitUrl] = useState("");
 	const [analyzingId, setAnalyzingId] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 
-	const ownedIds = useMemo(() => new Set(authUser.ownedRepoIds ?? []), [authUser.ownedRepoIds]);
+	const ownedIds = useMemo(
+		() => new Set(authUser.ownedRepoIds ?? []),
+		[authUser.ownedRepoIds],
+	);
 
 	const loadCatalog = useCallback(async () => {
 		setLoading(true);
@@ -52,7 +61,7 @@ function RepositoriesPanel({
 			const data = await fetchAdminCatalog();
 			setEntries(data);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to load catalog');
+			setError(err instanceof Error ? err.message : "Failed to load catalog");
 		} finally {
 			setLoading(false);
 		}
@@ -63,9 +72,9 @@ function RepositoriesPanel({
 	}, [loadCatalog]);
 
 	const resetForm = () => {
-		setDisplayName('');
-		setDescription('');
-		setGitUrl('');
+		setDisplayName("");
+		setDescription("");
+		setGitUrl("");
 	};
 
 	const handleAdd = async (event: React.FormEvent) => {
@@ -80,7 +89,7 @@ function RepositoriesPanel({
 			await loadCatalog();
 			onCatalogChanged?.();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to add repository');
+			setError(err instanceof Error ? err.message : "Failed to add repository");
 		} finally {
 			setAnalyzingId(null);
 			setSubmitting(false);
@@ -95,7 +104,7 @@ function RepositoriesPanel({
 			await loadCatalog();
 			onCatalogChanged?.();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Re-index failed');
+			setError(err instanceof Error ? err.message : "Re-index failed");
 		} finally {
 			setAnalyzingId(null);
 		}
@@ -109,19 +118,27 @@ function RepositoriesPanel({
 			await loadCatalog();
 			onCatalogChanged?.();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Delete failed');
+			setError(err instanceof Error ? err.message : "Delete failed");
 		}
 	};
 
-	const canDelete = (entryId: string) => authUser.isAdmin || ownedIds.has(entryId);
+	const canDelete = (entryId: string) =>
+		authUser.isAdmin || ownedIds.has(entryId);
 
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between gap-2">
 				<p className="text-muted-foreground text-sm">
-					Register repositories and trigger re-index jobs. Add requires GitHub ownership.
+					Register repositories and trigger re-index jobs. Add requires GitHub
+					ownership.
 				</p>
-				<Button type="button" size="sm" variant="outline" disabled={loading} onClick={() => void loadCatalog()}>
+				<Button
+					type="button"
+					size="sm"
+					variant="outline"
+					disabled={loading}
+					onClick={() => void loadCatalog()}
+				>
 					<RefreshCw className="mr-1.5 size-3.5" />
 					Refresh
 				</Button>
@@ -129,7 +146,10 @@ function RepositoriesPanel({
 
 			{error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-			<form onSubmit={(e) => void handleAdd(e)} className="space-y-3 rounded-xl bg-muted/20 p-4">
+			<form
+				onSubmit={(e) => void handleAdd(e)}
+				className="space-y-3 rounded-xl bg-muted/20 p-4"
+			>
 				<h3 className="text-sm font-medium">Add repository</h3>
 				<Input
 					required
@@ -152,7 +172,7 @@ function RepositoriesPanel({
 				/>
 				<Button type="submit" className="w-full" disabled={submitting}>
 					<Sparkles className="mr-2 size-4" />
-					{submitting ? 'Adding…' : 'Add and index'}
+					{submitting ? "Adding…" : "Add and index"}
 				</Button>
 			</form>
 
@@ -170,10 +190,14 @@ function RepositoriesPanel({
 						>
 							<div className="min-w-0">
 								<p className="font-medium">{entry.displayName}</p>
-								<p className="truncate font-mono text-[10px] text-muted-foreground">{entry.gitUrl}</p>
+								<p className="truncate font-mono text-[10px] text-muted-foreground">
+									{entry.gitUrl}
+								</p>
 								<p className="text-[10px] text-muted-foreground">
-									{entry.lastIndexedCommit ? 'Indexed' : 'Pending index'}
-									{entry.lastIndexedCommit ? ` · ${entry.lastIndexedCommit.slice(0, 7)}` : ''}
+									{entry.lastIndexedCommit ? "Indexed" : "Pending index"}
+									{entry.lastIndexedCommit
+										? ` · ${entry.lastIndexedCommit.slice(0, 7)}`
+										: ""}
 								</p>
 							</div>
 							<div className="flex shrink-0 gap-2">
@@ -184,7 +208,7 @@ function RepositoriesPanel({
 									disabled={analyzingId === entry.id}
 									onClick={() => void handleAnalyze(entry.id)}
 								>
-									{analyzingId === entry.id ? '…' : 'Re-index'}
+									{analyzingId === entry.id ? "…" : "Re-index"}
 								</Button>
 								{canDelete(entry.id) ? (
 									<Button
@@ -203,7 +227,9 @@ function RepositoriesPanel({
 					))}
 				</ul>
 			) : (
-				<p className="text-muted-foreground text-sm">No repositories in the catalog yet.</p>
+				<p className="text-muted-foreground text-sm">
+					No repositories in the catalog yet.
+				</p>
 			)}
 
 			{analyzingId ? (
@@ -220,21 +246,24 @@ function buildRegistry(authUser: AuthUser, onCatalogChanged?: () => void) {
 	return defineSettingsRegistry<NexusSettingsValues>({
 		groups: [
 			{
-				id: 'repositories',
-				label: 'Repositories',
+				id: "repositories",
+				label: "Repositories",
 				icon: FolderGit2,
 				sections: [
 					{
-						id: 'catalog',
-						title: 'Catalog',
-						description: 'Manage indexed repositories for this Nexus instance.',
+						id: "catalog",
+						title: "Catalog",
+						description: "Manage indexed repositories for this Nexus instance.",
 						fields: [
 							{
-								id: 'repoPlaceholder',
-								kind: 'custom',
-								label: 'Repositories',
+								id: "repoPlaceholder",
+								kind: "custom",
+								label: "Repositories",
 								render: () => (
-									<RepositoriesPanel authUser={authUser} onCatalogChanged={onCatalogChanged} />
+									<RepositoriesPanel
+										authUser={authUser}
+										onCatalogChanged={onCatalogChanged}
+									/>
 								),
 							},
 						],
@@ -242,38 +271,38 @@ function buildRegistry(authUser: AuthUser, onCatalogChanged?: () => void) {
 				],
 			},
 			{
-				id: 'openrouter',
-				label: 'OpenRouter',
+				id: "openrouter",
+				label: "OpenRouter",
 				icon: Sparkles,
 				sections: [
 					{
-						id: 'inference',
-						title: 'Code documentation',
+						id: "inference",
+						title: "Code documentation",
 						description:
-							'Server-side code-doc pipeline uses OpenRouter free model only (no cost to users).',
-						keywords: ['openrouter', 'api', 'model', 'inference'],
+							"Server-side code-doc pipeline uses OpenRouter free model only (no cost to users).",
+						keywords: ["openrouter", "api", "model", "inference"],
 						fields: [
 							{
-								id: 'configured',
-								kind: 'readonly',
-								label: 'Status',
+								id: "configured",
+								kind: "readonly",
+								label: "Status",
 							},
 							{
-								id: 'model',
-								kind: 'readonly',
-								label: 'Model',
-								description: 'Locked to the free OpenRouter router model.',
+								id: "model",
+								kind: "readonly",
+								label: "Model",
+								description: "Locked to the free OpenRouter router model.",
 							},
 							{
-								id: 'apiKeyMasked',
-								kind: 'readonly',
-								label: 'Current API key',
+								id: "apiKeyMasked",
+								kind: "readonly",
+								label: "Current API key",
 							},
 							{
-								id: 'apiKey',
-								kind: 'password',
-								label: 'API key',
-								placeholder: 'Leave blank to keep current key',
+								id: "apiKey",
+								kind: "password",
+								label: "API key",
+								placeholder: "Leave blank to keep current key",
 							},
 						],
 					},
@@ -300,7 +329,7 @@ export function NexusSettingsHeaderButton({
 	return (
 		<Button
 			type="button"
-			variant={open ? 'secondary' : 'ghost'}
+			variant={open ? "secondary" : "ghost"}
 			size="icon-sm"
 			className="relative shrink-0"
 			onClick={() => onOpenChange(!open)}
@@ -338,11 +367,11 @@ export function NexusSettingsDialog({
 
 	const values = useMemo((): NexusSettingsValues => {
 		return {
-			apiKey: '',
-			model: openRouterSettings?.model ?? 'openrouter/free',
-			configured: openRouterSettings?.configured ? 'Configured' : 'Not configured',
-			apiKeyMasked: openRouterSettings?.apiKeyMasked ?? '—',
-			repoPlaceholder: '',
+			apiKey: "",
+			model: openRouterSettings?.model ?? "openrouter/free",
+			configured: openRouterSettings?.configured ? "Configured" : "Not configured",
+			apiKeyMasked: openRouterSettings?.apiKeyMasked ?? "—",
+			repoPlaceholder: "",
 		};
 	}, [openRouterSettings]);
 

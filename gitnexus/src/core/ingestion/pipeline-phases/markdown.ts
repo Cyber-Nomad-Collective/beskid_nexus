@@ -8,52 +8,56 @@
  * @writes  graph (Markdown section nodes + cross-link edges)
  */
 
-import type { PipelinePhase, PipelineContext, PhaseResult } from './types.js';
-import { getPhaseOutput } from './types.js';
-import { processMarkdown } from '../markdown-processor.js';
-import { readFileContents } from '../filesystem-walker.js';
-import type { StructureOutput } from './structure.js';
-import { isDev } from '../utils/env.js';
-
-import { logger } from '../../logger.js';
+import { logger } from "../../logger.js";
+import { readFileContents } from "../filesystem-walker.js";
+import { processMarkdown } from "../markdown-processor.js";
+import { isDev } from "../utils/env.js";
+import type { StructureOutput } from "./structure.js";
+import type { PhaseResult, PipelineContext, PipelinePhase } from "./types.js";
+import { getPhaseOutput } from "./types.js";
 export interface MarkdownOutput {
-  /** Number of markdown sections extracted. */
-  sections: number;
-  /** Number of cross-links created. */
-  links: number;
+	/** Number of markdown sections extracted. */
+	sections: number;
+	/** Number of cross-links created. */
+	links: number;
 }
 
 export const markdownPhase: PipelinePhase<MarkdownOutput> = {
-  name: 'markdown',
-  deps: ['structure'],
+	name: "markdown",
+	deps: ["structure"],
 
-  async execute(
-    ctx: PipelineContext,
-    deps: ReadonlyMap<string, PhaseResult<unknown>>,
-  ): Promise<MarkdownOutput> {
-    const { scannedFiles, allPathSet } = getPhaseOutput<StructureOutput>(deps, 'structure');
+	async execute(
+		ctx: PipelineContext,
+		deps: ReadonlyMap<string, PhaseResult<unknown>>,
+	): Promise<MarkdownOutput> {
+		const { scannedFiles, allPathSet } = getPhaseOutput<StructureOutput>(
+			deps,
+			"structure",
+		);
 
-    const mdScanned = scannedFiles.filter((f) => f.path.endsWith('.md') || f.path.endsWith('.mdx'));
+		const mdScanned = scannedFiles.filter(
+			(f) => f.path.endsWith(".md") || f.path.endsWith(".mdx"),
+		);
 
-    if (mdScanned.length === 0) {
-      return { sections: 0, links: 0 };
-    }
+		if (mdScanned.length === 0) {
+			return { sections: 0, links: 0 };
+		}
 
-    const mdContents = await readFileContents(
-      ctx.repoPath,
-      mdScanned.map((f) => f.path),
-    );
-    const mdFiles = mdScanned
-      .filter((f) => mdContents.has(f.path))
-      .map((f) => ({ path: f.path, content: mdContents.get(f.path)! }));
-    const mdResult = processMarkdown(ctx.graph, mdFiles, allPathSet);
+		const mdContents = await readFileContents(
+			ctx.repoPath,
+			mdScanned.map((f) => f.path),
+		);
+		const mdFiles = mdScanned
+			.filter((f) => mdContents.has(f.path))
+			.map((f) => ({ path: f.path, content: mdContents.get(f.path)! }));
+		const mdResult = processMarkdown(ctx.graph, mdFiles, allPathSet);
 
-    if (isDev) {
-      logger.info(
-        `  Markdown: ${mdResult.sections} sections, ${mdResult.links} cross-links from ${mdFiles.length} files`,
-      );
-    }
+		if (isDev) {
+			logger.info(
+				`  Markdown: ${mdResult.sections} sections, ${mdResult.links} cross-links from ${mdFiles.length} files`,
+			);
+		}
 
-    return { sections: mdResult.sections, links: mdResult.links };
-  },
+		return { sections: mdResult.sections, links: mdResult.links };
+	},
 };

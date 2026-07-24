@@ -1,4 +1,4 @@
-import { Bar } from './components';
+import { Bar } from "./components";
 
 // Paired JSX element (`<Bar>...</Bar>`). The query captures
 // `jsx_opening_element` (NOT `jsx_closing_element`) so each JSX use

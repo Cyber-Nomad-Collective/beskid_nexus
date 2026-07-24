@@ -43,18 +43,19 @@
 // arguments-containing-call_expression on the value side, which has its
 // own trade-offs (which level wins the name?).
 
-import { helper } from './helpers';
+import { helper } from "./helpers";
 
 const memo = <P,>(render: (props: P) => unknown) => render;
-const forwardRef = <T, P>(render: (props: P, ref: T | null) => unknown) => render;
+const forwardRef = <T, P>(render: (props: P, ref: T | null) => unknown) =>
+	render;
 
 interface DeepProps {
-  label: string;
+	label: string;
 }
 
 export const Wrapped = memo(
-  forwardRef<HTMLDivElement, DeepProps>(({ label }, _ref) => {
-    helper(label);
-    return null;
-  }),
+	forwardRef<HTMLDivElement, DeepProps>(({ label }, _ref) => {
+		helper(label);
+		return null;
+	}),
 );

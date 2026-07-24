@@ -22,13 +22,13 @@
 // def. Calls inside `removeItem` now stop at `removeItem`'s arrow scope,
 // resolve to `removeItem`, and the per-action attribution is correct.
 
-import { create, persist } from './store';
+import { create, persist } from "./store";
 
 interface MultiAction {
-  readonly count: number;
-  readonly addItem: (item: number) => void;
-  readonly removeItem: (item: number) => void;
-  readonly fetchData: () => void;
+	readonly count: number;
+	readonly addItem: (item: number) => void;
+	readonly removeItem: (item: number) => void;
+	readonly fetchData: () => void;
 }
 
 export const doA = (_item: number): void => {};
@@ -36,18 +36,18 @@ export const doB = (_item: number): void => {};
 export const doC = (): void => {};
 
 export const useMultiActionStore = create<MultiAction>()(
-  persist((set) => ({
-    count: 0,
-    addItem: (item) => {
-      doA(item);
-      set({ count: 1 });
-    },
-    removeItem: (item) => {
-      doB(item);
-      set({ count: 0 });
-    },
-    fetchData: () => {
-      doC();
-    },
-  })),
+	persist((set) => ({
+		count: 0,
+		addItem: (item) => {
+			doA(item);
+			set({ count: 1 });
+		},
+		removeItem: (item) => {
+			doB(item);
+			set({ count: 0 });
+		},
+		fetchData: () => {
+			doC();
+		},
+	})),
 );

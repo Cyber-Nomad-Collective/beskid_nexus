@@ -9,5 +9,5 @@
  * nuke every circuit breaker process-wide.
  */
 
-export { __resetBreakerRegistry__ } from './integrations/circuit-breaker.js';
-export { classifyOutcome } from './integrations/resilient-fetch.js';
+export { __resetBreakerRegistry__ } from "./integrations/circuit-breaker.js";
+export { classifyOutcome } from "./integrations/resilient-fetch.js";

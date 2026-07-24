@@ -54,56 +54,60 @@ export type IndependentFileGroup = readonly string[];
  * @returns          Levels (topologically ordered groups, leaves first)
  *                   and count of files in cycles
  */
-export function topologicalLevelSort(importMap: ReadonlyMap<string, ReadonlySet<string>>): {
-  levels: readonly IndependentFileGroup[];
-  cycleCount: number;
+export function topologicalLevelSort(
+	importMap: ReadonlyMap<string, ReadonlySet<string>>,
+): {
+	levels: readonly IndependentFileGroup[];
+	cycleCount: number;
 } {
-  // Per-file count of imports that have not yet been emitted in an earlier
-  // level. See JSDoc above for why this is **not** standard `inDegree`.
-  const pendingImportsPerFile = new Map<string, number>();
-  const reverseDeps = new Map<string, string[]>();
+	// Per-file count of imports that have not yet been emitted in an earlier
+	// level. See JSDoc above for why this is **not** standard `inDegree`.
+	const pendingImportsPerFile = new Map<string, number>();
+	const reverseDeps = new Map<string, string[]>();
 
-  for (const [file, deps] of importMap) {
-    if (!pendingImportsPerFile.has(file)) pendingImportsPerFile.set(file, 0);
-    for (const dep of deps) {
-      if (!pendingImportsPerFile.has(dep)) pendingImportsPerFile.set(dep, 0);
-      pendingImportsPerFile.set(file, (pendingImportsPerFile.get(file) ?? 0) + 1);
-      let rev = reverseDeps.get(dep);
-      if (!rev) {
-        rev = [];
-        reverseDeps.set(dep, rev);
-      }
-      rev.push(file);
-    }
-  }
+	for (const [file, deps] of importMap) {
+		if (!pendingImportsPerFile.has(file)) pendingImportsPerFile.set(file, 0);
+		for (const dep of deps) {
+			if (!pendingImportsPerFile.has(dep)) pendingImportsPerFile.set(dep, 0);
+			pendingImportsPerFile.set(file, (pendingImportsPerFile.get(file) ?? 0) + 1);
+			let rev = reverseDeps.get(dep);
+			if (!rev) {
+				rev = [];
+				reverseDeps.set(dep, rev);
+			}
+			rev.push(file);
+		}
+	}
 
-  const levels: string[][] = [];
-  // Level 0: files with no un-emitted imports (true leaves of the import graph).
-  let currentLevel = [...pendingImportsPerFile.entries()]
-    .filter(([, d]) => d === 0)
-    .map(([f]) => f);
+	const levels: string[][] = [];
+	// Level 0: files with no un-emitted imports (true leaves of the import graph).
+	let currentLevel = [...pendingImportsPerFile.entries()]
+		.filter(([, d]) => d === 0)
+		.map(([f]) => f);
 
-  while (currentLevel.length > 0) {
-    levels.push(currentLevel);
-    const nextLevel: string[] = [];
-    for (const file of currentLevel) {
-      // For each importer of `file`, one of its pending imports just got
-      // emitted — decrement the importer's pending count. If it hits 0,
-      // the importer is ready for the next level.
-      for (const dependent of reverseDeps.get(file) ?? []) {
-        const newPending = (pendingImportsPerFile.get(dependent) ?? 1) - 1;
-        pendingImportsPerFile.set(dependent, newPending);
-        if (newPending === 0) nextLevel.push(dependent);
-      }
-    }
-    currentLevel = nextLevel;
-  }
+	while (currentLevel.length > 0) {
+		levels.push(currentLevel);
+		const nextLevel: string[] = [];
+		for (const file of currentLevel) {
+			// For each importer of `file`, one of its pending imports just got
+			// emitted — decrement the importer's pending count. If it hits 0,
+			// the importer is ready for the next level.
+			for (const dependent of reverseDeps.get(file) ?? []) {
+				const newPending = (pendingImportsPerFile.get(dependent) ?? 1) - 1;
+				pendingImportsPerFile.set(dependent, newPending);
+				if (newPending === 0) nextLevel.push(dependent);
+			}
+		}
+		currentLevel = nextLevel;
+	}
 
-  // Anything still > 0 participates in a cycle — append in undefined order.
-  const cycleFiles = [...pendingImportsPerFile.entries()].filter(([, d]) => d > 0).map(([f]) => f);
-  if (cycleFiles.length > 0) {
-    levels.push(cycleFiles);
-  }
+	// Anything still > 0 participates in a cycle — append in undefined order.
+	const cycleFiles = [...pendingImportsPerFile.entries()]
+		.filter(([, d]) => d > 0)
+		.map(([f]) => f);
+	if (cycleFiles.length > 0) {
+		levels.push(cycleFiles);
+	}
 
-  return { levels, cycleCount: cycleFiles.length };
+	return { levels, cycleCount: cycleFiles.length };
 }

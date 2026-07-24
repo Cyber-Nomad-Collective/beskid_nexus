@@ -36,43 +36,43 @@
  * `isSemanticModelValidatorEnabled()` (`utils/env.ts`).
  */
 
-import type { ScopeResolutionIndexes } from '../../model/scope-resolution-indexes.js';
-import { isSemanticModelValidatorEnabled } from '../../utils/env.js';
+import type { ScopeResolutionIndexes } from "../../model/scope-resolution-indexes.js";
+import { isSemanticModelValidatorEnabled } from "../../utils/env.js";
 
 export function validateBindingsImmutability(
-  indexes: ScopeResolutionIndexes,
-  onWarn: (message: string) => void,
+	indexes: ScopeResolutionIndexes,
+	onWarn: (message: string) => void,
 ): number {
-  if (!isSemanticModelValidatorEnabled()) return 0;
+	if (!isSemanticModelValidatorEnabled()) return 0;
 
-  let violations = 0;
+	let violations = 0;
 
-  for (const [scopeId, bucketMap] of indexes.bindings) {
-    for (const [name, bucket] of bucketMap) {
-      if (!Object.isFrozen(bucket)) {
-        onWarn(
-          `binding-immutability: indexes.bindings[${scopeId}][${name}] is NOT frozen — ` +
-            `finalize produced a mutable bucket OR a post-finalize hook replaced a frozen ` +
-            `bucket with a mutable one. Hooks must write to indexes.bindingAugmentations ` +
-            `instead. See ScopeResolver Invariant I8.`,
-        );
-        violations++;
-      }
-    }
-  }
+	for (const [scopeId, bucketMap] of indexes.bindings) {
+		for (const [name, bucket] of bucketMap) {
+			if (!Object.isFrozen(bucket)) {
+				onWarn(
+					`binding-immutability: indexes.bindings[${scopeId}][${name}] is NOT frozen — ` +
+						`finalize produced a mutable bucket OR a post-finalize hook replaced a frozen ` +
+						`bucket with a mutable one. Hooks must write to indexes.bindingAugmentations ` +
+						`instead. See ScopeResolver Invariant I8.`,
+				);
+				violations++;
+			}
+		}
+	}
 
-  for (const [scopeId, bucketMap] of indexes.bindingAugmentations) {
-    for (const [name, bucket] of bucketMap) {
-      if (Object.isFrozen(bucket)) {
-        onWarn(
-          `binding-immutability: indexes.bindingAugmentations[${scopeId}][${name}] is FROZEN — ` +
-            `the augmentation channel is mutable by contract; freezing it defeats the ` +
-            `append-only purpose. See ScopeResolver Invariant I8.`,
-        );
-        violations++;
-      }
-    }
-  }
+	for (const [scopeId, bucketMap] of indexes.bindingAugmentations) {
+		for (const [name, bucket] of bucketMap) {
+			if (Object.isFrozen(bucket)) {
+				onWarn(
+					`binding-immutability: indexes.bindingAugmentations[${scopeId}][${name}] is FROZEN — ` +
+						`the augmentation channel is mutable by contract; freezing it defeats the ` +
+						`append-only purpose. See ScopeResolver Invariant I8.`,
+				);
+				violations++;
+			}
+		}
+	}
 
-  return violations;
+	return violations;
 }

@@ -1,10 +1,10 @@
-import { User } from './user';
-import { Repo } from './repo';
+import type { Repo } from "./repo";
+import type { User } from "./user";
 
 export function handleUser(entity: User): void {
-  entity.save();
+	entity.save();
 }
 
 export function handleRepo(entity: Repo): void {
-  entity.save();
+	entity.save();
 }

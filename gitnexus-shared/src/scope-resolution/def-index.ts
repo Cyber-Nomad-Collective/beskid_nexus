@@ -11,14 +11,14 @@
  * Consumed by: #917 (`Registry.lookup` implementations), #915 (SCC finalize).
  */
 
-import type { SymbolDefinition } from './symbol-definition.js';
-import type { DefId } from './types.js';
+import type { SymbolDefinition } from "./symbol-definition.js";
+import type { DefId } from "./types.js";
 
 export interface DefIndex {
-  readonly byId: ReadonlyMap<DefId, SymbolDefinition>;
-  readonly size: number;
-  get(id: DefId): SymbolDefinition | undefined;
-  has(id: DefId): boolean;
+	readonly byId: ReadonlyMap<DefId, SymbolDefinition>;
+	readonly size: number;
+	get(id: DefId): SymbolDefinition | undefined;
+	has(id: DefId): boolean;
 }
 
 /**
@@ -36,27 +36,27 @@ export interface DefIndex {
  * Pure function — safe to call repeatedly; no side effects.
  */
 export function buildDefIndex(defs: readonly SymbolDefinition[]): DefIndex {
-  const byId = new Map<DefId, SymbolDefinition>();
-  for (const def of defs) {
-    if (byId.has(def.nodeId)) continue; // first-write-wins
-    byId.set(def.nodeId, def);
-  }
-  return wrapIndex(byId);
+	const byId = new Map<DefId, SymbolDefinition>();
+	for (const def of defs) {
+		if (byId.has(def.nodeId)) continue; // first-write-wins
+		byId.set(def.nodeId, def);
+	}
+	return wrapIndex(byId);
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
 
 function wrapIndex(byId: Map<DefId, SymbolDefinition>): DefIndex {
-  return {
-    byId,
-    get size() {
-      return byId.size;
-    },
-    get(id: DefId): SymbolDefinition | undefined {
-      return byId.get(id);
-    },
-    has(id: DefId): boolean {
-      return byId.has(id);
-    },
-  };
+	return {
+		byId,
+		get size() {
+			return byId.size;
+		},
+		get(id: DefId): SymbolDefinition | undefined {
+			return byId.get(id);
+		},
+		has(id: DefId): boolean {
+			return byId.has(id);
+		},
+	};
 }

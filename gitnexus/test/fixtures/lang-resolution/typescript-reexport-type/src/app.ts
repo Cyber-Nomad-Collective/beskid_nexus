@@ -1,9 +1,9 @@
-import type { User, Repo } from './models';
+import type { Repo, User } from "./models";
 
 function main(): void {
-  const user = new User();
-  user.save();
+	const user = new User();
+	user.save();
 
-  const repo = new Repo();
-  repo.persist();
+	const repo = new Repo();
+	repo.persist();
 }

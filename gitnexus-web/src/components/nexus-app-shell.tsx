@@ -1,14 +1,13 @@
-import { BeskidHub } from '@beskid/beskid-ui/react/BeskidHub';
-import { type ReactNode, useState } from 'react';
-
-import { ThemeToggle } from './theme-toggle';
-import { ConnectMcpDialog } from './connect-mcp-dialog';
+import { BeskidHub } from "@beskid/beskid-ui/react/BeskidHub";
+import { type ReactNode, useState } from "react";
+import { Button } from "#/components/ui/button";
+import type { AuthUser } from "../services/nexus-api";
+import { ConnectMcpDialog } from "./connect-mcp-dialog";
 import {
 	NexusSettingsDialog,
 	NexusSettingsHeaderButton,
-} from './nexus-settings-dialog';
-import { Button } from '#/components/ui/button';
-import type { AuthUser } from '../services/nexus-api';
+} from "./nexus-settings-dialog";
+import { ThemeToggle } from "./theme-toggle";
 
 export interface NexusAppShellProps {
 	repoSelector?: ReactNode;
@@ -50,14 +49,26 @@ export function NexusAppShell({
 					{search}
 					{actions}
 					{authUser?.isAdmin ? (
-						<NexusSettingsHeaderButton open={settingsOpen} onOpenChange={setSettingsOpen} />
+						<NexusSettingsHeaderButton
+							open={settingsOpen}
+							onOpenChange={setSettingsOpen}
+						/>
 					) : null}
 					{authUser ? (
 						<>
-							<Button type="button" variant="outline" size="sm" onClick={() => setMcpOpen(true)}>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setMcpOpen(true)}
+							>
 								Connect MCP
 							</Button>
-							<ConnectMcpDialog open={mcpOpen} onOpenChange={setMcpOpen} mcpUrl={mcpUrl} />
+							<ConnectMcpDialog
+								open={mcpOpen}
+								onOpenChange={setMcpOpen}
+								mcpUrl={mcpUrl}
+							/>
 						</>
 					) : null}
 					<ThemeToggle />

@@ -14,32 +14,32 @@
  */
 
 export interface EmbeddingModeInput {
-  force?: boolean;
-  embeddings?: boolean;
-  dropEmbeddings?: boolean;
+	force?: boolean;
+	embeddings?: boolean;
+	dropEmbeddings?: boolean;
 }
 
 export interface EmbeddingMode {
-  /** True when phase 4 should run the embedding generation pipeline. */
-  shouldGenerateEmbeddings: boolean;
-  /** True when we should load the cache to re-insert vectors after rebuild without generating new ones. */
-  preserveExistingEmbeddings: boolean;
-  /** True when `--force` upgraded a default analyze into a regeneration because the repo was already embedded. */
-  forceRegenerateEmbeddings: boolean;
-  /** True when we need to load cached embeddings from the existing DB before the rebuild. */
-  shouldLoadCache: boolean;
+	/** True when phase 4 should run the embedding generation pipeline. */
+	shouldGenerateEmbeddings: boolean;
+	/** True when we should load the cache to re-insert vectors after rebuild without generating new ones. */
+	preserveExistingEmbeddings: boolean;
+	/** True when `--force` upgraded a default analyze into a regeneration because the repo was already embedded. */
+	forceRegenerateEmbeddings: boolean;
+	/** True when we need to load cached embeddings from the existing DB before the rebuild. */
+	shouldLoadCache: boolean;
 }
 
 /** Default safety cap on graph node count for embedding generation. */
 export const DEFAULT_EMBEDDING_NODE_LIMIT = 50_000;
 
 export interface EmbeddingCapDecision {
-  /** True when the node-count cap blocks generation for this graph. */
-  skipForCap: boolean;
-  /** True when the user explicitly disabled the cap (`--embeddings 0`). */
-  capDisabled: boolean;
-  /** Effective node limit applied (`0` means disabled). */
-  nodeLimit: number;
+	/** True when the node-count cap blocks generation for this graph. */
+	skipForCap: boolean;
+	/** True when the user explicitly disabled the cap (`--embeddings 0`). */
+	capDisabled: boolean;
+	/** Effective node limit applied (`0` means disabled). */
+	nodeLimit: number;
 }
 
 /**
@@ -53,34 +53,35 @@ export interface EmbeddingCapDecision {
  * contract is unit-testable without spinning up LadybugDB or the pipeline.
  */
 export function deriveEmbeddingCap(
-  nodeCount: number,
-  embeddingsNodeLimit: number | undefined,
+	nodeCount: number,
+	embeddingsNodeLimit: number | undefined,
 ): EmbeddingCapDecision {
-  const nodeLimit = embeddingsNodeLimit ?? DEFAULT_EMBEDDING_NODE_LIMIT;
-  const capDisabled = nodeLimit === 0;
-  const skipForCap = !capDisabled && nodeCount > nodeLimit;
-  return { skipForCap, capDisabled, nodeLimit };
+	const nodeLimit = embeddingsNodeLimit ?? DEFAULT_EMBEDDING_NODE_LIMIT;
+	const capDisabled = nodeLimit === 0;
+	const skipForCap = !capDisabled && nodeCount > nodeLimit;
+	return { skipForCap, capDisabled, nodeLimit };
 }
 
 export function deriveEmbeddingMode(
-  options: EmbeddingModeInput,
-  existingEmbeddingCount: number,
+	options: EmbeddingModeInput,
+	existingEmbeddingCount: number,
 ): EmbeddingMode {
-  const hasExisting = existingEmbeddingCount > 0;
-  const drop = !!options.dropEmbeddings;
-  const explicit = !!options.embeddings;
-  const force = !!options.force;
+	const hasExisting = existingEmbeddingCount > 0;
+	const drop = !!options.dropEmbeddings;
+	const explicit = !!options.embeddings;
+	const force = !!options.force;
 
-  const forceRegenerateEmbeddings = force && !explicit && !drop && hasExisting;
-  const preserveExistingEmbeddings =
-    !explicit && !drop && !forceRegenerateEmbeddings && hasExisting;
-  const shouldGenerateEmbeddings = explicit || forceRegenerateEmbeddings;
-  const shouldLoadCache = !drop && (shouldGenerateEmbeddings || preserveExistingEmbeddings);
+	const forceRegenerateEmbeddings = force && !explicit && !drop && hasExisting;
+	const preserveExistingEmbeddings =
+		!explicit && !drop && !forceRegenerateEmbeddings && hasExisting;
+	const shouldGenerateEmbeddings = explicit || forceRegenerateEmbeddings;
+	const shouldLoadCache =
+		!drop && (shouldGenerateEmbeddings || preserveExistingEmbeddings);
 
-  return {
-    shouldGenerateEmbeddings,
-    preserveExistingEmbeddings,
-    forceRegenerateEmbeddings,
-    shouldLoadCache,
-  };
+	return {
+		shouldGenerateEmbeddings,
+		preserveExistingEmbeddings,
+		forceRegenerateEmbeddings,
+		shouldLoadCache,
+	};
 }

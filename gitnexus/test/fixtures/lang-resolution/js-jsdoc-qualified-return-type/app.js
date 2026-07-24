@@ -1,13 +1,13 @@
-const { User } = require('./user');
+const { User } = require("./user");
 
 /**
  * @returns {Promise<models.User>}
  */
 async function fetchUser(name) {
-  return new User(name);
+	return new User(name);
 }
 
 async function processUser() {
-  const user = await fetchUser('alice');
-  user.save();
+	const user = await fetchUser("alice");
+	user.save();
 }

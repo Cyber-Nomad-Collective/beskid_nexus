@@ -46,38 +46,38 @@
  */
 
 import type {
-  NodeLabel,
-  RelationshipType,
-  Reference,
-  ReferenceIndex,
-  ResolutionEvidence,
-  Scope,
-  ScopeId,
-  SymbolDefinition,
-} from 'gitnexus-shared';
-import type { KnowledgeGraph } from '../graph/types.js';
-import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js';
+	NodeLabel,
+	Reference,
+	ReferenceIndex,
+	RelationshipType,
+	ResolutionEvidence,
+	Scope,
+	ScopeId,
+	SymbolDefinition,
+} from "gitnexus-shared";
+import type { KnowledgeGraph } from "../graph/types.js";
+import type { ScopeResolutionIndexes } from "./model/scope-resolution-indexes.js";
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 export interface EmitStats {
-  readonly edgesEmitted: number;
-  /** References dropped because no caller def could be resolved. */
-  readonly skippedNoCaller: number;
-  /** References dropped because `toDef` was not found in the DefIndex. */
-  readonly skippedMissingTarget: number;
-  /** Scope nodes emitted — `0` unless `INGESTION_EMIT_SCOPES=1`. */
-  readonly scopeNodesEmitted: number;
-  /** Scope-tree structural edges emitted — `0` unless `INGESTION_EMIT_SCOPES=1`. */
-  readonly scopeEdgesEmitted: number;
+	readonly edgesEmitted: number;
+	/** References dropped because no caller def could be resolved. */
+	readonly skippedNoCaller: number;
+	/** References dropped because `toDef` was not found in the DefIndex. */
+	readonly skippedMissingTarget: number;
+	/** Scope nodes emitted — `0` unless `INGESTION_EMIT_SCOPES=1`. */
+	readonly scopeNodesEmitted: number;
+	/** Scope-tree structural edges emitted — `0` unless `INGESTION_EMIT_SCOPES=1`. */
+	readonly scopeEdgesEmitted: number;
 }
 
 export interface EmitReferencesInput {
-  readonly graph: KnowledgeGraph;
-  readonly scopes: ScopeResolutionIndexes;
-  readonly referenceIndex: ReferenceIndex;
-  /** Human-consumable label for the `reason` prefix. Defaults to `'scope-resolution'`. */
-  readonly sourceLabel?: string;
+	readonly graph: KnowledgeGraph;
+	readonly scopes: ScopeResolutionIndexes;
+	readonly referenceIndex: ReferenceIndex;
+	/** Human-consumable label for the `reason` prefix. Defaults to `'scope-resolution'`. */
+	readonly sourceLabel?: string;
 }
 
 /**
@@ -88,35 +88,37 @@ export interface EmitReferencesInput {
  * without scope-node emission or layer the two calls as needed.
  */
 export function emitReferencesToGraph(input: EmitReferencesInput): EmitStats {
-  const { graph, scopes, referenceIndex } = input;
-  const sourceLabel = input.sourceLabel ?? 'scope-resolution';
+	const { graph, scopes, referenceIndex } = input;
+	const sourceLabel = input.sourceLabel ?? "scope-resolution";
 
-  let edgesEmitted = 0;
-  let skippedNoCaller = 0;
-  let skippedMissingTarget = 0;
+	let edgesEmitted = 0;
+	let skippedNoCaller = 0;
+	let skippedMissingTarget = 0;
 
-  for (const [fromScope, refs] of referenceIndex.bySourceScope) {
-    for (const ref of refs) {
-      const targetDef = scopes.defs.get(ref.toDef);
-      if (targetDef === undefined) {
-        skippedMissingTarget++;
-        continue;
-      }
-      const callerId = resolveCallerNodeId(fromScope, scopes);
-      if (callerId === undefined) {
-        skippedNoCaller++;
-        continue;
-      }
-      graph.addRelationship(buildRelationship(ref, callerId, targetDef, sourceLabel));
-      edgesEmitted++;
-    }
-  }
+	for (const [fromScope, refs] of referenceIndex.bySourceScope) {
+		for (const ref of refs) {
+			const targetDef = scopes.defs.get(ref.toDef);
+			if (targetDef === undefined) {
+				skippedMissingTarget++;
+				continue;
+			}
+			const callerId = resolveCallerNodeId(fromScope, scopes);
+			if (callerId === undefined) {
+				skippedNoCaller++;
+				continue;
+			}
+			graph.addRelationship(
+				buildRelationship(ref, callerId, targetDef, sourceLabel),
+			);
+			edgesEmitted++;
+		}
+	}
 
-  const scopeStats = isScopeEmissionEnabled()
-    ? emitScopeGraph({ graph, scopes })
-    : { scopeNodesEmitted: 0, scopeEdgesEmitted: 0 };
+	const scopeStats = isScopeEmissionEnabled()
+		? emitScopeGraph({ graph, scopes })
+		: { scopeNodesEmitted: 0, scopeEdgesEmitted: 0 };
 
-  return { edgesEmitted, skippedNoCaller, skippedMissingTarget, ...scopeStats };
+	return { edgesEmitted, skippedNoCaller, skippedMissingTarget, ...scopeStats };
 }
 
 /**
@@ -126,79 +128,79 @@ export function emitReferencesToGraph(input: EmitReferencesInput): EmitStats {
  * exercise the path directly.
  */
 export function emitScopeGraph(input: {
-  readonly graph: KnowledgeGraph;
-  readonly scopes: ScopeResolutionIndexes;
+	readonly graph: KnowledgeGraph;
+	readonly scopes: ScopeResolutionIndexes;
 }): { readonly scopeNodesEmitted: number; readonly scopeEdgesEmitted: number } {
-  const { graph, scopes } = input;
-  let scopeNodesEmitted = 0;
-  let scopeEdgesEmitted = 0;
+	const { graph, scopes } = input;
+	let scopeNodesEmitted = 0;
+	let scopeEdgesEmitted = 0;
 
-  for (const scope of scopes.scopeTree.byId.values()) {
-    graph.addNode({
-      id: scope.id,
-      label: 'CodeElement' as NodeLabel, // the generic bucket for non-symbol graph nodes
-      properties: {
-        name: scope.kind,
-        filePath: scope.filePath,
-        startLine: scope.range.startLine,
-        endLine: scope.range.endLine,
-        description: `Scope: ${scope.kind}`,
-      } as unknown as Parameters<KnowledgeGraph['addNode']>[0]['properties'],
-    });
-    scopeNodesEmitted++;
+	for (const scope of scopes.scopeTree.byId.values()) {
+		graph.addNode({
+			id: scope.id,
+			label: "CodeElement" as NodeLabel, // the generic bucket for non-symbol graph nodes
+			properties: {
+				name: scope.kind,
+				filePath: scope.filePath,
+				startLine: scope.range.startLine,
+				endLine: scope.range.endLine,
+				description: `Scope: ${scope.kind}`,
+			} as unknown as Parameters<KnowledgeGraph["addNode"]>[0]["properties"],
+		});
+		scopeNodesEmitted++;
 
-    if (scope.parent !== null) {
-      graph.addRelationship({
-        id: `rel:contains:${scope.parent}->${scope.id}`,
-        sourceId: scope.parent,
-        targetId: scope.id,
-        type: 'CONTAINS',
-        confidence: 1,
-        reason: 'scope-tree parent/child',
-      });
-      scopeEdgesEmitted++;
-    }
+		if (scope.parent !== null) {
+			graph.addRelationship({
+				id: `rel:contains:${scope.parent}->${scope.id}`,
+				sourceId: scope.parent,
+				targetId: scope.id,
+				type: "CONTAINS",
+				confidence: 1,
+				reason: "scope-tree parent/child",
+			});
+			scopeEdgesEmitted++;
+		}
 
-    for (const def of scope.ownedDefs) {
-      graph.addRelationship({
-        id: `rel:defines:${scope.id}->${def.nodeId}`,
-        sourceId: scope.id,
-        targetId: def.nodeId,
-        type: 'DEFINES',
-        confidence: 1,
-        reason: 'scope.ownedDefs',
-      });
-      scopeEdgesEmitted++;
-    }
-  }
+		for (const def of scope.ownedDefs) {
+			graph.addRelationship({
+				id: `rel:defines:${scope.id}->${def.nodeId}`,
+				sourceId: scope.id,
+				targetId: def.nodeId,
+				type: "DEFINES",
+				confidence: 1,
+				reason: "scope.ownedDefs",
+			});
+			scopeEdgesEmitted++;
+		}
+	}
 
-  for (const [scopeId, edges] of scopes.imports) {
-    for (const edge of edges) {
-      if (edge.targetModuleScope === undefined) continue;
-      graph.addRelationship({
-        id: `rel:imports:${scopeId}->${edge.targetModuleScope}:${edge.localName}`,
-        sourceId: scopeId,
-        targetId: edge.targetModuleScope,
-        type: 'IMPORTS',
-        confidence: edge.linkStatus === 'unresolved' ? 0.5 : 1,
-        reason: `import ${edge.kind} ${edge.localName}`,
-      });
-      scopeEdgesEmitted++;
-    }
-  }
+	for (const [scopeId, edges] of scopes.imports) {
+		for (const edge of edges) {
+			if (edge.targetModuleScope === undefined) continue;
+			graph.addRelationship({
+				id: `rel:imports:${scopeId}->${edge.targetModuleScope}:${edge.localName}`,
+				sourceId: scopeId,
+				targetId: edge.targetModuleScope,
+				type: "IMPORTS",
+				confidence: edge.linkStatus === "unresolved" ? 0.5 : 1,
+				reason: `import ${edge.kind} ${edge.localName}`,
+			});
+			scopeEdgesEmitted++;
+		}
+	}
 
-  return { scopeNodesEmitted, scopeEdgesEmitted };
+	return { scopeNodesEmitted, scopeEdgesEmitted };
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
 
 /** Accepted truthy values for `INGESTION_EMIT_SCOPES`. */
-const TRUTHY: ReadonlySet<string> = new Set(['true', '1', 'yes']);
+const TRUTHY: ReadonlySet<string> = new Set(["true", "1", "yes"]);
 
 function isScopeEmissionEnabled(): boolean {
-  const raw = process.env['INGESTION_EMIT_SCOPES'];
-  if (raw === undefined) return false;
-  return TRUTHY.has(raw.trim().toLowerCase());
+	const raw = process.env["INGESTION_EMIT_SCOPES"];
+	if (raw === undefined) return false;
+	return TRUTHY.has(raw.trim().toLowerCase());
 }
 
 /**
@@ -208,61 +210,61 @@ function isScopeEmissionEnabled(): boolean {
  * if none is found; return `undefined` if all ancestors have no defs.
  */
 function resolveCallerNodeId(
-  startScope: ScopeId,
-  scopes: ScopeResolutionIndexes,
+	startScope: ScopeId,
+	scopes: ScopeResolutionIndexes,
 ): string | undefined {
-  const tree = scopes.scopeTree;
-  let current: ScopeId | null = startScope;
-  const visited = new Set<ScopeId>();
-  let firstOwnedFallback: string | undefined;
+	const tree = scopes.scopeTree;
+	let current: ScopeId | null = startScope;
+	const visited = new Set<ScopeId>();
+	let firstOwnedFallback: string | undefined;
 
-  while (current !== null) {
-    if (visited.has(current)) break;
-    visited.add(current);
+	while (current !== null) {
+		if (visited.has(current)) break;
+		visited.add(current);
 
-    const scope: Scope | undefined = tree.getScope(current);
-    if (scope === undefined) break;
+		const scope: Scope | undefined = tree.getScope(current);
+		if (scope === undefined) break;
 
-    // Prefer a Function-like owner.
-    const fnDef = scope.ownedDefs.find((d) => isFunctionLike(d.type));
-    if (fnDef !== undefined) return fnDef.nodeId;
+		// Prefer a Function-like owner.
+		const fnDef = scope.ownedDefs.find((d) => isFunctionLike(d.type));
+		if (fnDef !== undefined) return fnDef.nodeId;
 
-    // Stash the first owned def we see as a conservative fallback.
-    if (firstOwnedFallback === undefined && scope.ownedDefs.length > 0) {
-      firstOwnedFallback = scope.ownedDefs[0]!.nodeId;
-    }
+		// Stash the first owned def we see as a conservative fallback.
+		if (firstOwnedFallback === undefined && scope.ownedDefs.length > 0) {
+			firstOwnedFallback = scope.ownedDefs[0]!.nodeId;
+		}
 
-    current = scope.parent;
-  }
+		current = scope.parent;
+	}
 
-  return firstOwnedFallback;
+	return firstOwnedFallback;
 }
 
 function isFunctionLike(type: NodeLabel): boolean {
-  return type === 'Function' || type === 'Method' || type === 'Constructor';
+	return type === "Function" || type === "Method" || type === "Constructor";
 }
 
 function buildRelationship(
-  ref: Reference,
-  callerId: string,
-  targetDef: SymbolDefinition,
-  sourceLabel: string,
-): Parameters<KnowledgeGraph['addRelationship']>[0] {
-  const type = mapKindToType(ref.kind);
-  const reason = `${sourceLabel}: ${ref.kind} | confidence ${ref.confidence.toFixed(3)}`;
-  // `step` encodes read/write discriminator for ACCESSES edges (1=read, 2=write).
-  // Other kinds omit `step`.
-  const step = ref.kind === 'read' ? 1 : ref.kind === 'write' ? 2 : undefined;
-  return {
-    id: `rel:${type}:${callerId}->${targetDef.nodeId}:${ref.atRange.startLine}:${ref.atRange.startCol}`,
-    sourceId: callerId,
-    targetId: targetDef.nodeId,
-    type,
-    confidence: ref.confidence,
-    reason,
-    evidence: ref.evidence.map(serializeEvidence),
-    ...(step !== undefined ? { step } : {}),
-  };
+	ref: Reference,
+	callerId: string,
+	targetDef: SymbolDefinition,
+	sourceLabel: string,
+): Parameters<KnowledgeGraph["addRelationship"]>[0] {
+	const type = mapKindToType(ref.kind);
+	const reason = `${sourceLabel}: ${ref.kind} | confidence ${ref.confidence.toFixed(3)}`;
+	// `step` encodes read/write discriminator for ACCESSES edges (1=read, 2=write).
+	// Other kinds omit `step`.
+	const step = ref.kind === "read" ? 1 : ref.kind === "write" ? 2 : undefined;
+	return {
+		id: `rel:${type}:${callerId}->${targetDef.nodeId}:${ref.atRange.startLine}:${ref.atRange.startCol}`,
+		sourceId: callerId,
+		targetId: targetDef.nodeId,
+		type,
+		confidence: ref.confidence,
+		reason,
+		evidence: ref.evidence.map(serializeEvidence),
+		...(step !== undefined ? { step } : {}),
+	};
 }
 
 /**
@@ -271,29 +273,29 @@ function buildRelationship(
  * into `USES`. This keeps the graph schema additive — no new
  * RelationshipType values are introduced by this module.
  */
-function mapKindToType(kind: Reference['kind']): RelationshipType {
-  switch (kind) {
-    case 'call':
-      return 'CALLS';
-    case 'read':
-    case 'write':
-      return 'ACCESSES';
-    case 'inherits':
-      return 'INHERITS';
-    case 'type-reference':
-    case 'import-use':
-      return 'USES';
-  }
+function mapKindToType(kind: Reference["kind"]): RelationshipType {
+	switch (kind) {
+		case "call":
+			return "CALLS";
+		case "read":
+		case "write":
+			return "ACCESSES";
+		case "inherits":
+			return "INHERITS";
+		case "type-reference":
+		case "import-use":
+			return "USES";
+	}
 }
 
 function serializeEvidence(e: ResolutionEvidence): {
-  readonly kind: string;
-  readonly weight: number;
-  readonly note?: string;
+	readonly kind: string;
+	readonly weight: number;
+	readonly note?: string;
 } {
-  return {
-    kind: e.kind,
-    weight: e.weight,
-    ...(e.note !== undefined ? { note: e.note } : {}),
-  };
+	return {
+		kind: e.kind,
+		weight: e.weight,
+		...(e.note !== undefined ? { note: e.note } : {}),
+	};
 }

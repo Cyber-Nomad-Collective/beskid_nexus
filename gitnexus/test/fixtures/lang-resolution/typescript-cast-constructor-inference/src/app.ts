@@ -1,10 +1,10 @@
-import { User } from './user';
-import { Repo } from './repo';
+import { Repo } from "./repo";
+import { User } from "./user";
 
 function process() {
-  const user = new User() as any;
-  user.save();
+	const user = new User() as any;
+	user.save();
 
-  const repo = new Repo()!;
-  repo.save();
+	const repo = new Repo()!;
+	repo.save();
 }

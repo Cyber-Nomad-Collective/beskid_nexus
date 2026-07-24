@@ -1,7 +1,7 @@
-import { User } from '../models/User';
+import { User } from "../models/User";
 
 export class UserService {
-  static findUser(): User {
-    return new User();
-  }
+	static findUser(): User {
+		return new User();
+	}
 }

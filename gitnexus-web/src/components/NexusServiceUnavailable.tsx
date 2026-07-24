@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { Loader2, RefreshCw, Sparkles } from '@/lib/lucide-icons';
-import { probeBackend } from '../services/backend-client';
+import { useState } from "react";
+import { Loader2, RefreshCw, Sparkles } from "@/lib/lucide-icons";
+import { probeBackend } from "../services/backend-client";
 
 interface NexusServiceUnavailableProps {
 	onRecovered: () => void;
 }
 
-export function NexusServiceUnavailable({ onRecovered }: NexusServiceUnavailableProps) {
+export function NexusServiceUnavailable({
+	onRecovered,
+}: NexusServiceUnavailableProps) {
 	const [retrying, setRetrying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -18,10 +20,10 @@ export function NexusServiceUnavailable({ onRecovered }: NexusServiceUnavailable
 			if (ok) {
 				onRecovered();
 			} else {
-				setError('The Nexus API is not responding yet. Try again in a moment.');
+				setError("The Nexus API is not responding yet. Try again in a moment.");
 			}
 		} catch {
-			setError('Could not reach the Nexus API.');
+			setError("Could not reach the Nexus API.");
 		} finally {
 			setRetrying(false);
 		}
@@ -32,10 +34,12 @@ export function NexusServiceUnavailable({ onRecovered }: NexusServiceUnavailable
 			<div className="pointer-events-none absolute -top-28 -right-28 h-72 w-72 rounded-full bg-primary/6 blur-3xl" />
 			<div className="relative">
 				<Sparkles className="mx-auto mb-3 h-8 w-8 text-primary" />
-				<h1 className="text-lg font-semibold text-foreground">Nexus is starting up</h1>
+				<h1 className="text-lg font-semibold text-foreground">
+					Nexus is starting up
+				</h1>
 				<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-					This site is a hosted Beskid Nexus instance. The API on this domain is not reachable
-					right now — it may still be deploying or misconfigured.
+					This site is a hosted Beskid Nexus instance. The API on this domain is not
+					reachable right now — it may still be deploying or misconfigured.
 				</p>
 				{error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 				<button

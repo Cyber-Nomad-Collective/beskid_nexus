@@ -1,4 +1,4 @@
-import { SqlRepository } from './sql-repository';
+import { SqlRepository } from "./sql-repository";
 
 const repo = new SqlRepository();
 repo.find(1);

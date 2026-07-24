@@ -1,7 +1,7 @@
 // gitnexus/src/core/ingestion/heritage-extractors/configs/go.ts
 
-import { SupportedLanguages } from 'gitnexus-shared';
-import type { HeritageExtractionConfig } from '../../heritage-types.js';
+import { SupportedLanguages } from "gitnexus-shared";
+import type { HeritageExtractionConfig } from "../../heritage-types.js";
 
 /**
  * Go heritage extraction config.
@@ -15,10 +15,13 @@ import type { HeritageExtractionConfig } from '../../heritage-types.js';
  * (non-embedded) field that should not produce a heritage record.
  */
 export const goHeritageConfig: HeritageExtractionConfig = {
-  language: SupportedLanguages.Go,
+	language: SupportedLanguages.Go,
 
-  shouldSkipExtends(extendsNode) {
-    const fieldDecl = extendsNode.parent;
-    return fieldDecl?.type === 'field_declaration' && fieldDecl.childForFieldName?.('name') != null;
-  },
+	shouldSkipExtends(extendsNode) {
+		const fieldDecl = extendsNode.parent;
+		return (
+			fieldDecl?.type === "field_declaration" &&
+			fieldDecl.childForFieldName?.("name") != null
+		);
+	},
 };

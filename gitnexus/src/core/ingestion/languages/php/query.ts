@@ -28,8 +28,8 @@
  * tree-sitter init cost per file.
  */
 
-import Parser from 'tree-sitter';
-import Php from 'tree-sitter-php';
+import Parser from "tree-sitter";
+import Php from "tree-sitter-php";
 
 // tree-sitter-php exports `{ php, php_only, html }` in recent versions, or the
 // language directly in older versions.
@@ -148,7 +148,7 @@ const PHP_SCOPE_QUERY = `
   right: (object_creation_expression
     (name) @type-binding.type)) @type-binding.constructor
 
-;; new Foo\Bar\ClassName() — qualified_name wraps name
+;; new FooBarClassName() — qualified_name wraps name
 (assignment_expression
   left: (variable_name) @type-binding.name
   right: (object_creation_expression
@@ -317,16 +317,19 @@ let _parser: Parser | null = null;
 let _query: Parser.Query | null = null;
 
 export function getPhpParser(): Parser {
-  if (_parser === null) {
-    _parser = new Parser();
-    _parser.setLanguage(PHP_LANG as Parameters<Parser['setLanguage']>[0]);
-  }
-  return _parser;
+	if (_parser === null) {
+		_parser = new Parser();
+		_parser.setLanguage(PHP_LANG as Parameters<Parser["setLanguage"]>[0]);
+	}
+	return _parser;
 }
 
 export function getPhpScopeQuery(): Parser.Query {
-  if (_query === null) {
-    _query = new Parser.Query(PHP_LANG as Parameters<Parser['setLanguage']>[0], PHP_SCOPE_QUERY);
-  }
-  return _query;
+	if (_query === null) {
+		_query = new Parser.Query(
+			PHP_LANG as Parameters<Parser["setLanguage"]>[0],
+			PHP_SCOPE_QUERY,
+		);
+	}
+	return _query;
 }

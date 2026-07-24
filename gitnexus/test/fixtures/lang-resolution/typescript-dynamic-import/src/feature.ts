@@ -1,5 +1,5 @@
 export class Feature {
-  activate(): void {
-    console.log('activated');
-  }
+	activate(): void {
+		console.log("activated");
+	}
 }

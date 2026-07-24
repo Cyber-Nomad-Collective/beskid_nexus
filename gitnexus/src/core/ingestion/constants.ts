@@ -1,4 +1,4 @@
-import { Buffer } from 'node:buffer';
+import { Buffer } from "node:buffer";
 
 /**
  * Default minimum buffer size for tree-sitter parsing (512 KB).
@@ -18,9 +18,12 @@ export const TREE_SITTER_MAX_BUFFER = 32 * 1024 * 1024;
  * Keeps tree-sitter's byte-sized buffer above large ASCII and multibyte sources.
  */
 export const getTreeSitterContentByteLength = (sourceText: string): number =>
-  Buffer.byteLength(sourceText, 'utf8');
+	Buffer.byteLength(sourceText, "utf8");
 
 export const getTreeSitterBufferSize = (sourceText: string): number => {
-  const byteLength = getTreeSitterContentByteLength(sourceText);
-  return Math.min(Math.max(byteLength * 2, TREE_SITTER_BUFFER_SIZE), TREE_SITTER_MAX_BUFFER);
+	const byteLength = getTreeSitterContentByteLength(sourceText);
+	return Math.min(
+		Math.max(byteLength * 2, TREE_SITTER_BUFFER_SIZE),
+		TREE_SITTER_MAX_BUFFER,
+	);
 };

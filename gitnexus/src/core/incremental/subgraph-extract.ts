@@ -48,48 +48,50 @@
  * IMPORTS from the pre-pipeline DB) covers that case instead.
  */
 
-import type { GraphNode, GraphRelationship } from 'gitnexus-shared';
-import { createKnowledgeGraph } from '../graph/graph.js';
-import type { KnowledgeGraph } from '../graph/types.js';
+import type { GraphNode, GraphRelationship } from "gitnexus-shared";
+import { createKnowledgeGraph } from "../graph/graph.js";
+import type { KnowledgeGraph } from "../graph/types.js";
 
-const isGraphWide = (label: string): boolean => label === 'Community' || label === 'Process';
+const isGraphWide = (label: string): boolean =>
+	label === "Community" || label === "Process";
 
 /**
  * Build a Map<nodeId, filePath> for every File-bound node in the graph.
  * Graph-wide nodes (Community/Process) have no filePath and are filtered.
  */
 const indexNodeFilePaths = (fullGraph: KnowledgeGraph): Map<string, string> => {
-  const idx = new Map<string, string>();
-  fullGraph.forEachNode((n: GraphNode) => {
-    const fp = n.properties?.filePath as string | undefined;
-    if (fp) idx.set(n.id, fp);
-  });
-  return idx;
+	const idx = new Map<string, string>();
+	fullGraph.forEachNode((n: GraphNode) => {
+		const fp = n.properties?.filePath as string | undefined;
+		if (fp) idx.set(n.id, fp);
+	});
+	return idx;
 };
 
 export const extractChangedSubgraph = (
-  fullGraph: KnowledgeGraph,
-  toWriteSet: ReadonlySet<string>,
+	fullGraph: KnowledgeGraph,
+	toWriteSet: ReadonlySet<string>,
 ): KnowledgeGraph => {
-  const sub = createKnowledgeGraph();
-  const writableNodeIds = new Set<string>();
+	const sub = createKnowledgeGraph();
+	const writableNodeIds = new Set<string>();
 
-  fullGraph.forEachNode((n: GraphNode) => {
-    const filePath = n.properties?.filePath as string | undefined;
-    const include = (filePath && toWriteSet.has(filePath)) || isGraphWide(n.label);
-    if (include) {
-      sub.addNode(n);
-      writableNodeIds.add(n.id);
-    }
-  });
+	fullGraph.forEachNode((n: GraphNode) => {
+		const filePath = n.properties?.filePath as string | undefined;
+		const include =
+			(filePath && toWriteSet.has(filePath)) || isGraphWide(n.label);
+		if (include) {
+			sub.addNode(n);
+			writableNodeIds.add(n.id);
+		}
+	});
 
-  fullGraph.forEachRelationship((r: GraphRelationship) => {
-    if (writableNodeIds.has(r.sourceId) || writableNodeIds.has(r.targetId)) {
-      sub.addRelationship(r);
-    }
-  });
+	fullGraph.forEachRelationship((r: GraphRelationship) => {
+		if (writableNodeIds.has(r.sourceId) || writableNodeIds.has(r.targetId)) {
+			sub.addRelationship(r);
+		}
+	});
 
-  return sub;
+	return sub;
 };
 
 /**
@@ -105,19 +107,19 @@ export const extractChangedSubgraph = (
  * one leaves stale rows or PK-conflicts at COPY time.
  */
 export const computeEffectiveWriteSet = (
-  fullGraph: KnowledgeGraph,
-  toWriteSet: ReadonlySet<string>,
+	fullGraph: KnowledgeGraph,
+	toWriteSet: ReadonlySet<string>,
 ): Set<string> => {
-  const nodeFilePaths = indexNodeFilePaths(fullGraph);
-  const expanded = new Set<string>(toWriteSet);
-  fullGraph.forEachRelationship((r: GraphRelationship) => {
-    const sourcePath = nodeFilePaths.get(r.sourceId);
-    const targetPath = nodeFilePaths.get(r.targetId);
-    if (!sourcePath || !targetPath) return; // skip edges to graph-wide nodes
-    const sourceWritable = toWriteSet.has(sourcePath);
-    const targetWritable = toWriteSet.has(targetPath);
-    if (sourceWritable && !targetWritable) expanded.add(targetPath);
-    else if (targetWritable && !sourceWritable) expanded.add(sourcePath);
-  });
-  return expanded;
+	const nodeFilePaths = indexNodeFilePaths(fullGraph);
+	const expanded = new Set<string>(toWriteSet);
+	fullGraph.forEachRelationship((r: GraphRelationship) => {
+		const sourcePath = nodeFilePaths.get(r.sourceId);
+		const targetPath = nodeFilePaths.get(r.targetId);
+		if (!sourcePath || !targetPath) return; // skip edges to graph-wide nodes
+		const sourceWritable = toWriteSet.has(sourcePath);
+		const targetWritable = toWriteSet.has(targetPath);
+		if (sourceWritable && !targetWritable) expanded.add(targetPath);
+		else if (targetWritable && !sourceWritable) expanded.add(sourcePath);
+	});
+	return expanded;
 };

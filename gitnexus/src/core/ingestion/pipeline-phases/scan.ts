@@ -10,51 +10,58 @@
  * @output  ScannedFile[], allPaths[], totalFiles
  */
 
-import type { PipelinePhase, PipelineContext } from './types.js';
-import { walkRepositoryPaths } from '../filesystem-walker.js';
+import { walkRepositoryPaths } from "../filesystem-walker.js";
+import type { PipelineContext, PipelinePhase } from "./types.js";
 
 export interface ScanOutput {
-  scannedFiles: { path: string; size: number }[];
-  allPaths: string[];
-  totalFiles: number;
+	scannedFiles: { path: string; size: number }[];
+	allPaths: string[];
+	totalFiles: number;
 }
 
 export const scanPhase: PipelinePhase<ScanOutput> = {
-  name: 'scan',
-  deps: [],
+	name: "scan",
+	deps: [],
 
-  async execute(ctx: PipelineContext): Promise<ScanOutput> {
-    ctx.onProgress({
-      phase: 'extracting',
-      percent: 0,
-      message: 'Scanning repository...',
-    });
+	async execute(ctx: PipelineContext): Promise<ScanOutput> {
+		ctx.onProgress({
+			phase: "extracting",
+			percent: 0,
+			message: "Scanning repository...",
+		});
 
-    const scannedFiles = await walkRepositoryPaths(ctx.repoPath, (current, total, filePath) => {
-      const scanProgress = Math.round((current / total) * 15);
-      ctx.onProgress({
-        phase: 'extracting',
-        percent: scanProgress,
-        message: 'Scanning repository...',
-        detail: filePath,
-        stats: {
-          filesProcessed: current,
-          totalFiles: total,
-          nodesCreated: ctx.graph.nodeCount,
-        },
-      });
-    });
+		const scannedFiles = await walkRepositoryPaths(
+			ctx.repoPath,
+			(current, total, filePath) => {
+				const scanProgress = Math.round((current / total) * 15);
+				ctx.onProgress({
+					phase: "extracting",
+					percent: scanProgress,
+					message: "Scanning repository...",
+					detail: filePath,
+					stats: {
+						filesProcessed: current,
+						totalFiles: total,
+						nodesCreated: ctx.graph.nodeCount,
+					},
+				});
+			},
+		);
 
-    const totalFiles = scannedFiles.length;
-    const allPaths = scannedFiles.map((f) => f.path);
+		const totalFiles = scannedFiles.length;
+		const allPaths = scannedFiles.map((f) => f.path);
 
-    ctx.onProgress({
-      phase: 'extracting',
-      percent: 15,
-      message: 'Repository scanned successfully',
-      stats: { filesProcessed: totalFiles, totalFiles, nodesCreated: ctx.graph.nodeCount },
-    });
+		ctx.onProgress({
+			phase: "extracting",
+			percent: 15,
+			message: "Repository scanned successfully",
+			stats: {
+				filesProcessed: totalFiles,
+				totalFiles,
+				nodesCreated: ctx.graph.nodeCount,
+			},
+		});
 
-    return { scannedFiles, allPaths, totalFiles };
-  },
+		return { scannedFiles, allPaths, totalFiles };
+	},
 };

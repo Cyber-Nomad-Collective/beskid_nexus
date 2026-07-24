@@ -5,141 +5,151 @@
  * module tree, and metadata — viewable offline in any browser.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { sanitizeMermaidMarkdown } from './mermaid-sanitizer.js';
+import fs from "fs/promises";
+import path from "path";
+import { sanitizeMermaidMarkdown } from "./mermaid-sanitizer.js";
 
 interface ModuleTreeNode {
-  name: string;
-  slug: string;
-  files: string[];
-  children?: ModuleTreeNode[];
+	name: string;
+	slug: string;
+	files: string[];
+	children?: ModuleTreeNode[];
 }
 
 /**
  * Generate the wiki HTML viewer (index.html) from existing markdown pages.
  */
-export async function generateHTMLViewer(wikiDir: string, projectName: string): Promise<string> {
-  // Load module tree
-  let moduleTree: ModuleTreeNode[] = [];
-  try {
-    const raw = await fs.readFile(path.join(wikiDir, 'module_tree.json'), 'utf-8');
-    moduleTree = JSON.parse(raw);
-  } catch {
-    /* will show empty nav */
-  }
+export async function generateHTMLViewer(
+	wikiDir: string,
+	projectName: string,
+): Promise<string> {
+	// Load module tree
+	let moduleTree: ModuleTreeNode[] = [];
+	try {
+		const raw = await fs.readFile(
+			path.join(wikiDir, "module_tree.json"),
+			"utf-8",
+		);
+		moduleTree = JSON.parse(raw);
+	} catch {
+		/* will show empty nav */
+	}
 
-  // Load meta
-  let meta: Record<string, unknown> | null = null;
-  try {
-    const raw = await fs.readFile(path.join(wikiDir, 'meta.json'), 'utf-8');
-    meta = JSON.parse(raw);
-  } catch {
-    /* no meta */
-  }
+	// Load meta
+	let meta: Record<string, unknown> | null = null;
+	try {
+		const raw = await fs.readFile(path.join(wikiDir, "meta.json"), "utf-8");
+		meta = JSON.parse(raw);
+	} catch {
+		/* no meta */
+	}
 
-  // Read all markdown files into a { slug: content } map
-  const pages: Record<string, string> = {};
-  const dirEntries = await fs.readdir(wikiDir);
-  for (const f of dirEntries.filter((f) => f.endsWith('.md'))) {
-    const content = await fs.readFile(path.join(wikiDir, f), 'utf-8');
-    pages[f.replace(/\.md$/, '')] = sanitizeMermaidMarkdown(content);
-  }
+	// Read all markdown files into a { slug: content } map
+	const pages: Record<string, string> = {};
+	const dirEntries = await fs.readdir(wikiDir);
+	for (const f of dirEntries.filter((f) => f.endsWith(".md"))) {
+		const content = await fs.readFile(path.join(wikiDir, f), "utf-8");
+		pages[f.replace(/\.md$/, "")] = sanitizeMermaidMarkdown(content);
+	}
 
-  const html = buildHTML(projectName, moduleTree, pages, meta);
-  const outputPath = path.join(wikiDir, 'index.html');
-  await fs.writeFile(outputPath, html, 'utf-8');
-  return outputPath;
+	const html = buildHTML(projectName, moduleTree, pages, meta);
+	const outputPath = path.join(wikiDir, "index.html");
+	await fs.writeFile(outputPath, html, "utf-8");
+	return outputPath;
 }
 
 // ─── HTML Builder ───────────────────────────────────────────────────────
 
 function esc(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
 }
 
 function buildHTML(
-  projectName: string,
-  moduleTree: ModuleTreeNode[],
-  pages: Record<string, string>,
-  meta: Record<string, unknown> | null,
+	projectName: string,
+	moduleTree: ModuleTreeNode[],
+	pages: Record<string, string>,
+	meta: Record<string, unknown> | null,
 ): string {
-  // Embed data as JSON inside the HTML.
-  // Escape </script> sequences so they don't prematurely close the <script> tag.
-  const escScript = (s: string) => s.replace(/<\//g, '<\\/');
-  const pagesJSON = escScript(JSON.stringify(pages));
-  const treeJSON = escScript(JSON.stringify(moduleTree));
-  const metaJSON = escScript(JSON.stringify(meta));
+	// Embed data as JSON inside the HTML.
+	// Escape </script> sequences so they don't prematurely close the <script> tag.
+	const escScript = (s: string) => s.replace(/<\//g, "<\\/");
+	const pagesJSON = escScript(JSON.stringify(pages));
+	const treeJSON = escScript(JSON.stringify(moduleTree));
+	const metaJSON = escScript(JSON.stringify(meta));
 
-  const parts: string[] = [];
+	const parts: string[] = [];
 
-  // ── Head ──
-  parts.push('<!DOCTYPE html>');
-  parts.push('<html lang="en">');
-  parts.push('<head>');
-  parts.push('<meta charset="UTF-8">');
-  parts.push('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
-  parts.push('<title>' + esc(projectName) + ' — Wiki</title>');
-  parts.push('<script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"><\/script>');
-  parts.push(
-    '<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"><\/script>',
-  );
-  parts.push('<style>');
-  parts.push(CSS);
-  parts.push('</style>');
-  parts.push('</head>');
+	// ── Head ──
+	parts.push("<!DOCTYPE html>");
+	parts.push('<html lang="en">');
+	parts.push("<head>");
+	parts.push('<meta charset="UTF-8">');
+	parts.push(
+		'<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+	);
+	parts.push("<title>" + esc(projectName) + " — Wiki</title>");
+	parts.push(
+		'<script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>',
+	);
+	parts.push(
+		'<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>',
+	);
+	parts.push("<style>");
+	parts.push(CSS);
+	parts.push("</style>");
+	parts.push("</head>");
 
-  // ── Body ──
-  parts.push('<body>');
-  parts.push(
-    '<button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">&#9776;</button>',
-  );
-  parts.push('<div class="layout">');
+	// ── Body ──
+	parts.push("<body>");
+	parts.push(
+		'<button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">&#9776;</button>',
+	);
+	parts.push('<div class="layout">');
 
-  // Sidebar
-  parts.push('<nav class="sidebar" id="sidebar">');
-  parts.push('<div class="sidebar-header">');
-  parts.push('<div class="sidebar-title">');
-  parts.push(BOOK_SVG);
-  parts.push(esc(projectName));
-  parts.push('</div>');
-  parts.push('<div class="sidebar-meta" id="meta-info"></div>');
-  parts.push('</div>');
-  parts.push('<div id="nav-tree"></div>');
-  parts.push('<div class="sidebar-footer">Generated by GitNexus</div>');
-  parts.push('</nav>');
+	// Sidebar
+	parts.push('<nav class="sidebar" id="sidebar">');
+	parts.push('<div class="sidebar-header">');
+	parts.push('<div class="sidebar-title">');
+	parts.push(BOOK_SVG);
+	parts.push(esc(projectName));
+	parts.push("</div>");
+	parts.push('<div class="sidebar-meta" id="meta-info"></div>');
+	parts.push("</div>");
+	parts.push('<div id="nav-tree"></div>');
+	parts.push('<div class="sidebar-footer">Generated by GitNexus</div>');
+	parts.push("</nav>");
 
-  // Content
-  parts.push('<main class="content" id="content">');
-  parts.push('<div class="empty-state"><h2>Loading…</h2></div>');
-  parts.push('</main>');
-  parts.push('</div>');
+	// Content
+	parts.push('<main class="content" id="content">');
+	parts.push('<div class="empty-state"><h2>Loading…</h2></div>');
+	parts.push("</main>");
+	parts.push("</div>");
 
-  // ── Script ──
-  parts.push('<script>');
-  parts.push('var PAGES = ' + pagesJSON + ';');
-  parts.push('var TREE = ' + treeJSON + ';');
-  parts.push('var META = ' + metaJSON + ';');
-  parts.push(JS_APP);
-  parts.push('<\/script>');
+	// ── Script ──
+	parts.push("<script>");
+	parts.push("var PAGES = " + pagesJSON + ";");
+	parts.push("var TREE = " + treeJSON + ";");
+	parts.push("var META = " + metaJSON + ";");
+	parts.push(JS_APP);
+	parts.push("</script>");
 
-  parts.push('</body>');
-  parts.push('</html>');
+	parts.push("</body>");
+	parts.push("</html>");
 
-  return parts.join('\n');
+	return parts.join("\n");
 }
 
 // ─── Static Assets ────────────────────────────────────────────────────
 
 const BOOK_SVG =
-  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-  '<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>' +
-  '<path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>' +
-  '</svg>';
+	'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+	'<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>' +
+	'<path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>' +
+	"</svg>";
 
 const CSS = `
 *{margin:0;padding:0;box-sizing:border-box}

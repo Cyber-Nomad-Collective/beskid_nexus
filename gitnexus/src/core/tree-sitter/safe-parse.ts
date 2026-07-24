@@ -1,4 +1,4 @@
-import type Parser from 'tree-sitter';
+import type Parser from "tree-sitter";
 
 /**
  * tree-sitter 0.21.x's Node native binding crashes (SIGSEGV) on Windows when
@@ -24,17 +24,17 @@ const DIRECT_PARSE_LIMIT_CHARS = 16 * 1024;
  * for the underlying tree-sitter binding bug this works around.
  */
 export function parseSourceSafe(
-  parser: Parser,
-  sourceText: string,
-  oldTree?: Parser.Tree,
-  options?: Parser.Options,
+	parser: Parser,
+	sourceText: string,
+	oldTree?: Parser.Tree,
+	options?: Parser.Options,
 ): Parser.Tree {
-  if (sourceText.length <= DIRECT_PARSE_LIMIT_CHARS) {
-    return parser.parse(sourceText, oldTree, options);
-  }
-  const input: Parser.Input = (index) => {
-    if (index >= sourceText.length) return null;
-    return sourceText.slice(index, index + SAFE_PARSE_CHUNK_CHARS);
-  };
-  return parser.parse(input, oldTree, options);
+	if (sourceText.length <= DIRECT_PARSE_LIMIT_CHARS) {
+		return parser.parse(sourceText, oldTree, options);
+	}
+	const input: Parser.Input = (index) => {
+		if (index >= sourceText.length) return null;
+		return sourceText.slice(index, index + SAFE_PARSE_CHUNK_CHARS);
+	};
+	return parser.parse(input, oldTree, options);
 }

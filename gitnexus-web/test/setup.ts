@@ -1,5 +1,5 @@
-import { beforeEach } from 'vitest';
-import '@testing-library/jest-dom/vitest';
+import { beforeEach } from "vitest";
+import "@testing-library/jest-dom/vitest";
 
 function createMemoryStorage(): Storage {
 	const store = new Map<string, string>();
@@ -19,15 +19,15 @@ function createMemoryStorage(): Storage {
 	};
 }
 
-if (typeof globalThis.localStorage === 'undefined') {
+if (typeof globalThis.localStorage === "undefined") {
 	globalThis.localStorage = createMemoryStorage();
 }
 
 // Reset storage between tests
 beforeEach(() => {
 	try {
-		sessionStorage.removeItem('gitnexus-llm-settings');
-		localStorage.removeItem('gitnexus-llm-settings'); // legacy key (migration)
+		sessionStorage.removeItem("gitnexus-llm-settings");
+		localStorage.removeItem("gitnexus-llm-settings"); // legacy key (migration)
 	} catch {
 		// ignore
 	}

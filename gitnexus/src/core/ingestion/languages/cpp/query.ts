@@ -1,5 +1,5 @@
-import Parser from 'tree-sitter';
-import CPP from 'tree-sitter-cpp';
+import Parser from "tree-sitter";
+import CPP from "tree-sitter-cpp";
 
 const CPP_SCOPE_QUERY = `
 ;; ─── Scopes ──────────────────────────────────────────────────────────
@@ -497,16 +497,19 @@ let _parser: Parser | null = null;
 let _query: Parser.Query | null = null;
 
 export function getCppParser(): Parser {
-  if (_parser === null) {
-    _parser = new Parser();
-    _parser.setLanguage(CPP as Parameters<Parser['setLanguage']>[0]);
-  }
-  return _parser;
+	if (_parser === null) {
+		_parser = new Parser();
+		_parser.setLanguage(CPP as Parameters<Parser["setLanguage"]>[0]);
+	}
+	return _parser;
 }
 
 export function getCppScopeQuery(): Parser.Query {
-  if (_query === null) {
-    _query = new Parser.Query(CPP as Parameters<Parser['setLanguage']>[0], CPP_SCOPE_QUERY);
-  }
-  return _query;
+	if (_query === null) {
+		_query = new Parser.Query(
+			CPP as Parameters<Parser["setLanguage"]>[0],
+			CPP_SCOPE_QUERY,
+		);
+	}
+	return _query;
 }

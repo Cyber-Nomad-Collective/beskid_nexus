@@ -1,5 +1,5 @@
 export function withRateLimit(handler: Function) {
-  return async (req: Request) => {
-    return handler(req);
-  };
+	return async (req: Request) => {
+		return handler(req);
+	};
 }

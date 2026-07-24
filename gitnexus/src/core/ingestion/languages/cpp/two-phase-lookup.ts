@@ -31,9 +31,9 @@
  * (see `file-local-linkage.ts`).
  */
 
-import type { ParsedFile, ScopeId, SymbolDefinition } from 'gitnexus-shared';
-import type { ScopeResolutionIndexes } from '../../model/scope-resolution-indexes.js';
-import { findEnclosingClassDef } from '../../scope-resolution/scope/walkers.js';
+import type { ParsedFile, ScopeId, SymbolDefinition } from "gitnexus-shared";
+import type { ScopeResolutionIndexes } from "../../model/scope-resolution-indexes.js";
+import { findEnclosingClassDef } from "../../scope-resolution/scope/walkers.js";
 
 /**
  * Capture-time record: for each template class declaration in a file,
@@ -60,24 +60,28 @@ const dependentBaseNodeIds = new Map<string, Set<string>>();
  * resolution that maps names → nodeIds runs later (in
  * `populateCppDependentBases`).
  */
-export function markCppDependentBase(filePath: string, className: string, baseName: string): void {
-  let perFile = dependentBasesByFile.get(filePath);
-  if (perFile === undefined) {
-    perFile = new Map();
-    dependentBasesByFile.set(filePath, perFile);
-  }
-  let bases = perFile.get(className);
-  if (bases === undefined) {
-    bases = new Set();
-    perFile.set(className, bases);
-  }
-  bases.add(baseName);
+export function markCppDependentBase(
+	filePath: string,
+	className: string,
+	baseName: string,
+): void {
+	let perFile = dependentBasesByFile.get(filePath);
+	if (perFile === undefined) {
+		perFile = new Map();
+		dependentBasesByFile.set(filePath, perFile);
+	}
+	let bases = perFile.get(className);
+	if (bases === undefined) {
+		bases = new Set();
+		perFile.set(className, bases);
+	}
+	bases.add(baseName);
 }
 
 /** Clear two-phase-lookup state. Called from `clearFileLocalNames`. */
 export function clearCppDependentBases(): void {
-  dependentBasesByFile.clear();
-  dependentBaseNodeIds.clear();
+	dependentBasesByFile.clear();
+	dependentBaseNodeIds.clear();
 }
 
 /**
@@ -93,87 +97,105 @@ export function clearCppDependentBases(): void {
  *  3. Skip when multiple candidates exist and no namespace match is
  *     found (conservative: avoids false associations).
  */
-export function populateCppDependentBases(parsedFiles: readonly ParsedFile[]): void {
-  if (dependentBasesByFile.size === 0) return;
+export function populateCppDependentBases(
+	parsedFiles: readonly ParsedFile[],
+): void {
+	if (dependentBasesByFile.size === 0) return;
 
-  // Build workspace-wide index: simpleName → {nodeId, nsPrefix}[]
-  // nsPrefix is the dot-joined namespace path (qualifiedName without the
-  // last segment). Classes at global scope have nsPrefix = ''.
-  const classesBySimpleName = new Map<string, { nodeId: string; nsPrefix: string }[]>();
-  for (const parsed of parsedFiles) {
-    for (const def of parsed.localDefs) {
-      if (def.type !== 'Class' && def.type !== 'Struct' && def.type !== 'Interface') continue;
-      const qn = def.qualifiedName ?? '';
-      const lastDot = qn.lastIndexOf('.');
-      const simple = lastDot >= 0 ? qn.slice(lastDot + 1) : qn;
-      if (simple === '') continue;
-      const nsPrefix = lastDot >= 0 ? qn.slice(0, lastDot) : '';
-      let entries = classesBySimpleName.get(simple);
-      if (entries === undefined) {
-        entries = [];
-        classesBySimpleName.set(simple, entries);
-      }
-      entries.push({ nodeId: def.nodeId, nsPrefix });
-    }
-  }
+	// Build workspace-wide index: simpleName → {nodeId, nsPrefix}[]
+	// nsPrefix is the dot-joined namespace path (qualifiedName without the
+	// last segment). Classes at global scope have nsPrefix = ''.
+	const classesBySimpleName = new Map<
+		string,
+		{ nodeId: string; nsPrefix: string }[]
+	>();
+	for (const parsed of parsedFiles) {
+		for (const def of parsed.localDefs) {
+			if (
+				def.type !== "Class" &&
+				def.type !== "Struct" &&
+				def.type !== "Interface"
+			)
+				continue;
+			const qn = def.qualifiedName ?? "";
+			const lastDot = qn.lastIndexOf(".");
+			const simple = lastDot >= 0 ? qn.slice(lastDot + 1) : qn;
+			if (simple === "") continue;
+			const nsPrefix = lastDot >= 0 ? qn.slice(0, lastDot) : "";
+			let entries = classesBySimpleName.get(simple);
+			if (entries === undefined) {
+				entries = [];
+				classesBySimpleName.set(simple, entries);
+			}
+			entries.push({ nodeId: def.nodeId, nsPrefix });
+		}
+	}
 
-  // Build a filePath → ParsedFile lookup for fast per-file access.
-  const parsedByFile = new Map<string, ParsedFile>();
-  for (const parsed of parsedFiles) parsedByFile.set(parsed.filePath, parsed);
+	// Build a filePath → ParsedFile lookup for fast per-file access.
+	const parsedByFile = new Map<string, ParsedFile>();
+	for (const parsed of parsedFiles) parsedByFile.set(parsed.filePath, parsed);
 
-  for (const [filePath, perFile] of dependentBasesByFile) {
-    const parsed = parsedByFile.get(filePath);
-    if (parsed === undefined) continue;
+	for (const [filePath, perFile] of dependentBasesByFile) {
+		const parsed = parsedByFile.get(filePath);
+		if (parsed === undefined) continue;
 
-    // Build a simple-name → {nodeId, nsPrefix} map for THIS file's
-    // class-like defs so we can identify each template class precisely
-    // (avoids cross-file name collisions for the deriving class itself).
-    const localClassByName = new Map<string, { nodeId: string; nsPrefix: string }>();
-    for (const def of parsed.localDefs) {
-      if (def.type !== 'Class' && def.type !== 'Struct' && def.type !== 'Interface') continue;
-      const qn = def.qualifiedName ?? '';
-      const lastDot = qn.lastIndexOf('.');
-      const simple = lastDot >= 0 ? qn.slice(lastDot + 1) : qn;
-      if (simple === '') continue;
-      const nsPrefix = lastDot >= 0 ? qn.slice(0, lastDot) : '';
-      localClassByName.set(simple, { nodeId: def.nodeId, nsPrefix });
-    }
+		// Build a simple-name → {nodeId, nsPrefix} map for THIS file's
+		// class-like defs so we can identify each template class precisely
+		// (avoids cross-file name collisions for the deriving class itself).
+		const localClassByName = new Map<
+			string,
+			{ nodeId: string; nsPrefix: string }
+		>();
+		for (const def of parsed.localDefs) {
+			if (
+				def.type !== "Class" &&
+				def.type !== "Struct" &&
+				def.type !== "Interface"
+			)
+				continue;
+			const qn = def.qualifiedName ?? "";
+			const lastDot = qn.lastIndexOf(".");
+			const simple = lastDot >= 0 ? qn.slice(lastDot + 1) : qn;
+			if (simple === "") continue;
+			const nsPrefix = lastDot >= 0 ? qn.slice(0, lastDot) : "";
+			localClassByName.set(simple, { nodeId: def.nodeId, nsPrefix });
+		}
 
-    for (const [className, baseNames] of perFile) {
-      const classEntry = localClassByName.get(className);
-      if (classEntry === undefined) continue;
+		for (const [className, baseNames] of perFile) {
+			const classEntry = localClassByName.get(className);
+			if (classEntry === undefined) continue;
 
-      let bases = dependentBaseNodeIds.get(classEntry.nodeId);
-      if (bases === undefined) {
-        bases = new Set();
-        dependentBaseNodeIds.set(classEntry.nodeId, bases);
-      }
+			let bases = dependentBaseNodeIds.get(classEntry.nodeId);
+			if (bases === undefined) {
+				bases = new Set();
+				dependentBaseNodeIds.set(classEntry.nodeId, bases);
+			}
 
-      for (const baseName of baseNames) {
-        const candidates = classesBySimpleName.get(baseName);
-        if (candidates === undefined || candidates.length === 0) continue;
+			for (const baseName of baseNames) {
+				const candidates = classesBySimpleName.get(baseName);
+				if (candidates === undefined || candidates.length === 0) continue;
 
-        if (candidates.length === 1) {
-          // Unique simple-name match — accept regardless of namespace.
-          bases.add(candidates[0].nodeId);
-          continue;
-        }
+				if (candidates.length === 1) {
+					// Unique simple-name match — accept regardless of namespace.
+					bases.add(candidates[0].nodeId);
+					continue;
+				}
 
-        // Multiple classes share the same simple name — prefer the one
-        // whose namespace matches the deriving class's namespace.
-        // V1: exact dot-prefix match only. Cross-namespace inheritance
-        // (e.g., `ns::outer::Derived` extending bare `Inner` defined in
-        // `ns::outer::inner`) and inline-namespace cases are deferred to
-        // V2; the conservative skip-on-ambiguity below avoids false
-        // associations in those edge cases.
-        const nsMatch = candidates.find((c) => c.nsPrefix === classEntry.nsPrefix);
-        if (nsMatch !== undefined) {
-          bases.add(nsMatch.nodeId);
-        }
-        // else: ambiguous (multiple candidates, no namespace match) → skip.
-      }
-    }
-  }
+				// Multiple classes share the same simple name — prefer the one
+				// whose namespace matches the deriving class's namespace.
+				// V1: exact dot-prefix match only. Cross-namespace inheritance
+				// (e.g., `ns::outer::Derived` extending bare `Inner` defined in
+				// `ns::outer::inner`) and inline-namespace cases are deferred to
+				// V2; the conservative skip-on-ambiguity below avoids false
+				// associations in those edge cases.
+				const nsMatch = candidates.find((c) => c.nsPrefix === classEntry.nsPrefix);
+				if (nsMatch !== undefined) {
+					bases.add(nsMatch.nodeId);
+				}
+				// else: ambiguous (multiple candidates, no namespace match) → skip.
+			}
+		}
+	}
 }
 
 /**
@@ -192,14 +214,14 @@ export function populateCppDependentBases(parsedFiles: readonly ParsedFile[]): v
  * access; missing edges here match the compiler's diagnostic shape.
  */
 export function isCppDependentBaseMember(
-  callerScopeId: ScopeId,
-  candidateDef: SymbolDefinition,
-  scopes: ScopeResolutionIndexes,
+	callerScopeId: ScopeId,
+	candidateDef: SymbolDefinition,
+	scopes: ScopeResolutionIndexes,
 ): boolean {
-  if (candidateDef.ownerId === undefined) return false;
-  const enclosing = findEnclosingClassDef(callerScopeId, scopes);
-  if (enclosing === undefined) return false;
-  const bases = dependentBaseNodeIds.get(enclosing.nodeId);
-  if (bases === undefined) return false;
-  return bases.has(candidateDef.ownerId);
+	if (candidateDef.ownerId === undefined) return false;
+	const enclosing = findEnclosingClassDef(callerScopeId, scopes);
+	if (enclosing === undefined) return false;
+	const bases = dependentBaseNodeIds.get(enclosing.nodeId);
+	if (bases === undefined) return false;
+	return bases.has(candidateDef.ownerId);
 }

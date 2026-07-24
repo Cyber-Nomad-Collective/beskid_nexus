@@ -36,7 +36,7 @@
  * lives in `shadow-harness.ts` (#923), not here.
  */
 
-import { SupportedLanguages } from 'gitnexus-shared';
+import { SupportedLanguages } from "gitnexus-shared";
 
 /**
  * Languages whose RFC #909 Ring 3 scope-resolution migration is complete.
@@ -66,15 +66,16 @@ import { SupportedLanguages } from 'gitnexus-shared';
  * not an env lookup) so CI can discover it via `tsx` without a build step
  * and reviewers see the change inline with the code that consumes it.
  */
-export const MIGRATED_LANGUAGES: ReadonlySet<SupportedLanguages> = new Set<SupportedLanguages>([
-  SupportedLanguages.Python,
-  SupportedLanguages.CSharp,
-  SupportedLanguages.TypeScript,
-  SupportedLanguages.Go,
-  SupportedLanguages.C,
-  SupportedLanguages.CPlusPlus,
-  SupportedLanguages.PHP,
-]);
+export const MIGRATED_LANGUAGES: ReadonlySet<SupportedLanguages> =
+	new Set<SupportedLanguages>([
+		SupportedLanguages.Python,
+		SupportedLanguages.CSharp,
+		SupportedLanguages.TypeScript,
+		SupportedLanguages.Go,
+		SupportedLanguages.C,
+		SupportedLanguages.CPlusPlus,
+		SupportedLanguages.PHP,
+	]);
 
 /**
  * Return the env-var name that controls a given language's registry-
@@ -82,7 +83,7 @@ export const MIGRATED_LANGUAGES: ReadonlySet<SupportedLanguages> = new Set<Suppo
  * CI job that cross-references per-language flag changes.
  */
 export function envVarNameFor(lang: SupportedLanguages): string {
-  return `REGISTRY_PRIMARY_${lang.toUpperCase()}`;
+	return `REGISTRY_PRIMARY_${lang.toUpperCase()}`;
 }
 
 /**
@@ -94,9 +95,9 @@ export function envVarNameFor(lang: SupportedLanguages): string {
  * complete default to registry-primary without touching any env.
  */
 export function isRegistryPrimary(lang: SupportedLanguages): boolean {
-  const raw = process.env[envVarNameFor(lang)];
-  if (raw !== undefined) return parseFlag(raw);
-  return MIGRATED_LANGUAGES.has(lang);
+	const raw = process.env[envVarNameFor(lang)];
+	if (raw !== undefined) return parseFlag(raw);
+	return MIGRATED_LANGUAGES.has(lang);
 }
 
 /**
@@ -105,19 +106,19 @@ export function isRegistryPrimary(lang: SupportedLanguages): boolean {
  * distinguish "primary: legacy" from "primary: registry" rows.
  */
 export function primaryLanguages(): ReadonlySet<SupportedLanguages> {
-  const out = new Set<SupportedLanguages>();
-  for (const lang of Object.values(SupportedLanguages)) {
-    if (isRegistryPrimary(lang)) out.add(lang);
-  }
-  return out;
+	const out = new Set<SupportedLanguages>();
+	for (const lang of Object.values(SupportedLanguages)) {
+		if (isRegistryPrimary(lang)) out.add(lang);
+	}
+	return out;
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
 
 /** Accepted truthy strings (case-insensitive, trimmed). */
-const TRUTHY_VALUES: ReadonlySet<string> = new Set(['true', '1', 'yes']);
+const TRUTHY_VALUES: ReadonlySet<string> = new Set(["true", "1", "yes"]);
 
 function parseFlag(raw: string | undefined): boolean {
-  if (raw === undefined) return false;
-  return TRUTHY_VALUES.has(raw.trim().toLowerCase());
+	if (raw === undefined) return false;
+	return TRUTHY_VALUES.has(raw.trim().toLowerCase());
 }

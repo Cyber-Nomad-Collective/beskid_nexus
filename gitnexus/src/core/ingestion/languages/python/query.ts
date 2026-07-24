@@ -5,8 +5,8 @@
  * pay tree-sitter init cost per file.
  */
 
-import Parser from 'tree-sitter';
-import Python from 'tree-sitter-python';
+import Parser from "tree-sitter";
+import Python from "tree-sitter-python";
 
 const PYTHON_SCOPE_QUERY = `
 ;; Scopes
@@ -257,16 +257,19 @@ let _parser: Parser | null = null;
 let _query: Parser.Query | null = null;
 
 export function getPythonParser(): Parser {
-  if (_parser === null) {
-    _parser = new Parser();
-    _parser.setLanguage(Python as Parameters<Parser['setLanguage']>[0]);
-  }
-  return _parser;
+	if (_parser === null) {
+		_parser = new Parser();
+		_parser.setLanguage(Python as Parameters<Parser["setLanguage"]>[0]);
+	}
+	return _parser;
 }
 
 export function getPythonScopeQuery(): Parser.Query {
-  if (_query === null) {
-    _query = new Parser.Query(Python as Parameters<Parser['setLanguage']>[0], PYTHON_SCOPE_QUERY);
-  }
-  return _query;
+	if (_query === null) {
+		_query = new Parser.Query(
+			Python as Parameters<Parser["setLanguage"]>[0],
+			PYTHON_SCOPE_QUERY,
+		);
+	}
+	return _query;
 }

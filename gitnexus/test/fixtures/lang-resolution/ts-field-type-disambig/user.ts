@@ -1,10 +1,10 @@
-import { Address } from './address';
+import type { Address } from "./address";
 
 export class User {
-  name: string;
-  address: Address;
+	name: string;
+	address: Address;
 
-  save(): void {
-    // persist user
-  }
+	save(): void {
+		// persist user
+	}
 }

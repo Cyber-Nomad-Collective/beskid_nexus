@@ -1,6 +1,6 @@
-import { UserService } from '@/services/user';
+import { UserService } from "@/services/user";
 
 export function main(): void {
-  const svc = new UserService();
-  svc.save();
+	const svc = new UserService();
+	svc.save();
 }

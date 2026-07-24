@@ -24,12 +24,12 @@
  */
 
 /** Set of normalized arithmetic types that support implicit conversion. */
-const ARITHMETIC = new Set(['int', 'double', 'char', 'bool']);
+const ARITHMETIC = new Set(["int", "double", "char", "bool"]);
 
 /** Integral promotion targets: char→int and bool→int are rank 1. */
 const INTEGRAL_PROMOTION = new Map([
-  ['char', 'int'],
-  ['bool', 'int'],
+	["char", "int"],
+	["bool", "int"],
 ]);
 
 /**
@@ -39,9 +39,9 @@ const INTEGRAL_PROMOTION = new Map([
  *          2 for standard arithmetic conversion, Infinity for mismatch.
  */
 export function cppConversionRank(argType: string, paramType: string): number {
-  if (argType === paramType) return 0;
-  // Integral promotions: char→int, bool→int (ISO C++ [conv.prom])
-  if (INTEGRAL_PROMOTION.get(argType) === paramType) return 1;
-  if (ARITHMETIC.has(argType) && ARITHMETIC.has(paramType)) return 2;
-  return Infinity;
+	if (argType === paramType) return 0;
+	// Integral promotions: char→int, bool→int (ISO C++ [conv.prom])
+	if (INTEGRAL_PROMOTION.get(argType) === paramType) return 1;
+	if (ARITHMETIC.has(argType) && ARITHMETIC.has(paramType)) return 2;
+	return Infinity;
 }

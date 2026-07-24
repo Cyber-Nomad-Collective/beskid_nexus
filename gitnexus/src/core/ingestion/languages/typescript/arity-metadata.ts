@@ -50,45 +50,49 @@
  * field only, which contains value parameters, not type parameters.
  */
 
-import type { SyntaxNode } from '../../utils/ast-helpers.js';
-import { typescriptMethodConfig } from '../../method-extractors/configs/typescript-javascript.js';
+import { typescriptMethodConfig } from "../../method-extractors/configs/typescript-javascript.js";
+import type { SyntaxNode } from "../../utils/ast-helpers.js";
 
 interface TsArityMetadata {
-  readonly parameterCount: number | undefined;
-  readonly requiredParameterCount: number | undefined;
-  readonly parameterTypes: readonly string[] | undefined;
+	readonly parameterCount: number | undefined;
+	readonly requiredParameterCount: number | undefined;
+	readonly parameterTypes: readonly string[] | undefined;
 }
 
 export function computeTsArityMetadata(fnNode: SyntaxNode): TsArityMetadata {
-  const params = typescriptMethodConfig.extractParameters?.(fnNode) ?? [];
+	const params = typescriptMethodConfig.extractParameters?.(fnNode) ?? [];
 
-  let hasRest = false;
-  let optionalCount = 0;
-  const types: string[] = [];
-  for (const p of params) {
-    if (p.isVariadic) hasRest = true;
-    else if (p.isOptional) optionalCount++;
-    const t = p.type !== null && p.type !== undefined ? stripGenericsAndArraySuffix(p.type) : '';
-    types.push(t);
-  }
-  if (hasRest) types.push('params');
+	let hasRest = false;
+	let optionalCount = 0;
+	const types: string[] = [];
+	for (const p of params) {
+		if (p.isVariadic) hasRest = true;
+		else if (p.isOptional) optionalCount++;
+		const t =
+			p.type !== null && p.type !== undefined
+				? stripGenericsAndArraySuffix(p.type)
+				: "";
+		types.push(t);
+	}
+	if (hasRest) types.push("params");
 
-  const total = params.length;
-  const parameterCount = hasRest ? undefined : total;
-  const requiredParameterCount = hasRest ? undefined : total - optionalCount;
+	const total = params.length;
+	const parameterCount = hasRest ? undefined : total;
+	const requiredParameterCount = hasRest ? undefined : total - optionalCount;
 
-  // Only emit parameterTypes when at least one param carries a non-
-  // empty type name. An array of all empty strings adds noise to the
-  // registry without aiding narrowing — callers treat absence as
-  // "types unknown".
-  const hasAnyType = types.some((t) => t !== '' && t !== 'params');
-  const parameterTypes = hasAnyType || hasRest ? (types.length > 0 ? types : undefined) : undefined;
+	// Only emit parameterTypes when at least one param carries a non-
+	// empty type name. An array of all empty strings adds noise to the
+	// registry without aiding narrowing — callers treat absence as
+	// "types unknown".
+	const hasAnyType = types.some((t) => t !== "" && t !== "params");
+	const parameterTypes =
+		hasAnyType || hasRest ? (types.length > 0 ? types : undefined) : undefined;
 
-  return {
-    parameterCount,
-    requiredParameterCount,
-    parameterTypes,
-  };
+	return {
+		parameterCount,
+		requiredParameterCount,
+		parameterTypes,
+	};
 }
 
 /**
@@ -100,14 +104,14 @@ export function computeTsArityMetadata(fnNode: SyntaxNode): TsArityMetadata {
  *   outermost `<>` → `Foo`.
  */
 function stripGenericsAndArraySuffix(raw: string): string {
-  let t = raw.trim();
-  // Repeatedly peel trailing `[]` pairs, then peel the outermost `<…>`
-  // block once. We don't loop the `<>` peel since nesting is rare and
-  // the head name is already reached after one peel.
-  while (t.endsWith('[]')) t = t.slice(0, -2).trim();
-  const lt = t.indexOf('<');
-  if (lt > 0 && t.endsWith('>')) {
-    t = t.slice(0, lt).trim();
-  }
-  return t;
+	let t = raw.trim();
+	// Repeatedly peel trailing `[]` pairs, then peel the outermost `<…>`
+	// block once. We don't loop the `<>` peel since nesting is rare and
+	// the head name is already reached after one peel.
+	while (t.endsWith("[]")) t = t.slice(0, -2).trim();
+	const lt = t.indexOf("<");
+	if (lt > 0 && t.endsWith(">")) {
+		t = t.slice(0, lt).trim();
+	}
+	return t;
 }

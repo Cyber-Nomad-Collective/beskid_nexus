@@ -22,12 +22,12 @@
  * the cache itself is always safe to reuse.
  */
 
-import { createHash } from 'crypto';
-import { createRequire } from 'module';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import type { ParseWorkerResult } from '../core/ingestion/workers/parse-worker.js';
+import { createHash } from "crypto";
+import fs from "fs/promises";
+import { createRequire } from "module";
+import path from "path";
+import { fileURLToPath } from "url";
+import type { ParseWorkerResult } from "../core/ingestion/workers/parse-worker.js";
 
 /**
  * Cache version composed of:
@@ -46,74 +46,76 @@ import type { ParseWorkerResult } from '../core/ingestion/workers/parse-worker.j
  */
 const SCHEMA_BUMP = 1;
 const GITNEXUS_PKG_VERSION = (() => {
-  try {
-    // package.json sits at gitnexus/package.json — two levels up from
-    // gitnexus/src/storage/parse-cache.ts (or its dist/ equivalent).
-    const here = path.dirname(fileURLToPath(import.meta.url));
-    const candidates = [
-      path.join(here, '..', '..', 'package.json'), // src/storage → gitnexus/
-      path.join(here, '..', '..', '..', 'package.json'), // dist/storage → gitnexus/
-    ];
-    const requireCJS = createRequire(import.meta.url);
-    for (const c of candidates) {
-      try {
-        const pkg = requireCJS(c);
-        if (typeof pkg?.version === 'string') return pkg.version;
-      } catch {
-        /* try next candidate */
-      }
-    }
-  } catch {
-    /* fall through to fallback */
-  }
-  return '0.0.0-unknown';
+	try {
+		// package.json sits at gitnexus/package.json — two levels up from
+		// gitnexus/src/storage/parse-cache.ts (or its dist/ equivalent).
+		const here = path.dirname(fileURLToPath(import.meta.url));
+		const candidates = [
+			path.join(here, "..", "..", "package.json"), // src/storage → gitnexus/
+			path.join(here, "..", "..", "..", "package.json"), // dist/storage → gitnexus/
+		];
+		const requireCJS = createRequire(import.meta.url);
+		for (const c of candidates) {
+			try {
+				const pkg = requireCJS(c);
+				if (typeof pkg?.version === "string") return pkg.version;
+			} catch {
+				/* try next candidate */
+			}
+		}
+	} catch {
+		/* fall through to fallback */
+	}
+	return "0.0.0-unknown";
 })();
 export const PARSE_CACHE_VERSION = `${SCHEMA_BUMP}+${GITNEXUS_PKG_VERSION}`;
 
-const LEGACY_CACHE_FILENAME = 'parse-cache.json';
-const CACHE_DIRNAME = 'parse-cache';
-const CACHE_INDEX_FILENAME = 'index.json';
+const LEGACY_CACHE_FILENAME = "parse-cache.json";
+const CACHE_DIRNAME = "parse-cache";
+const CACHE_INDEX_FILENAME = "index.json";
 
 /** Keys on disk always come from `computeChunkHash` — 64-char lowercase hex. */
 const CHUNK_CACHE_KEY_HEX_RE = /^[a-f0-9]{64}$/;
 
-const isValidChunkCacheKey = (chunkHash: string): boolean => CHUNK_CACHE_KEY_HEX_RE.test(chunkHash);
+const isValidChunkCacheKey = (chunkHash: string): boolean =>
+	CHUNK_CACHE_KEY_HEX_RE.test(chunkHash);
 
 /** On-disk shape for the legacy single-file format. */
 interface ParseCacheFile {
-  version: string;
-  /** key = chunk hash (hex) → cached chunk result list. */
-  entries: Record<string, ParseWorkerResult[]>;
+	version: string;
+	/** key = chunk hash (hex) → cached chunk result list. */
+	entries: Record<string, ParseWorkerResult[]>;
 }
 
 /** On-disk shape for the sharded directory format. */
 interface ShardedParseCacheIndex {
-  version: string;
-  keys: string[];
+	version: string;
+	keys: string[];
 }
 
 /** Runtime view: keyed Map for fast lookup; mutated in place during a run. */
 export interface ParseCache {
-  version: string;
-  entries: Map<string, ParseWorkerResult[]>;
-  /**
-   * Hashes referenced (hit OR miss-and-stored) by the current run.
-   * The parse phase populates this as it processes chunks; the orchestrator
-   * uses it as input to `pruneCache` before saving so entries that no
-   * longer correspond to any chunk in the current scan are discarded.
-   * Transient — never serialized to disk.
-   */
-  usedKeys: Set<string>;
+	version: string;
+	entries: Map<string, ParseWorkerResult[]>;
+	/**
+	 * Hashes referenced (hit OR miss-and-stored) by the current run.
+	 * The parse phase populates this as it processes chunks; the orchestrator
+	 * uses it as input to `pruneCache` before saving so entries that no
+	 * longer correspond to any chunk in the current scan are discarded.
+	 * Transient — never serialized to disk.
+	 */
+	usedKeys: Set<string>;
 }
 
 /** SHA-256 hex of a single string or buffer. */
 const sha256Hex = (input: Buffer | string): string =>
-  createHash('sha256')
-    .update(typeof input === 'string' ? Buffer.from(input) : input)
-    .digest('hex');
+	createHash("sha256")
+		.update(typeof input === "string" ? Buffer.from(input) : input)
+		.digest("hex");
 
 /** Stable hash of a single file's contents — used by callers to compose a chunk hash. */
-export const fileContentHash = (content: Buffer | string): string => sha256Hex(content);
+export const fileContentHash = (content: Buffer | string): string =>
+	sha256Hex(content);
 
 /**
  * Compute the canonical cache key for a chunk's contents.
@@ -123,11 +125,11 @@ export const fileContentHash = (content: Buffer | string): string => sha256Hex(c
  * the same files in different order produce the same key.
  */
 export const computeChunkHash = (
-  entries: Array<{ filePath: string; contentHash: string }>,
+	entries: Array<{ filePath: string; contentHash: string }>,
 ): string => {
-  const sorted = [...entries].sort((a, b) => (a.filePath < b.filePath ? -1 : 1));
-  const joined = sorted.map((e) => `${e.filePath}:${e.contentHash}`).join('\n');
-  return sha256Hex(joined);
+	const sorted = [...entries].sort((a, b) => (a.filePath < b.filePath ? -1 : 1));
+	const joined = sorted.map((e) => `${e.filePath}:${e.contentHash}`).join("\n");
+	return sha256Hex(joined);
 };
 
 /**
@@ -139,99 +141,111 @@ export const computeChunkHash = (
  * with "is not iterable". Applied symmetrically by `mapReviver` on
  * load so the in-memory shape stays Map-typed.
  */
-const MAP_TAG = '__$mapEntries$__';
-const SET_TAG = '__$setValues$__';
+const MAP_TAG = "__$mapEntries$__";
+const SET_TAG = "__$setValues$__";
 
 const mapReplacer = (_key: string, value: unknown): unknown => {
-  if (value instanceof Map) return { [MAP_TAG]: Array.from(value.entries()) };
-  if (value instanceof Set) return { [SET_TAG]: Array.from(value.values()) };
-  return value;
+	if (value instanceof Map) return { [MAP_TAG]: Array.from(value.entries()) };
+	if (value instanceof Set) return { [SET_TAG]: Array.from(value.values()) };
+	return value;
 };
 
 const mapReviver = (_key: string, value: unknown): unknown => {
-  if (value && typeof value === 'object') {
-    const v = value as Record<string, unknown>;
-    if (Array.isArray(v[MAP_TAG])) return new Map(v[MAP_TAG] as [unknown, unknown][]);
-    if (Array.isArray(v[SET_TAG])) return new Set(v[SET_TAG] as unknown[]);
-  }
-  return value;
+	if (value && typeof value === "object") {
+		const v = value as Record<string, unknown>;
+		if (Array.isArray(v[MAP_TAG]))
+			return new Map(v[MAP_TAG] as [unknown, unknown][]);
+		if (Array.isArray(v[SET_TAG])) return new Set(v[SET_TAG] as unknown[]);
+	}
+	return value;
 };
 
 const getLegacyCachePath = (storagePath: string): string =>
-  path.join(storagePath, LEGACY_CACHE_FILENAME);
+	path.join(storagePath, LEGACY_CACHE_FILENAME);
 
-const getCacheDirPath = (storagePath: string): string => path.join(storagePath, CACHE_DIRNAME);
+const getCacheDirPath = (storagePath: string): string =>
+	path.join(storagePath, CACHE_DIRNAME);
 
 const getCacheIndexPath = (storagePath: string): string =>
-  path.join(getCacheDirPath(storagePath), CACHE_INDEX_FILENAME);
+	path.join(getCacheDirPath(storagePath), CACHE_INDEX_FILENAME);
 
 const getCacheChunkPath = (storagePath: string, chunkHash: string): string =>
-  path.join(getCacheDirPath(storagePath), `${chunkHash}.json`);
+	path.join(getCacheDirPath(storagePath), `${chunkHash}.json`);
 
-const loadLegacyParseCache = async (storagePath: string): Promise<ParseCache> => {
-  const cachePath = getLegacyCachePath(storagePath);
-  try {
-    const raw = await fs.readFile(cachePath, 'utf-8');
-    const data = JSON.parse(raw, mapReviver) as ParseCacheFile;
-    if (
-      typeof data !== 'object' ||
-      data === null ||
-      data.version !== PARSE_CACHE_VERSION ||
-      typeof data.entries !== 'object' ||
-      data.entries === null
-    ) {
-      return emptyCache();
-    }
-    const entries = new Map<string, ParseWorkerResult[]>();
-    for (const [k, v] of Object.entries(data.entries)) {
-      if (Array.isArray(v)) entries.set(k, v as ParseWorkerResult[]);
-    }
-    return { version: PARSE_CACHE_VERSION, entries, usedKeys: new Set<string>() };
-  } catch {
-    return emptyCache();
-  }
+const loadLegacyParseCache = async (
+	storagePath: string,
+): Promise<ParseCache> => {
+	const cachePath = getLegacyCachePath(storagePath);
+	try {
+		const raw = await fs.readFile(cachePath, "utf-8");
+		const data = JSON.parse(raw, mapReviver) as ParseCacheFile;
+		if (
+			typeof data !== "object" ||
+			data === null ||
+			data.version !== PARSE_CACHE_VERSION ||
+			typeof data.entries !== "object" ||
+			data.entries === null
+		) {
+			return emptyCache();
+		}
+		const entries = new Map<string, ParseWorkerResult[]>();
+		for (const [k, v] of Object.entries(data.entries)) {
+			if (Array.isArray(v)) entries.set(k, v as ParseWorkerResult[]);
+		}
+		return { version: PARSE_CACHE_VERSION, entries, usedKeys: new Set<string>() };
+	} catch {
+		return emptyCache();
+	}
 };
 
-const loadShardedParseCache = async (storagePath: string): Promise<ParseCache | null> => {
-  const indexPath = getCacheIndexPath(storagePath);
-  try {
-    const raw = await fs.readFile(indexPath, 'utf-8');
-    const data = JSON.parse(raw) as ShardedParseCacheIndex;
-    if (
-      typeof data !== 'object' ||
-      data === null ||
-      data.version !== PARSE_CACHE_VERSION ||
-      !Array.isArray(data.keys)
-    ) {
-      return emptyCache();
-    }
+const loadShardedParseCache = async (
+	storagePath: string,
+): Promise<ParseCache | null> => {
+	const indexPath = getCacheIndexPath(storagePath);
+	try {
+		const raw = await fs.readFile(indexPath, "utf-8");
+		const data = JSON.parse(raw) as ShardedParseCacheIndex;
+		if (
+			typeof data !== "object" ||
+			data === null ||
+			data.version !== PARSE_CACHE_VERSION ||
+			!Array.isArray(data.keys)
+		) {
+			return emptyCache();
+		}
 
-    const entries = new Map<string, ParseWorkerResult[]>();
-    for (const chunkHash of data.keys) {
-      if (typeof chunkHash !== 'string' || !isValidChunkCacheKey(chunkHash)) continue;
-      try {
-        const chunkRaw = await fs.readFile(getCacheChunkPath(storagePath, chunkHash), 'utf-8');
-        const chunkData = JSON.parse(chunkRaw, mapReviver) as ParseWorkerResult[];
-        if (Array.isArray(chunkData)) entries.set(chunkHash, chunkData);
-      } catch {
-        /* skip corrupt or missing shard */
-      }
-    }
+		const entries = new Map<string, ParseWorkerResult[]>();
+		for (const chunkHash of data.keys) {
+			if (typeof chunkHash !== "string" || !isValidChunkCacheKey(chunkHash))
+				continue;
+			try {
+				const chunkRaw = await fs.readFile(
+					getCacheChunkPath(storagePath, chunkHash),
+					"utf-8",
+				);
+				const chunkData = JSON.parse(chunkRaw, mapReviver) as ParseWorkerResult[];
+				if (Array.isArray(chunkData)) entries.set(chunkHash, chunkData);
+			} catch {
+				/* skip corrupt or missing shard */
+			}
+		}
 
-    return { version: PARSE_CACHE_VERSION, entries, usedKeys: new Set<string>() };
-  } catch {
-    return null;
-  }
+		return { version: PARSE_CACHE_VERSION, entries, usedKeys: new Set<string>() };
+	} catch {
+		return null;
+	}
 };
 
 /**
  * Load the parse cache. Returns an empty cache on any failure (missing
  * file, corrupt JSON, version mismatch). Never throws on a normal load.
  */
-export const loadParseCache = async (storagePath: string): Promise<ParseCache> => {
-  const sharded = await loadShardedParseCache(storagePath);
-  if (sharded) return sharded;
-  return loadLegacyParseCache(storagePath);
+export const loadParseCache = async (
+	storagePath: string,
+): Promise<ParseCache> => {
+	const sharded = await loadShardedParseCache(storagePath);
+	if (sharded) return sharded;
+	return loadLegacyParseCache(storagePath);
 };
 
 /**
@@ -244,38 +258,45 @@ export const loadParseCache = async (storagePath: string): Promise<ParseCache> =
  * reparses. This is not a single atomic swap of the whole tree, but avoids
  * leaving a half-written shard set visible to readers.
  */
-export const saveParseCache = async (storagePath: string, cache: ParseCache): Promise<void> => {
-  await fs.mkdir(storagePath, { recursive: true });
-  const cacheDir = getCacheDirPath(storagePath);
-  const tmpDir = `${cacheDir}.tmp`;
-  await fs.rm(tmpDir, { recursive: true, force: true });
-  await fs.mkdir(tmpDir, { recursive: true });
+export const saveParseCache = async (
+	storagePath: string,
+	cache: ParseCache,
+): Promise<void> => {
+	await fs.mkdir(storagePath, { recursive: true });
+	const cacheDir = getCacheDirPath(storagePath);
+	const tmpDir = `${cacheDir}.tmp`;
+	await fs.rm(tmpDir, { recursive: true, force: true });
+	await fs.mkdir(tmpDir, { recursive: true });
 
-  const keys: string[] = [];
-  for (const [chunkHash, chunkResults] of cache.entries) {
-    if (!isValidChunkCacheKey(chunkHash)) continue;
-    let payload: string;
-    try {
-      payload = JSON.stringify(chunkResults, mapReplacer);
-    } catch {
-      // Extremely dense chunks could theoretically exceed string limits; skip
-      // rather than failing the entire save (orchestrator catches save errors).
-      continue;
-    }
-    keys.push(chunkHash);
-    const chunkPath = path.join(tmpDir, `${chunkHash}.json`);
-    await fs.writeFile(chunkPath, payload, 'utf-8');
-  }
+	const keys: string[] = [];
+	for (const [chunkHash, chunkResults] of cache.entries) {
+		if (!isValidChunkCacheKey(chunkHash)) continue;
+		let payload: string;
+		try {
+			payload = JSON.stringify(chunkResults, mapReplacer);
+		} catch {
+			// Extremely dense chunks could theoretically exceed string limits; skip
+			// rather than failing the entire save (orchestrator catches save errors).
+			continue;
+		}
+		keys.push(chunkHash);
+		const chunkPath = path.join(tmpDir, `${chunkHash}.json`);
+		await fs.writeFile(chunkPath, payload, "utf-8");
+	}
 
-  const index: ShardedParseCacheIndex = {
-    version: cache.version,
-    keys,
-  };
-  await fs.writeFile(path.join(tmpDir, CACHE_INDEX_FILENAME), JSON.stringify(index), 'utf-8');
+	const index: ShardedParseCacheIndex = {
+		version: cache.version,
+		keys,
+	};
+	await fs.writeFile(
+		path.join(tmpDir, CACHE_INDEX_FILENAME),
+		JSON.stringify(index),
+		"utf-8",
+	);
 
-  await fs.rm(cacheDir, { recursive: true, force: true });
-  await fs.rename(tmpDir, cacheDir);
-  await fs.rm(getLegacyCachePath(storagePath), { force: true });
+	await fs.rm(cacheDir, { recursive: true, force: true });
+	await fs.rename(tmpDir, cacheDir);
+	await fs.rm(getLegacyCachePath(storagePath), { force: true });
 };
 
 /**
@@ -283,19 +304,22 @@ export const saveParseCache = async (storagePath: string, cache: ParseCache): Pr
  * of a run so chunks that no longer correspond to any current chunk
  * don't keep their stale entries forever.
  */
-export const pruneCache = (cache: ParseCache, usedHashes: ReadonlySet<string>): number => {
-  let removed = 0;
-  for (const k of cache.entries.keys()) {
-    if (!usedHashes.has(k)) {
-      cache.entries.delete(k);
-      removed++;
-    }
-  }
-  return removed;
+export const pruneCache = (
+	cache: ParseCache,
+	usedHashes: ReadonlySet<string>,
+): number => {
+	let removed = 0;
+	for (const k of cache.entries.keys()) {
+		if (!usedHashes.has(k)) {
+			cache.entries.delete(k);
+			removed++;
+		}
+	}
+	return removed;
 };
 
 const emptyCache = (): ParseCache => ({
-  version: PARSE_CACHE_VERSION,
-  entries: new Map<string, ParseWorkerResult[]>(),
-  usedKeys: new Set<string>(),
+	version: PARSE_CACHE_VERSION,
+	entries: new Map<string, ParseWorkerResult[]>(),
+	usedKeys: new Set<string>(),
 });

@@ -3,10 +3,10 @@
 // `const X = useMemo(() => { ... }, [...])` and the test is symmetric:
 // calls inside should attribute to `computed`.
 
-import { doStuff } from './helpers';
+import { doStuff } from "./helpers";
 
 const useMemo = <T>(factory: () => T, _deps: unknown[]): T => factory();
 
 export const computed = useMemo(() => {
-  return doStuff(42);
+	return doStuff(42);
 }, []);

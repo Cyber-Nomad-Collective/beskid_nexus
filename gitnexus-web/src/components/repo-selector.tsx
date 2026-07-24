@@ -4,8 +4,8 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '#/components/ui/select';
-import type { PublicCatalogEntry } from '../services/nexus-api';
+} from "#/components/ui/select";
+import type { PublicCatalogEntry } from "../services/nexus-api";
 
 export interface RepoSelectorProps {
 	entries: PublicCatalogEntry[];
@@ -14,7 +14,12 @@ export interface RepoSelectorProps {
 	disabled?: boolean;
 }
 
-export function RepoSelector({ entries, activeEntryId, onSelect, disabled }: RepoSelectorProps) {
+export function RepoSelector({
+	entries,
+	activeEntryId,
+	onSelect,
+	disabled,
+}: RepoSelectorProps) {
 	const indexed = [...entries]
 		.filter((entry) => entry.indexed)
 		.sort((a, b) => a.sortOrder - b.sortOrder);

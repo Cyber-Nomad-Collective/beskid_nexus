@@ -6,33 +6,33 @@
  * CLAUDE.md is for Claude Code which only reads that file.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { type GeneratedSkillInfo } from './skill-gen.js';
-import { logger } from '../core/logger.js';
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import { logger } from "../core/logger.js";
+import type { GeneratedSkillInfo } from "./skill-gen.js";
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 interface RepoStats {
-  files?: number;
-  nodes?: number;
-  edges?: number;
-  communities?: number;
-  clusters?: number; // Aggregated cluster count (what tools show)
-  processes?: number;
+	files?: number;
+	nodes?: number;
+	edges?: number;
+	communities?: number;
+	clusters?: number; // Aggregated cluster count (what tools show)
+	processes?: number;
 }
 
 export interface AIContextOptions {
-  skipAgentsMd?: boolean;
-  noStats?: boolean;
-  skipSkills?: boolean;
+	skipAgentsMd?: boolean;
+	noStats?: boolean;
+	skipSkills?: boolean;
 }
 
-const GITNEXUS_START_MARKER = '<!-- gitnexus:start -->';
-const GITNEXUS_END_MARKER = '<!-- gitnexus:end -->';
+const GITNEXUS_START_MARKER = "<!-- gitnexus:start -->";
+const GITNEXUS_END_MARKER = "<!-- gitnexus:end -->";
 
 /**
  * Find the index of a section marker that occupies its own line.
@@ -48,17 +48,23 @@ const GITNEXUS_END_MARKER = '<!-- gitnexus:end -->';
  * start marker, avoiding a scan from 0 and guaranteeing we never pick
  * up an end marker that appears earlier in the file than the start.
  */
-function findSectionMarkerIndex(content: string, marker: string, startFrom = 0): number {
-  let idx = content.indexOf(marker, startFrom);
-  while (idx !== -1) {
-    const atLineStart = idx === 0 || content[idx - 1] === '\n';
-    const endPos = idx + marker.length;
-    const atLineEnd =
-      endPos === content.length || content[endPos] === '\n' || content[endPos] === '\r';
-    if (atLineStart && atLineEnd) return idx;
-    idx = content.indexOf(marker, idx + 1);
-  }
-  return -1;
+function findSectionMarkerIndex(
+	content: string,
+	marker: string,
+	startFrom = 0,
+): number {
+	let idx = content.indexOf(marker, startFrom);
+	while (idx !== -1) {
+		const atLineStart = idx === 0 || content[idx - 1] === "\n";
+		const endPos = idx + marker.length;
+		const atLineEnd =
+			endPos === content.length ||
+			content[endPos] === "\n" ||
+			content[endPos] === "\r";
+		if (atLineStart && atLineEnd) return idx;
+		idx = content.indexOf(marker, idx + 1);
+	}
+	return -1;
 }
 
 /**
@@ -72,66 +78,74 @@ function findSectionMarkerIndex(content: string, marker: string, startFrom = 0):
  * - Exact tool commands with parameters — vague directives get ignored
  * - Self-review checklist — forces model to verify its own work
  */
-async function findGroupsContainingRegistryName(registryName: string): Promise<string[]> {
-  const { listGroups, getDefaultGitnexusDir, getGroupDir } =
-    await import('../core/group/storage.js');
-  const { loadGroupConfig } = await import('../core/group/config-parser.js');
-  const names = await listGroups();
-  const hits: string[] = [];
-  for (const g of names) {
-    try {
-      const config = await loadGroupConfig(getGroupDir(getDefaultGitnexusDir(), g));
-      if (Object.values(config.repos).some((r) => r === registryName)) hits.push(config.name);
-    } catch {
-      // skip invalid or unreadable groups
-    }
-  }
-  return hits;
+async function findGroupsContainingRegistryName(
+	registryName: string,
+): Promise<string[]> {
+	const { listGroups, getDefaultGitnexusDir, getGroupDir } = await import(
+		"../core/group/storage.js"
+	);
+	const { loadGroupConfig } = await import("../core/group/config-parser.js");
+	const names = await listGroups();
+	const hits: string[] = [];
+	for (const g of names) {
+		try {
+			const config = await loadGroupConfig(
+				getGroupDir(getDefaultGitnexusDir(), g),
+			);
+			if (Object.values(config.repos).some((r) => r === registryName))
+				hits.push(config.name);
+		} catch {
+			// skip invalid or unreadable groups
+		}
+	}
+	return hits;
 }
 
 function generateGitNexusContent(
-  projectName: string,
-  stats: RepoStats,
-  generatedSkills?: GeneratedSkillInfo[],
-  groupNames?: string[],
-  noStats?: boolean,
-  skipSkills?: boolean,
+	projectName: string,
+	stats: RepoStats,
+	generatedSkills?: GeneratedSkillInfo[],
+	groupNames?: string[],
+	noStats?: boolean,
+	skipSkills?: boolean,
 ): string {
-  const generatedRows =
-    generatedSkills && generatedSkills.length > 0
-      ? generatedSkills
-          .map(
-            (s) =>
-              `| Work in the ${s.label} area (${s.symbolCount} symbols) | \`.claude/skills/generated/${s.name}/SKILL.md\` |`,
-          )
-          .join('\n')
-      : '';
+	const generatedRows =
+		generatedSkills && generatedSkills.length > 0
+			? generatedSkills
+					.map(
+						(s) =>
+							`| Work in the ${s.label} area (${s.symbolCount} symbols) | \`.claude/skills/generated/${s.name}/SKILL.md\` |`,
+					)
+					.join("\n")
+			: "";
 
-  // Standard skill rows reference files installed by installSkills(). When
-  // --skip-skills suppresses that install, these rows must be omitted — else
-  // AGENTS.md/CLAUDE.md would direct agents to read files that don't exist.
-  // Community skills (generatedRows) live in .claude/skills/generated/ and
-  // are independent of --skip-skills, so they remain when present.
-  const standardSkillsRows = skipSkills
-    ? ''
-    : `| Understand architecture / "How does X work?" | \`.claude/skills/gitnexus/gitnexus-exploring/SKILL.md\` |
+	// Standard skill rows reference files installed by installSkills(). When
+	// --skip-skills suppresses that install, these rows must be omitted — else
+	// AGENTS.md/CLAUDE.md would direct agents to read files that don't exist.
+	// Community skills (generatedRows) live in .claude/skills/generated/ and
+	// are independent of --skip-skills, so they remain when present.
+	const standardSkillsRows = skipSkills
+		? ""
+		: `| Understand architecture / "How does X work?" | \`.claude/skills/gitnexus/gitnexus-exploring/SKILL.md\` |
 | Blast radius / "What breaks if I change X?" | \`.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md\` |
 | Trace bugs / "Why is X failing?" | \`.claude/skills/gitnexus/gitnexus-debugging/SKILL.md\` |
 | Rename / extract / split / refactor | \`.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md\` |
 | Tools, resources, schema reference | \`.claude/skills/gitnexus/gitnexus-guide/SKILL.md\` |
 | Index, status, clean, wiki CLI commands | \`.claude/skills/gitnexus/gitnexus-cli/SKILL.md\` |`;
 
-  const tableBody = [standardSkillsRows, generatedRows].filter(Boolean).join('\n');
-  const skillsTable = tableBody
-    ? `| Task | Read this skill file |
+	const tableBody = [standardSkillsRows, generatedRows]
+		.filter(Boolean)
+		.join("\n");
+	const skillsTable = tableBody
+		? `| Task | Read this skill file |
 |------|---------------------|
 ${tableBody}`
-    : '';
+		: "";
 
-  return `${GITNEXUS_START_MARKER}
+	return `${GITNEXUS_START_MARKER}
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **${projectName}**${noStats ? '' : ` (${stats.nodes || 0} symbols, ${stats.edges || 0} relationships, ${stats.processes || 0} execution flows)`}. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **${projectName}**${noStats ? "" : ` (${stats.nodes || 0} symbols, ${stats.edges || 0} relationships, ${stats.processes || 0} execution flows)`}. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run \`npx gitnexus analyze\` in terminal first.
 
@@ -160,34 +174,34 @@ This project is indexed by GitNexus as **${projectName}**${noStats ? '' : ` (${s
 | \`gitnexus://repo/${projectName}/process/{name}\` | Step-by-step execution trace |
 
 ${
-  groupNames && groupNames.length > 0
-    ? `## Cross-Repo Groups
+	groupNames && groupNames.length > 0
+		? `## Cross-Repo Groups
 
-This repository is listed under GitNexus **group(s): ${groupNames.join(', ')}** (see \`~/.gitnexus/groups/\`). For cross-repo analysis, use MCP tools \`impact\`, \`query\`, and \`context\` with \`repo\` set to \`@<groupName>\` or \`@<groupName>/<memberPath>\` (paths match keys in that group’s \`group.yaml\`). Use \`group_list\` / \`group_sync\` for membership and sync. From the terminal: \`npx gitnexus group list\`, \`npx gitnexus group sync <name>\`, \`npx gitnexus group impact <name> --target <symbol> --repo <group-path>\`.
+This repository is listed under GitNexus **group(s): ${groupNames.join(", ")}** (see \`~/.gitnexus/groups/\`). For cross-repo analysis, use MCP tools \`impact\`, \`query\`, and \`context\` with \`repo\` set to \`@<groupName>\` or \`@<groupName>/<memberPath>\` (paths match keys in that group’s \`group.yaml\`). Use \`group_list\` / \`group_sync\` for membership and sync. From the terminal: \`npx gitnexus group list\`, \`npx gitnexus group sync <name>\`, \`npx gitnexus group impact <name> --target <symbol> --repo <group-path>\`.
 
 `
-    : ''
+		: ""
 }${
-    skillsTable
-      ? `## CLI
+	skillsTable
+		? `## CLI
 
 ${skillsTable}
 
 `
-      : ''
-  }${GITNEXUS_END_MARKER}`;
+		: ""
+}${GITNEXUS_END_MARKER}`;
 }
 
 /**
  * Check if a file exists
  */
 async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
+	try {
+		await fs.access(filePath);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -197,89 +211,99 @@ async function fileExists(filePath: string): Promise<boolean> {
  * - If file exists with GitNexus section: replace that section
  */
 async function upsertGitNexusSection(
-  filePath: string,
-  content: string,
-  projectName: string,
-  stats: RepoStats,
-): Promise<'created' | 'updated' | 'appended' | 'preserved'> {
-  const exists = await fileExists(filePath);
+	filePath: string,
+	content: string,
+	projectName: string,
+	stats: RepoStats,
+): Promise<"created" | "updated" | "appended" | "preserved"> {
+	const exists = await fileExists(filePath);
 
-  if (!exists) {
-    await fs.writeFile(filePath, content, 'utf-8');
-    return 'created';
-  }
+	if (!exists) {
+		await fs.writeFile(filePath, content, "utf-8");
+		return "created";
+	}
 
-  const existingContent = await fs.readFile(filePath, 'utf-8');
+	const existingContent = await fs.readFile(filePath, "utf-8");
 
-  // Check if GitNexus section already exists. Matching is restricted
-  // to markers that occupy their own line so that inline prose
-  // references (e.g. `` See the `<!-- gitnexus:start -->` block `` in
-  // the shipped CLAUDE.md) are NOT treated as section delimiters
-  // (#1041). The end-marker scan starts after the start-marker so it
-  // can never pick up an earlier end in the file.
-  const startIdx = findSectionMarkerIndex(existingContent, GITNEXUS_START_MARKER);
-  const endIdx = findSectionMarkerIndex(
-    existingContent,
-    GITNEXUS_END_MARKER,
-    startIdx === -1 ? 0 : startIdx,
-  );
+	// Check if GitNexus section already exists. Matching is restricted
+	// to markers that occupy their own line so that inline prose
+	// references (e.g. `` See the `<!-- gitnexus:start -->` block `` in
+	// the shipped CLAUDE.md) are NOT treated as section delimiters
+	// (#1041). The end-marker scan starts after the start-marker so it
+	// can never pick up an earlier end in the file.
+	const startIdx = findSectionMarkerIndex(
+		existingContent,
+		GITNEXUS_START_MARKER,
+	);
+	const endIdx = findSectionMarkerIndex(
+		existingContent,
+		GITNEXUS_END_MARKER,
+		startIdx === -1 ? 0 : startIdx,
+	);
 
-  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-    const existingSection = existingContent.substring(
-      startIdx,
-      endIdx + GITNEXUS_END_MARKER.length,
-    );
+	if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+		const existingSection = existingContent.substring(
+			startIdx,
+			endIdx + GITNEXUS_END_MARKER.length,
+		);
 
-    // If the existing section contains <!-- gitnexus:keep -->, preserve the user's
-    // custom layout and only update the stats line (node/edge/flow counts).
-    // This lets teams trim the verbose default template to a lean format without
-    // having it overwritten on every `gitnexus analyze`.
-    //
-    // Note: the keep-marker check operates on `existingSection` (the substring
-    // between valid section markers identified by findSectionMarkerIndex), so
-    // a keep marker in user prose OUTSIDE the GitNexus block has no effect.
-    if (existingSection.includes('<!-- gitnexus:keep -->')) {
-      // Build the new stats line from the caller-provided values directly.
-      // We do NOT re-extract from `content` because:
-      //   (a) first-bold extraction is fragile if the template evolves
-      //   (b) the parenthesized-text fallback can match unrelated tuples
-      //       like `({target: "symbolName", direction: "upstream"})`
-      //       when noStats is set
-      // Passing projectName + stats explicitly makes the contract obvious.
-      // noStats controls template generation, not keep-section stat updates — the user opted into a stats line by keeping it.
-      const newStatsInner = `${stats.nodes || 0} symbols, ${stats.edges || 0} relationships, ${stats.processes || 0} execution flows`;
-      const statsLine = `Indexed as **${projectName}** (${newStatsInner})`;
+		// If the existing section contains <!-- gitnexus:keep -->, preserve the user's
+		// custom layout and only update the stats line (node/edge/flow counts).
+		// This lets teams trim the verbose default template to a lean format without
+		// having it overwritten on every `gitnexus analyze`.
+		//
+		// Note: the keep-marker check operates on `existingSection` (the substring
+		// between valid section markers identified by findSectionMarkerIndex), so
+		// a keep marker in user prose OUTSIDE the GitNexus block has no effect.
+		if (existingSection.includes("<!-- gitnexus:keep -->")) {
+			// Build the new stats line from the caller-provided values directly.
+			// We do NOT re-extract from `content` because:
+			//   (a) first-bold extraction is fragile if the template evolves
+			//   (b) the parenthesized-text fallback can match unrelated tuples
+			//       like `({target: "symbolName", direction: "upstream"})`
+			//       when noStats is set
+			// Passing projectName + stats explicitly makes the contract obvious.
+			// noStats controls template generation, not keep-section stat updates — the user opted into a stats line by keeping it.
+			const newStatsInner = `${stats.nodes || 0} symbols, ${stats.edges || 0} relationships, ${stats.processes || 0} execution flows`;
+			const statsLine = `Indexed as **${projectName}** (${newStatsInner})`;
 
-      // Match either canonical phrasing at line start (`^` with `m` flag) so we
-      // cannot replace prose embedded mid-paragraph. Deliberately no `$`: text
-      // after the closing `)` on the same line (e.g. ". MCP tools.") stays intact.
-      const statsPattern = /^(?:Indexed as|indexed by GitNexus as) \*\*[^*]+\*\* \([^)]+\)/m;
+			// Match either canonical phrasing at line start (`^` with `m` flag) so we
+			// cannot replace prose embedded mid-paragraph. Deliberately no `$`: text
+			// after the closing `)` on the same line (e.g. ". MCP tools.") stays intact.
+			const statsPattern =
+				/^(?:Indexed as|indexed by GitNexus as) \*\*[^*]+\*\* \([^)]+\)/m;
 
-      if (statsPattern.test(existingSection)) {
-        const updatedSection = existingSection.replace(statsPattern, statsLine);
-        const before = existingContent.substring(0, startIdx);
-        const after = existingContent.substring(endIdx + GITNEXUS_END_MARKER.length);
-        await fs.writeFile(filePath, (before + updatedSection + after).trim() + '\n', 'utf-8');
-        return 'updated';
-      }
-      // Keep marker present but no stats line matched. Section is preserved
-      // unchanged on disk; return a distinct status so callers/CLI output
-      // don't mis-report this as 'updated' (which would imply a write).
-      return 'preserved';
-    }
+			if (statsPattern.test(existingSection)) {
+				const updatedSection = existingSection.replace(statsPattern, statsLine);
+				const before = existingContent.substring(0, startIdx);
+				const after = existingContent.substring(
+					endIdx + GITNEXUS_END_MARKER.length,
+				);
+				await fs.writeFile(
+					filePath,
+					(before + updatedSection + after).trim() + "\n",
+					"utf-8",
+				);
+				return "updated";
+			}
+			// Keep marker present but no stats line matched. Section is preserved
+			// unchanged on disk; return a distinct status so callers/CLI output
+			// don't mis-report this as 'updated' (which would imply a write).
+			return "preserved";
+		}
 
-    // No keep marker — replace existing section with full verbose content
-    const before = existingContent.substring(0, startIdx);
-    const after = existingContent.substring(endIdx + GITNEXUS_END_MARKER.length);
-    const newContent = before + content + after;
-    await fs.writeFile(filePath, newContent.trim() + '\n', 'utf-8');
-    return 'updated';
-  }
+		// No keep marker — replace existing section with full verbose content
+		const before = existingContent.substring(0, startIdx);
+		const after = existingContent.substring(endIdx + GITNEXUS_END_MARKER.length);
+		const newContent = before + content + after;
+		await fs.writeFile(filePath, newContent.trim() + "\n", "utf-8");
+		return "updated";
+	}
 
-  // Append new section
-  const newContent = existingContent.trim() + '\n\n' + content + '\n';
-  await fs.writeFile(filePath, newContent, 'utf-8');
-  return 'appended';
+	// Append new section
+	const newContent = existingContent.trim() + "\n\n" + content + "\n";
+	await fs.writeFile(filePath, newContent, "utf-8");
+	return "appended";
 }
 
 /**
@@ -287,60 +311,66 @@ async function upsertGitNexusSection(
  * Works natively with Claude Code, Cursor, and GitHub Copilot
  */
 async function installSkills(repoPath: string): Promise<string[]> {
-  const skillsDir = path.join(repoPath, '.claude', 'skills', 'gitnexus');
-  const installedSkills: string[] = [];
+	const skillsDir = path.join(repoPath, ".claude", "skills", "gitnexus");
+	const installedSkills: string[] = [];
 
-  // Skill definitions bundled with the package
-  const skills = [
-    {
-      name: 'gitnexus-exploring',
-      description:
-        'Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase. Examples: "How does X work?", "What calls this function?", "Show me the auth flow"',
-    },
-    {
-      name: 'gitnexus-debugging',
-      description:
-        'Use when the user is debugging a bug, tracing an error, or asking why something fails. Examples: "Why is X failing?", "Where does this error come from?", "Trace this bug"',
-    },
-    {
-      name: 'gitnexus-impact-analysis',
-      description:
-        'Use when the user wants to know what will break if they change something, or needs safety analysis before editing code. Examples: "Is it safe to change X?", "What depends on this?", "What will break?"',
-    },
-    {
-      name: 'gitnexus-refactoring',
-      description:
-        'Use when the user wants to rename, extract, split, move, or restructure code safely. Examples: "Rename this function", "Extract this into a module", "Refactor this class", "Move this to a separate file"',
-    },
-    {
-      name: 'gitnexus-guide',
-      description:
-        'Use when the user asks about GitNexus itself — available tools, how to query the knowledge graph, MCP resources, graph schema, or workflow reference. Examples: "What GitNexus tools are available?", "How do I use GitNexus?"',
-    },
-    {
-      name: 'gitnexus-cli',
-      description:
-        'Use when the user needs to run GitNexus CLI commands like analyze/index a repo, check status, clean the index, generate a wiki, or list indexed repos. Examples: "Index this repo", "Reanalyze the codebase", "Generate a wiki"',
-    },
-  ];
+	// Skill definitions bundled with the package
+	const skills = [
+		{
+			name: "gitnexus-exploring",
+			description:
+				'Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase. Examples: "How does X work?", "What calls this function?", "Show me the auth flow"',
+		},
+		{
+			name: "gitnexus-debugging",
+			description:
+				'Use when the user is debugging a bug, tracing an error, or asking why something fails. Examples: "Why is X failing?", "Where does this error come from?", "Trace this bug"',
+		},
+		{
+			name: "gitnexus-impact-analysis",
+			description:
+				'Use when the user wants to know what will break if they change something, or needs safety analysis before editing code. Examples: "Is it safe to change X?", "What depends on this?", "What will break?"',
+		},
+		{
+			name: "gitnexus-refactoring",
+			description:
+				'Use when the user wants to rename, extract, split, move, or restructure code safely. Examples: "Rename this function", "Extract this into a module", "Refactor this class", "Move this to a separate file"',
+		},
+		{
+			name: "gitnexus-guide",
+			description:
+				'Use when the user asks about GitNexus itself — available tools, how to query the knowledge graph, MCP resources, graph schema, or workflow reference. Examples: "What GitNexus tools are available?", "How do I use GitNexus?"',
+		},
+		{
+			name: "gitnexus-cli",
+			description:
+				'Use when the user needs to run GitNexus CLI commands like analyze/index a repo, check status, clean the index, generate a wiki, or list indexed repos. Examples: "Index this repo", "Reanalyze the codebase", "Generate a wiki"',
+		},
+	];
 
-  for (const skill of skills) {
-    const skillDir = path.join(skillsDir, skill.name);
-    const skillPath = path.join(skillDir, 'SKILL.md');
+	for (const skill of skills) {
+		const skillDir = path.join(skillsDir, skill.name);
+		const skillPath = path.join(skillDir, "SKILL.md");
 
-    try {
-      // Create skill directory
-      await fs.mkdir(skillDir, { recursive: true });
+		try {
+			// Create skill directory
+			await fs.mkdir(skillDir, { recursive: true });
 
-      // Try to read from package skills directory
-      const packageSkillPath = path.join(__dirname, '..', '..', 'skills', `${skill.name}.md`);
-      let skillContent: string;
+			// Try to read from package skills directory
+			const packageSkillPath = path.join(
+				__dirname,
+				"..",
+				"..",
+				"skills",
+				`${skill.name}.md`,
+			);
+			let skillContent: string;
 
-      try {
-        skillContent = await fs.readFile(packageSkillPath, 'utf-8');
-      } catch {
-        // Fallback: generate minimal skill content
-        skillContent = `---
+			try {
+				skillContent = await fs.readFile(packageSkillPath, "utf-8");
+			} catch {
+				// Fallback: generate minimal skill content
+				skillContent = `---
 name: ${skill.name}
 description: ${skill.description}
 ---
@@ -351,65 +381,77 @@ ${skill.description}
 
 Use GitNexus tools to accomplish this task.
 `;
-      }
+			}
 
-      await fs.writeFile(skillPath, skillContent, 'utf-8');
-      installedSkills.push(skill.name);
-    } catch (err) {
-      // Skip on error, don't fail the whole process
-      logger.warn({ err }, `Warning: Could not install skill ${skill.name}:`);
-    }
-  }
+			await fs.writeFile(skillPath, skillContent, "utf-8");
+			installedSkills.push(skill.name);
+		} catch (err) {
+			// Skip on error, don't fail the whole process
+			logger.warn({ err }, `Warning: Could not install skill ${skill.name}:`);
+		}
+	}
 
-  return installedSkills;
+	return installedSkills;
 }
 
 /**
  * Generate AI context files after indexing
  */
 export async function generateAIContextFiles(
-  repoPath: string,
-  _storagePath: string,
-  projectName: string,
-  stats: RepoStats,
-  generatedSkills?: GeneratedSkillInfo[],
-  options?: AIContextOptions,
+	repoPath: string,
+	_storagePath: string,
+	projectName: string,
+	stats: RepoStats,
+	generatedSkills?: GeneratedSkillInfo[],
+	options?: AIContextOptions,
 ): Promise<{ files: string[] }> {
-  const groupNames = await findGroupsContainingRegistryName(projectName);
-  const content = generateGitNexusContent(
-    projectName,
-    stats,
-    generatedSkills,
-    groupNames,
-    options?.noStats,
-    options?.skipSkills,
-  );
-  const createdFiles: string[] = [];
+	const groupNames = await findGroupsContainingRegistryName(projectName);
+	const content = generateGitNexusContent(
+		projectName,
+		stats,
+		generatedSkills,
+		groupNames,
+		options?.noStats,
+		options?.skipSkills,
+	);
+	const createdFiles: string[] = [];
 
-  if (!options?.skipAgentsMd) {
-    // Create AGENTS.md (standard for Cursor, Windsurf, OpenCode, Cline, etc.)
-    const agentsPath = path.join(repoPath, 'AGENTS.md');
-    const agentsResult = await upsertGitNexusSection(agentsPath, content, projectName, stats);
-    createdFiles.push(`AGENTS.md (${agentsResult})`);
+	if (!options?.skipAgentsMd) {
+		// Create AGENTS.md (standard for Cursor, Windsurf, OpenCode, Cline, etc.)
+		const agentsPath = path.join(repoPath, "AGENTS.md");
+		const agentsResult = await upsertGitNexusSection(
+			agentsPath,
+			content,
+			projectName,
+			stats,
+		);
+		createdFiles.push(`AGENTS.md (${agentsResult})`);
 
-    // Create CLAUDE.md (for Claude Code)
-    const claudePath = path.join(repoPath, 'CLAUDE.md');
-    const claudeResult = await upsertGitNexusSection(claudePath, content, projectName, stats);
-    createdFiles.push(`CLAUDE.md (${claudeResult})`);
-  } else {
-    createdFiles.push('AGENTS.md (skipped via --skip-agents-md)');
-    createdFiles.push('CLAUDE.md (skipped via --skip-agents-md)');
-  }
+		// Create CLAUDE.md (for Claude Code)
+		const claudePath = path.join(repoPath, "CLAUDE.md");
+		const claudeResult = await upsertGitNexusSection(
+			claudePath,
+			content,
+			projectName,
+			stats,
+		);
+		createdFiles.push(`CLAUDE.md (${claudeResult})`);
+	} else {
+		createdFiles.push("AGENTS.md (skipped via --skip-agents-md)");
+		createdFiles.push("CLAUDE.md (skipped via --skip-agents-md)");
+	}
 
-  // Install skills to .claude/skills/gitnexus/ (unless --skip-skills)
-  if (!options?.skipSkills) {
-    const installedSkills = await installSkills(repoPath);
-    if (installedSkills.length > 0) {
-      createdFiles.push(`.claude/skills/gitnexus/ (${installedSkills.length} skills)`);
-    }
-  } else {
-    createdFiles.push('.claude/skills/gitnexus/ (skipped via --skip-skills)');
-  }
+	// Install skills to .claude/skills/gitnexus/ (unless --skip-skills)
+	if (!options?.skipSkills) {
+		const installedSkills = await installSkills(repoPath);
+		if (installedSkills.length > 0) {
+			createdFiles.push(
+				`.claude/skills/gitnexus/ (${installedSkills.length} skills)`,
+			);
+		}
+	} else {
+		createdFiles.push(".claude/skills/gitnexus/ (skipped via --skip-skills)");
+	}
 
-  return { files: createdFiles };
+	return { files: createdFiles };
 }

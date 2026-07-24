@@ -5,7 +5,7 @@
  * under test (e.g. `bridge-db.fixtures.ts`) instead of ballooning this file.
  */
 
-import type { StoredContract } from '../../../src/core/group/types.js';
+import type { StoredContract } from "../../../src/core/group/types.js";
 
 /**
  * Canonical baseline contract used by bridge-db and related tests. Every
@@ -16,17 +16,19 @@ import type { StoredContract } from '../../../src/core/group/types.js';
  * Prefer passing a `Partial<StoredContract>` override for the specific
  * field you care about rather than mutating the returned object in place.
  */
-export function makeContract(overrides: Partial<StoredContract> = {}): StoredContract {
-  return {
-    contractId: 'http::GET::/api/users',
-    type: 'http',
-    role: 'provider',
-    symbolUid: 'uid-1',
-    symbolRef: { filePath: 'src/routes.ts', name: 'getUsers' },
-    symbolName: 'getUsers',
-    confidence: 0.85,
-    meta: {},
-    repo: 'backend',
-    ...overrides,
-  };
+export function makeContract(
+	overrides: Partial<StoredContract> = {},
+): StoredContract {
+	return {
+		contractId: "http::GET::/api/users",
+		type: "http",
+		role: "provider",
+		symbolUid: "uid-1",
+		symbolRef: { filePath: "src/routes.ts", name: "getUsers" },
+		symbolName: "getUsers",
+		confidence: 0.85,
+		meta: {},
+		repo: "backend",
+		...overrides,
+	};
 }

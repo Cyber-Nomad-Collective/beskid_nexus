@@ -16,8 +16,8 @@
  * it directly — only `languages/ruby.ts` does.
  */
 
-import type { SyntaxNode } from './ast-helpers.js';
-import type { LanguageProvider } from '../language-provider.js';
+import type { LanguageProvider } from "../language-provider.js";
+import type { SyntaxNode } from "./ast-helpers.js";
 
 /**
  * Rewrite suggestion returned by `maybeRewriteRubyBareCallToSelf`.
@@ -31,13 +31,13 @@ import type { LanguageProvider } from '../language-provider.js';
  * `ImplicitReceiverOverride`; `dispatchKind` becomes the `hint` field).
  */
 export interface SelfCallRewrite {
-  readonly callForm: 'member';
-  readonly receiverName: 'self';
-  readonly receiverTypeName: string;
-  /** `'singleton'` when the enclosing method is `def self.foo` / inside a
-   *  `singleton_class` body; `'instance'` otherwise. Controls MRO ancestry
-   *  view selection in stage-4 dispatch. */
-  readonly dispatchKind: 'instance' | 'singleton';
+	readonly callForm: "member";
+	readonly receiverName: "self";
+	readonly receiverTypeName: string;
+	/** `'singleton'` when the enclosing method is `def self.foo` / inside a
+	 *  `singleton_class` body; `'instance'` otherwise. Controls MRO ancestry
+	 *  view selection in stage-4 dispatch. */
+	readonly dispatchKind: "instance" | "singleton";
 }
 
 /** Maximum parent-walk depth to prevent runaway traversal. */
@@ -48,15 +48,15 @@ const MAX_PARENT_DEPTH = 50;
  * Stops at `class`/`module` boundary or MAX_PARENT_DEPTH (50) to bound traversal.
  */
 function isInsideSingletonMethod(callNode: SyntaxNode): boolean {
-  let current: SyntaxNode | null = callNode.parent;
-  let depth = 0;
-  while (current && depth++ < MAX_PARENT_DEPTH) {
-    if (current.type === 'singleton_method') return true;
-    if (current.type === 'singleton_class') return true;
-    if (current.type === 'class' || current.type === 'module') return false;
-    current = current.parent;
-  }
-  return false;
+	let current: SyntaxNode | null = callNode.parent;
+	let depth = 0;
+	while (current && depth++ < MAX_PARENT_DEPTH) {
+		if (current.type === "singleton_method") return true;
+		if (current.type === "singleton_class") return true;
+		if (current.type === "class" || current.type === "module") return false;
+		current = current.parent;
+	}
+	return false;
 }
 
 /**
@@ -74,28 +74,30 @@ function isInsideSingletonMethod(callNode: SyntaxNode): boolean {
  * `{callForm:'member', receiverName:'self', receiverTypeName:'Account', dispatchKind:'instance'}`
  */
 export function maybeRewriteRubyBareCallToSelf(
-  calledName: string,
-  callForm: 'free' | 'member' | 'constructor' | undefined,
-  callNode: SyntaxNode,
-  enclosingClassName: string | null,
-  provider: Pick<LanguageProvider, 'isBuiltInName' | 'mroStrategy'>,
+	calledName: string,
+	callForm: "free" | "member" | "constructor" | undefined,
+	callNode: SyntaxNode,
+	enclosingClassName: string | null,
+	provider: Pick<LanguageProvider, "isBuiltInName" | "mroStrategy">,
 ): SelfCallRewrite | null {
-  // Body-statement bare identifiers produce `callForm === undefined` because
-  // the @call node IS the @call.name node in tree-sitter-ruby. Treat both
-  // undefined and 'free' as qualifying.
-  if (callForm !== 'free' && callForm !== undefined) return null;
-  if (provider.mroStrategy !== 'ruby-mixin') return null;
-  if (!enclosingClassName) return null;
-  if (calledName === 'super') return null;
-  if (provider.isBuiltInName(calledName)) return null;
+	// Body-statement bare identifiers produce `callForm === undefined` because
+	// the @call node IS the @call.name node in tree-sitter-ruby. Treat both
+	// undefined and 'free' as qualifying.
+	if (callForm !== "free" && callForm !== undefined) return null;
+	if (provider.mroStrategy !== "ruby-mixin") return null;
+	if (!enclosingClassName) return null;
+	if (calledName === "super") return null;
+	if (provider.isBuiltInName(calledName)) return null;
 
-  const dispatchKind: SelfCallRewrite['dispatchKind'] = isInsideSingletonMethod(callNode)
-    ? 'singleton'
-    : 'instance';
-  return {
-    callForm: 'member',
-    receiverName: 'self',
-    receiverTypeName: enclosingClassName,
-    dispatchKind,
-  };
+	const dispatchKind: SelfCallRewrite["dispatchKind"] = isInsideSingletonMethod(
+		callNode,
+	)
+		? "singleton"
+		: "instance";
+	return {
+		callForm: "member",
+		receiverName: "self",
+		receiverTypeName: enclosingClassName,
+		dispatchKind,
+	};
 }

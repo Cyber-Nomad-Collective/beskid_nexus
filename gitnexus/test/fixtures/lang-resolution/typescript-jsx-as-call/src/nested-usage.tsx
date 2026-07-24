@@ -1,4 +1,4 @@
-import { Inner, Outer } from './components';
+import { Inner, Outer } from "./components";
 
 // Nested JSX — `<Outer><Inner /></Outer>`. Both `<Outer>` (paired) and
 // `<Inner />` (self-closing) are reference sites for the same enclosing
@@ -7,7 +7,7 @@ import { Inner, Outer } from './components';
 //   useNested → Outer
 //   useNested → Inner
 export const useNested = () => (
-  <Outer>
-    <Inner />
-  </Outer>
+	<Outer>
+		<Inner />
+	</Outer>
 );

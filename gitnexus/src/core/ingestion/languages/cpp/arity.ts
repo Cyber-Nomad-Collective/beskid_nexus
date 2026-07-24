@@ -1,4 +1,4 @@
-import type { Callsite, SymbolDefinition } from 'gitnexus-shared';
+import type { Callsite, SymbolDefinition } from "gitnexus-shared";
 
 /**
  * C++ arity compatibility: supports overloading and default parameters.
@@ -16,20 +16,21 @@ import type { Callsite, SymbolDefinition } from 'gitnexus-shared';
  *   - 'unknown':       insufficient metadata to determine
  */
 export function cppArityCompatibility(
-  def: SymbolDefinition,
-  callsite: Callsite,
-): 'compatible' | 'unknown' | 'incompatible' {
-  const max = def.parameterCount;
-  const min = def.requiredParameterCount;
-  if (max === undefined && min === undefined) return 'unknown';
-  if (!Number.isFinite(callsite.arity) || callsite.arity < 0) return 'unknown';
+	def: SymbolDefinition,
+	callsite: Callsite,
+): "compatible" | "unknown" | "incompatible" {
+	const max = def.parameterCount;
+	const min = def.requiredParameterCount;
+	if (max === undefined && min === undefined) return "unknown";
+	if (!Number.isFinite(callsite.arity) || callsite.arity < 0) return "unknown";
 
-  const variadic = def.parameterTypes?.some((t) => t === '...') ?? false;
+	const variadic = def.parameterTypes?.some((t) => t === "...") ?? false;
 
-  // Too few arguments: less than the minimum required
-  if (min !== undefined && callsite.arity < min) return 'incompatible';
-  // Too many arguments: more than the maximum and not variadic
-  if (max !== undefined && callsite.arity > max && !variadic) return 'incompatible';
+	// Too few arguments: less than the minimum required
+	if (min !== undefined && callsite.arity < min) return "incompatible";
+	// Too many arguments: more than the maximum and not variadic
+	if (max !== undefined && callsite.arity > max && !variadic)
+		return "incompatible";
 
-  return 'compatible';
+	return "compatible";
 }

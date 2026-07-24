@@ -1,5 +1,5 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 /**
  * Safely read a file inside a repo, rejecting any path that escapes
@@ -11,13 +11,13 @@ import * as path from 'node:path';
  * sensitive) lives in exactly one place.
  */
 export function readSafe(repoPath: string, rel: string): string | null {
-  const abs = path.resolve(repoPath, rel);
-  const base = path.resolve(repoPath);
-  const relToBase = path.relative(base, abs);
-  if (relToBase.startsWith('..') || path.isAbsolute(relToBase)) return null;
-  try {
-    return fs.readFileSync(abs, 'utf-8');
-  } catch {
-    return null;
-  }
+	const abs = path.resolve(repoPath, rel);
+	const base = path.resolve(repoPath);
+	const relToBase = path.relative(base, abs);
+	if (relToBase.startsWith("..") || path.isAbsolute(relToBase)) return null;
+	try {
+		return fs.readFileSync(abs, "utf-8");
+	} catch {
+		return null;
+	}
 }

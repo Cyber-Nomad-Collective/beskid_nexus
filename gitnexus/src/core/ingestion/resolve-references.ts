@@ -39,43 +39,43 @@
  */
 
 import {
-  buildClassRegistry,
-  buildFieldRegistry,
-  buildMethodRegistry,
-  CLASS_KINDS,
-  FIELD_KINDS,
-  METHOD_KINDS,
-  type ClassRegistry,
-  type FieldRegistry,
-  type MethodRegistry,
-  type Reference,
-  type ReferenceIndex,
-  type ReferenceSite,
-  type RegistryContext,
-  type RegistryProviders,
-  type Resolution,
-  type ScopeId,
-} from 'gitnexus-shared';
-import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js';
+	buildClassRegistry,
+	buildFieldRegistry,
+	buildMethodRegistry,
+	CLASS_KINDS,
+	type ClassRegistry,
+	FIELD_KINDS,
+	type FieldRegistry,
+	METHOD_KINDS,
+	type MethodRegistry,
+	type Reference,
+	type ReferenceIndex,
+	type ReferenceSite,
+	type RegistryContext,
+	type RegistryProviders,
+	type Resolution,
+	type ScopeId,
+} from "gitnexus-shared";
+import type { ScopeResolutionIndexes } from "./model/scope-resolution-indexes.js";
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 export interface ResolveReferencesInput {
-  readonly scopes: ScopeResolutionIndexes;
-  /** Provider hooks consumed by the registries (e.g. `arityCompatibility`). */
-  readonly providers?: RegistryProviders;
+	readonly scopes: ScopeResolutionIndexes;
+	/** Provider hooks consumed by the registries (e.g. `arityCompatibility`). */
+	readonly providers?: RegistryProviders;
 }
 
 export interface ResolveStats {
-  readonly sitesProcessed: number;
-  readonly referencesEmitted: number;
-  /** Sites where `Registry.lookup` returned no candidates. */
-  readonly unresolved: number;
+	readonly sitesProcessed: number;
+	readonly referencesEmitted: number;
+	/** Sites where `Registry.lookup` returned no candidates. */
+	readonly unresolved: number;
 }
 
 export interface ResolveReferencesOutput {
-  readonly referenceIndex: ReferenceIndex;
-  readonly stats: ResolveStats;
+	readonly referenceIndex: ReferenceIndex;
+	readonly stats: ResolveStats;
 }
 
 /**
@@ -83,69 +83,80 @@ export interface ResolveReferencesOutput {
  * matching registry and produce a `ReferenceIndex` keyed by source scope
  * + target def.
  */
-export function resolveReferenceSites(input: ResolveReferencesInput): ResolveReferencesOutput {
-  const { scopes } = input;
-  const providers: RegistryProviders = input.providers ?? {};
+export function resolveReferenceSites(
+	input: ResolveReferencesInput,
+): ResolveReferencesOutput {
+	const { scopes } = input;
+	const providers: RegistryProviders = input.providers ?? {};
 
-  const ctx: RegistryContext = {
-    scopes: scopes.scopeTree,
-    defs: scopes.defs,
-    qualifiedNames: scopes.qualifiedNames,
-    moduleScopes: scopes.moduleScopes,
-    methodDispatch: scopes.methodDispatch,
-    providers,
-  };
+	const ctx: RegistryContext = {
+		scopes: scopes.scopeTree,
+		defs: scopes.defs,
+		qualifiedNames: scopes.qualifiedNames,
+		moduleScopes: scopes.moduleScopes,
+		methodDispatch: scopes.methodDispatch,
+		providers,
+	};
 
-  const classRegistry = buildClassRegistry(ctx);
-  const methodRegistry = buildMethodRegistry(ctx);
-  const fieldRegistry = buildFieldRegistry(ctx);
+	const classRegistry = buildClassRegistry(ctx);
+	const methodRegistry = buildMethodRegistry(ctx);
+	const fieldRegistry = buildFieldRegistry(ctx);
 
-  // bySourceScope is the canonical index; byTargetDef is derived from it.
-  const bySourceScope = new Map<ScopeId, Reference[]>();
-  const byTargetDef = new Map<string, Reference[]>();
+	// bySourceScope is the canonical index; byTargetDef is derived from it.
+	const bySourceScope = new Map<ScopeId, Reference[]>();
+	const byTargetDef = new Map<string, Reference[]>();
 
-  let sitesProcessed = 0;
-  let referencesEmitted = 0;
-  let unresolved = 0;
+	let sitesProcessed = 0;
+	let referencesEmitted = 0;
+	let unresolved = 0;
 
-  for (const site of scopes.referenceSites) {
-    sitesProcessed++;
+	for (const site of scopes.referenceSites) {
+		sitesProcessed++;
 
-    const resolutions = lookupForSite(site, classRegistry, methodRegistry, fieldRegistry);
-    if (resolutions.length === 0) {
-      unresolved++;
-      continue;
-    }
+		const resolutions = lookupForSite(
+			site,
+			classRegistry,
+			methodRegistry,
+			fieldRegistry,
+		);
+		if (resolutions.length === 0) {
+			unresolved++;
+			continue;
+		}
 
-    const top = resolutions[0]!;
-    const ref = buildReference(site, top);
-    referencesEmitted++;
+		const top = resolutions[0]!;
+		const ref = buildReference(site, top);
+		referencesEmitted++;
 
-    let bySource = bySourceScope.get(site.inScope);
-    if (bySource === undefined) {
-      bySource = [];
-      bySourceScope.set(site.inScope, bySource);
-    }
-    bySource.push(ref);
+		let bySource = bySourceScope.get(site.inScope);
+		if (bySource === undefined) {
+			bySource = [];
+			bySourceScope.set(site.inScope, bySource);
+		}
+		bySource.push(ref);
 
-    let byTarget = byTargetDef.get(top.def.nodeId);
-    if (byTarget === undefined) {
-      byTarget = [];
-      byTargetDef.set(top.def.nodeId, byTarget);
-    }
-    byTarget.push(ref);
-  }
+		let byTarget = byTargetDef.get(top.def.nodeId);
+		if (byTarget === undefined) {
+			byTarget = [];
+			byTargetDef.set(top.def.nodeId, byTarget);
+		}
+		byTarget.push(ref);
+	}
 
-  // Freeze inner arrays so consumers don't accidentally mutate.
-  const frozenBySource = new Map<ScopeId, readonly Reference[]>();
-  for (const [k, v] of bySourceScope) frozenBySource.set(k, Object.freeze([...v]));
-  const frozenByTarget = new Map<string, readonly Reference[]>();
-  for (const [k, v] of byTargetDef) frozenByTarget.set(k, Object.freeze([...v]));
+	// Freeze inner arrays so consumers don't accidentally mutate.
+	const frozenBySource = new Map<ScopeId, readonly Reference[]>();
+	for (const [k, v] of bySourceScope)
+		frozenBySource.set(k, Object.freeze([...v]));
+	const frozenByTarget = new Map<string, readonly Reference[]>();
+	for (const [k, v] of byTargetDef) frozenByTarget.set(k, Object.freeze([...v]));
 
-  return {
-    referenceIndex: { bySourceScope: frozenBySource, byTargetDef: frozenByTarget },
-    stats: { sitesProcessed, referencesEmitted, unresolved },
-  };
+	return {
+		referenceIndex: {
+			bySourceScope: frozenBySource,
+			byTargetDef: frozenByTarget,
+		},
+		stats: { sitesProcessed, referencesEmitted, unresolved },
+	};
 }
 
 // ─── Internal ───────────────────────────────────────────────────────────────
@@ -170,60 +181,62 @@ export function resolveReferenceSites(input: ResolveReferencesInput): ResolveRef
  * regardless of which registry surfaces the def.
  */
 function lookupForSite(
-  site: ReferenceSite,
-  classRegistry: ClassRegistry,
-  methodRegistry: MethodRegistry,
-  fieldRegistry: FieldRegistry,
+	site: ReferenceSite,
+	classRegistry: ClassRegistry,
+	methodRegistry: MethodRegistry,
+	fieldRegistry: FieldRegistry,
 ): readonly Resolution[] {
-  switch (site.kind) {
-    case 'call': {
-      const opts: Parameters<MethodRegistry['lookup']>[2] = {
-        ...(site.arity !== undefined ? { callsite: { arity: site.arity } } : {}),
-        ...(site.explicitReceiver !== undefined ? { explicitReceiver: site.explicitReceiver } : {}),
-      };
-      return methodRegistry.lookup(site.name, site.inScope, opts);
-    }
-    case 'inherits':
-    case 'type-reference': {
-      return classRegistry.lookup(site.name, site.inScope);
-    }
-    case 'read':
-    case 'write': {
-      // Try field first; fall through to method then class so bare-name
-      // reads of a function (e.g. `cb = save`) still resolve.
-      const fieldHits = fieldRegistry.lookup(site.name, site.inScope);
-      if (fieldHits.length > 0) return fieldHits;
-      const methodHits = methodRegistry.lookup(site.name, site.inScope);
-      if (methodHits.length > 0) return methodHits;
-      return classRegistry.lookup(site.name, site.inScope);
-    }
-    case 'import-use': {
-      // Try class, method, then field. The lexical-hit Step 1 in
-      // `lookupCore` handles the actual binding lookup; the choice of
-      // registry only narrows `acceptedKinds`.
-      const classHits = classRegistry.lookup(site.name, site.inScope);
-      if (classHits.length > 0) return classHits;
-      const methodHits = methodRegistry.lookup(site.name, site.inScope);
-      if (methodHits.length > 0) return methodHits;
-      return fieldRegistry.lookup(site.name, site.inScope);
-    }
-  }
+	switch (site.kind) {
+		case "call": {
+			const opts: Parameters<MethodRegistry["lookup"]>[2] = {
+				...(site.arity !== undefined ? { callsite: { arity: site.arity } } : {}),
+				...(site.explicitReceiver !== undefined
+					? { explicitReceiver: site.explicitReceiver }
+					: {}),
+			};
+			return methodRegistry.lookup(site.name, site.inScope, opts);
+		}
+		case "inherits":
+		case "type-reference": {
+			return classRegistry.lookup(site.name, site.inScope);
+		}
+		case "read":
+		case "write": {
+			// Try field first; fall through to method then class so bare-name
+			// reads of a function (e.g. `cb = save`) still resolve.
+			const fieldHits = fieldRegistry.lookup(site.name, site.inScope);
+			if (fieldHits.length > 0) return fieldHits;
+			const methodHits = methodRegistry.lookup(site.name, site.inScope);
+			if (methodHits.length > 0) return methodHits;
+			return classRegistry.lookup(site.name, site.inScope);
+		}
+		case "import-use": {
+			// Try class, method, then field. The lexical-hit Step 1 in
+			// `lookupCore` handles the actual binding lookup; the choice of
+			// registry only narrows `acceptedKinds`.
+			const classHits = classRegistry.lookup(site.name, site.inScope);
+			if (classHits.length > 0) return classHits;
+			const methodHits = methodRegistry.lookup(site.name, site.inScope);
+			if (methodHits.length > 0) return methodHits;
+			return fieldRegistry.lookup(site.name, site.inScope);
+		}
+	}
 }
 
 /** Compose a `Reference` record from a site + its top resolution. */
 function buildReference(site: ReferenceSite, top: Resolution): Reference {
-  return {
-    fromScope: site.inScope,
-    toDef: top.def.nodeId,
-    atRange: site.atRange,
-    kind: site.kind,
-    confidence: top.confidence,
-    evidence: top.evidence,
-  };
+	return {
+		fromScope: site.inScope,
+		toDef: top.def.nodeId,
+		atRange: site.atRange,
+		kind: site.kind,
+		confidence: top.confidence,
+		evidence: top.evidence,
+	};
 }
 
 // Re-export the kind sets so consumers don't have to import them
 // separately when constructing custom resolution flows. The mappings
 // stay in `gitnexus-shared` (single source of truth); this is a
 // convenience pass-through only.
-export { CLASS_KINDS, METHOD_KINDS, FIELD_KINDS };
+export { CLASS_KINDS, FIELD_KINDS, METHOD_KINDS };

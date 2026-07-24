@@ -20,16 +20,16 @@
  * doesn't need to carry book-keeping fields.
  */
 
-import { ORIGIN_PRIORITY, type OriginForTieBreak } from '../origin-priority.js';
-import type { Resolution } from '../types.js';
+import { ORIGIN_PRIORITY, type OriginForTieBreak } from "../origin-priority.js";
+import type { Resolution } from "../types.js";
 
 export const CONFIDENCE_EPSILON = 0.001;
 
 /** Side-information per candidate used for secondary tie-breaks. */
 export interface TieBreakKey {
-  readonly scopeDepth: number;
-  readonly mroDepth: number;
-  readonly origin: OriginForTieBreak;
+	readonly scopeDepth: number;
+	readonly mroDepth: number;
+	readonly origin: OriginForTieBreak;
 }
 
 /**
@@ -44,33 +44,33 @@ export interface TieBreakKey {
  * even on malformed inputs.
  */
 export function compareByConfidenceWithTiebreaks(
-  a: Resolution,
-  b: Resolution,
-  keys: ReadonlyMap<string, TieBreakKey>,
+	a: Resolution,
+	b: Resolution,
+	keys: ReadonlyMap<string, TieBreakKey>,
 ): number {
-  // Primary: confidence DESC, treating values within epsilon as equal.
-  const delta = b.confidence - a.confidence;
-  if (Math.abs(delta) >= CONFIDENCE_EPSILON) return delta < 0 ? -1 : 1;
+	// Primary: confidence DESC, treating values within epsilon as equal.
+	const delta = b.confidence - a.confidence;
+	if (Math.abs(delta) >= CONFIDENCE_EPSILON) return delta < 0 ? -1 : 1;
 
-  const ka = keys.get(a.def.nodeId) ?? DEFAULT_KEY;
-  const kb = keys.get(b.def.nodeId) ?? DEFAULT_KEY;
+	const ka = keys.get(a.def.nodeId) ?? DEFAULT_KEY;
+	const kb = keys.get(b.def.nodeId) ?? DEFAULT_KEY;
 
-  // Secondary: scope depth ASC.
-  if (ka.scopeDepth !== kb.scopeDepth) return ka.scopeDepth - kb.scopeDepth;
+	// Secondary: scope depth ASC.
+	if (ka.scopeDepth !== kb.scopeDepth) return ka.scopeDepth - kb.scopeDepth;
 
-  // Tertiary: MRO depth ASC.
-  if (ka.mroDepth !== kb.mroDepth) return ka.mroDepth - kb.mroDepth;
+	// Tertiary: MRO depth ASC.
+	if (ka.mroDepth !== kb.mroDepth) return ka.mroDepth - kb.mroDepth;
 
-  // Quaternary: ORIGIN_PRIORITY ASC.
-  const po = ORIGIN_PRIORITY[ka.origin] - ORIGIN_PRIORITY[kb.origin];
-  if (po !== 0) return po;
+	// Quaternary: ORIGIN_PRIORITY ASC.
+	const po = ORIGIN_PRIORITY[ka.origin] - ORIGIN_PRIORITY[kb.origin];
+	if (po !== 0) return po;
 
-  // Final: DefId lexicographic, locale-aware for deterministic cross-platform output.
-  return a.def.nodeId.localeCompare(b.def.nodeId);
+	// Final: DefId lexicographic, locale-aware for deterministic cross-platform output.
+	return a.def.nodeId.localeCompare(b.def.nodeId);
 }
 
 const DEFAULT_KEY: TieBreakKey = Object.freeze({
-  scopeDepth: 0,
-  mroDepth: 0,
-  origin: 'local',
+	scopeDepth: 0,
+	mroDepth: 0,
+	origin: "local",
 });

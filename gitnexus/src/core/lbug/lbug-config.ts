@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
-import os from 'os';
-import path from 'path';
-import type lbug from '@ladybugdb/core';
+import type lbug from "@ladybugdb/core";
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
 
 /**
  * Shared configuration for `@ladybugdb/core` `Database` construction.
@@ -37,36 +37,37 @@ import type lbug from '@ladybugdb/core';
  * integer; anything invalid falls back to the default.
  */
 export const LBUG_MAX_DB_SIZE: number = (() => {
-  const raw = process.env.GITNEXUS_LBUG_MAX_DB_SIZE;
-  if (raw) {
-    const parsed = Number(raw);
-    if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
-  }
-  return 16 * 1024 * 1024 * 1024;
+	const raw = process.env.GITNEXUS_LBUG_MAX_DB_SIZE;
+	if (raw) {
+		const parsed = Number(raw);
+		if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
+	}
+	return 16 * 1024 * 1024 * 1024;
 })();
 
 /** Matches WAL corruption errors from the LadybugDB engine. */
-const WAL_CORRUPTION_RE = /corrupt(ed)?\s+wal|invalid\s+wal\s+record|wal.*corrupt|checksum.*wal/i;
+const WAL_CORRUPTION_RE =
+	/corrupt(ed)?\s+wal|invalid\s+wal\s+record|wal.*corrupt|checksum.*wal/i;
 
 export const WAL_RECOVERY_SUGGESTION =
-  'WAL corruption detected. Run `gitnexus analyze` to rebuild the index.';
+	"WAL corruption detected. Run `gitnexus analyze` to rebuild the index.";
 
 export function isWalCorruptionError(err: unknown): boolean {
-  if (!err) return false;
-  const msg = err instanceof Error ? err.message : String(err);
-  return WAL_CORRUPTION_RE.test(msg);
+	if (!err) return false;
+	const msg = err instanceof Error ? err.message : String(err);
+	return WAL_CORRUPTION_RE.test(msg);
 }
 
 type LbugModule = typeof lbug;
 
 export interface LbugDatabaseOptions {
-  readOnly?: boolean;
-  throwOnWalReplayFailure?: boolean;
+	readOnly?: boolean;
+	throwOnWalReplayFailure?: boolean;
 }
 
 export interface LbugConnectionHandle {
-  db: lbug.Database;
-  conn: lbug.Connection;
+	db: lbug.Database;
+	conn: lbug.Connection;
 }
 
 /**
@@ -81,33 +82,35 @@ export interface LbugConnectionHandle {
  * import directly from this module — no re-export to keep in sync.
  */
 export const isDbBusyError = (err: unknown): boolean => {
-  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-  // `lock` already subsumes `could not set lock`; the broader term is kept
-  // because graph-DB transient errors include "deadlock", "lock contention",
-  // and the LadybugDB native module's "could not set lock on file" — all of
-  // which deserve a retry. If a non-transient lock-shaped error ever
-  // surfaces (e.g., "lock file missing" during recovery), tighten this
-  // matcher rather than raising the retry budget.
-  return msg.includes('busy') || msg.includes('lock') || msg.includes('already in use');
+	const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+	// `lock` already subsumes `could not set lock`; the broader term is kept
+	// because graph-DB transient errors include "deadlock", "lock contention",
+	// and the LadybugDB native module's "could not set lock on file" — all of
+	// which deserve a retry. If a non-transient lock-shaped error ever
+	// surfaces (e.g., "lock file missing" during recovery), tighten this
+	// matcher rather than raising the retry budget.
+	return (
+		msg.includes("busy") || msg.includes("lock") || msg.includes("already in use")
+	);
 };
 
 export function createLbugDatabase(
-  lbugModule: LbugModule,
-  databasePath: string,
-  options: LbugDatabaseOptions = {},
+	lbugModule: LbugModule,
+	databasePath: string,
+	options: LbugDatabaseOptions = {},
 ): lbug.Database {
-  // .d.ts declares fewer args than the native constructor accepts.
-  return new (lbugModule.Database as any)(
-    databasePath,
-    0, // bufferManagerSize
-    false, // enableCompression (pinned for v0.16.0)
-    options.readOnly ?? false,
-    LBUG_MAX_DB_SIZE,
-    true, // autoCheckpoint
-    -1, // checkpointThreshold
-    options.throwOnWalReplayFailure ?? true,
-    true, // enableChecksums
-  ) as lbug.Database;
+	// .d.ts declares fewer args than the native constructor accepts.
+	return new (lbugModule.Database as any)(
+		databasePath,
+		0, // bufferManagerSize
+		false, // enableCompression (pinned for v0.16.0)
+		options.readOnly ?? false,
+		LBUG_MAX_DB_SIZE,
+		true, // autoCheckpoint
+		-1, // checkpointThreshold
+		options.throwOnWalReplayFailure ?? true,
+		true, // enableChecksums
+	) as lbug.Database;
 }
 
 // ─── Lock-busy retry tuning knobs ───────────────────────────────────────────
@@ -137,7 +140,7 @@ const OPEN_LOCK_RETRY_DELAY_MS = 100;
 
 const HANDLE_RELEASE_PROBE_ATTEMPTS = 5;
 const HANDLE_RELEASE_PROBE_DELAY_MS = 50;
-const HANDLE_RELEASE_LOCK_CODES = new Set(['EBUSY', 'EPERM', 'EACCES']);
+const HANDLE_RELEASE_LOCK_CODES = new Set(["EBUSY", "EPERM", "EACCES"]);
 
 /**
  * Test-fixture directory prefixes recognized by `isTestFixturePath`.
@@ -152,7 +155,7 @@ const HANDLE_RELEASE_LOCK_CODES = new Set(['EBUSY', 'EPERM', 'EACCES']);
  * The default `createTempDir('gitnexus-test-')` and the lbug variant
  * `'gitnexus-lbug-'` cover today's call sites.
  */
-const TEST_FIXTURE_PREFIXES = ['gitnexus-lbug-', 'gitnexus-test-'];
+const TEST_FIXTURE_PREFIXES = ["gitnexus-lbug-", "gitnexus-test-"];
 
 /**
  * Marker symbol attached to lock errors after `openWithLockRetry` exhausts
@@ -163,18 +166,26 @@ const TEST_FIXTURE_PREFIXES = ['gitnexus-lbug-', 'gitnexus-test-'];
  * The symbol is internal to GitNexus; consumers should treat the underlying
  * error message as the user-visible signal.
  */
-export const LBUG_OPEN_RETRY_EXHAUSTED = Symbol.for('gitnexus.lbug.openRetryExhausted');
+export const LBUG_OPEN_RETRY_EXHAUSTED = Symbol.for(
+	"gitnexus.lbug.openRetryExhausted",
+);
 
 export const isOpenRetryExhausted = (err: unknown): boolean => {
-  if (err === null || err === undefined || typeof err !== 'object') return false;
-  return (err as { [LBUG_OPEN_RETRY_EXHAUSTED]?: boolean })[LBUG_OPEN_RETRY_EXHAUSTED] === true;
+	if (err === null || err === undefined || typeof err !== "object") return false;
+	return (
+		(err as { [LBUG_OPEN_RETRY_EXHAUSTED]?: boolean })[
+			LBUG_OPEN_RETRY_EXHAUSTED
+		] === true
+	);
 };
 
 const tagOpenRetryExhausted = (err: unknown): unknown => {
-  if (err && typeof err === 'object') {
-    (err as { [LBUG_OPEN_RETRY_EXHAUSTED]?: boolean })[LBUG_OPEN_RETRY_EXHAUSTED] = true;
-  }
-  return err;
+	if (err && typeof err === "object") {
+		(err as { [LBUG_OPEN_RETRY_EXHAUSTED]?: boolean })[
+			LBUG_OPEN_RETRY_EXHAUSTED
+		] = true;
+	}
+	return err;
 };
 
 /**
@@ -193,17 +204,21 @@ const tagOpenRetryExhausted = (err: unknown): unknown => {
  *     with `gitnexus-lbug-` accept arbitrary nested paths under it.
  */
 const isTestFixturePath = (dbPath: string): boolean => {
-  const tmpRoot = os.tmpdir().replace(new RegExp(`${path.sep === '\\' ? '\\\\' : path.sep}+$`), '');
-  const resolved = path.resolve(dbPath);
-  if (!resolved.startsWith(tmpRoot + path.sep) && resolved !== tmpRoot) return false;
-  const parentBase = path.basename(path.dirname(resolved));
-  return TEST_FIXTURE_PREFIXES.some((p) => parentBase.startsWith(p));
+	const tmpRoot = os
+		.tmpdir()
+		.replace(new RegExp(`${path.sep === "\\" ? "\\\\" : path.sep}+$`), "");
+	const resolved = path.resolve(dbPath);
+	if (!resolved.startsWith(tmpRoot + path.sep) && resolved !== tmpRoot)
+		return false;
+	const parentBase = path.basename(path.dirname(resolved));
+	return TEST_FIXTURE_PREFIXES.some((p) => parentBase.startsWith(p));
 };
 
 /** Exported only for direct unit testing — production callers use `openWithLockRetry`. */
 export const _isTestFixturePathForTest = isTestFixturePath;
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number): Promise<void> =>
+	new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Attempt to remove stale `.wal` / `.lock` sidecars that a previous aborted
@@ -211,13 +226,13 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
  * else is swallowed so the caller's retry can surface the original error.
  */
 const sweepStaleSidecars = async (dbPath: string): Promise<void> => {
-  for (const suffix of ['.wal', '.lock']) {
-    try {
-      await fs.unlink(dbPath + suffix);
-    } catch {
-      /* missing sidecar or permission error — let the open retry surface it */
-    }
-  }
+	for (const suffix of [".wal", ".lock"]) {
+		try {
+			await fs.unlink(dbPath + suffix);
+		} catch {
+			/* missing sidecar or permission error — let the open retry surface it */
+		}
+	}
 };
 
 /**
@@ -229,61 +244,63 @@ const sweepStaleSidecars = async (dbPath: string): Promise<void> => {
  * `withLbugDb` skips re-retrying a freshly-exhausted path.
  */
 const openWithLockRetry = async (
-  construct: () => lbug.Database,
-  dbPath: string,
+	construct: () => lbug.Database,
+	dbPath: string,
 ): Promise<lbug.Database> => {
-  let originalLockError: unknown;
-  for (let attempt = 1; attempt <= OPEN_LOCK_RETRY_ATTEMPTS; attempt++) {
-    try {
-      return construct();
-    } catch (err) {
-      if (!isDbBusyError(err)) throw err;
-      originalLockError = err;
-      if (attempt === OPEN_LOCK_RETRY_ATTEMPTS) break;
-      await sleep(OPEN_LOCK_RETRY_DELAY_MS * attempt);
-    }
-  }
+	let originalLockError: unknown;
+	for (let attempt = 1; attempt <= OPEN_LOCK_RETRY_ATTEMPTS; attempt++) {
+		try {
+			return construct();
+		} catch (err) {
+			if (!isDbBusyError(err)) throw err;
+			originalLockError = err;
+			if (attempt === OPEN_LOCK_RETRY_ATTEMPTS) break;
+			await sleep(OPEN_LOCK_RETRY_DELAY_MS * attempt);
+		}
+	}
 
-  // Final defense: only for recognized test fixtures, sweep stale sidecars
-  // (a prior aborted test run can leave a `.wal` lock that survives the
-  // tmp dir cleanup). Production paths never reach this branch — the guard
-  // requires the immediate parent dir to match a test prefix AND the
-  // resolved path to live under the OS temp directory.
-  if (isTestFixturePath(dbPath)) {
-    await sweepStaleSidecars(dbPath);
-    try {
-      return construct();
-    } catch {
-      // Intentionally do NOT overwrite originalLockError. The user-actionable
-      // signal is "we exhausted lock retries" — a different error from the
-      // post-sweep attempt is less useful than the lock failure that drove
-      // the sweep in the first place.
-    }
-  }
-  throw tagOpenRetryExhausted(originalLockError);
+	// Final defense: only for recognized test fixtures, sweep stale sidecars
+	// (a prior aborted test run can leave a `.wal` lock that survives the
+	// tmp dir cleanup). Production paths never reach this branch — the guard
+	// requires the immediate parent dir to match a test prefix AND the
+	// resolved path to live under the OS temp directory.
+	if (isTestFixturePath(dbPath)) {
+		await sweepStaleSidecars(dbPath);
+		try {
+			return construct();
+		} catch {
+			// Intentionally do NOT overwrite originalLockError. The user-actionable
+			// signal is "we exhausted lock retries" — a different error from the
+			// post-sweep attempt is less useful than the lock failure that drove
+			// the sweep in the first place.
+		}
+	}
+	throw tagOpenRetryExhausted(originalLockError);
 };
 
 export async function openLbugConnection(
-  lbugModule: LbugModule,
-  databasePath: string,
-  options: LbugDatabaseOptions = {},
+	lbugModule: LbugModule,
+	databasePath: string,
+	options: LbugDatabaseOptions = {},
 ): Promise<LbugConnectionHandle> {
-  let db: lbug.Database | undefined;
-  try {
-    db = await openWithLockRetry(
-      () => createLbugDatabase(lbugModule, databasePath, options),
-      databasePath,
-    );
-    return { db, conn: new lbugModule.Connection(db) };
-  } catch (err) {
-    if (db) await db.close().catch(() => {});
-    throw err;
-  }
+	let db: lbug.Database | undefined;
+	try {
+		db = await openWithLockRetry(
+			() => createLbugDatabase(lbugModule, databasePath, options),
+			databasePath,
+		);
+		return { db, conn: new lbugModule.Connection(db) };
+	} catch (err) {
+		if (db) await db.close().catch(() => {});
+		throw err;
+	}
 }
 
-export async function closeLbugConnection(handle: LbugConnectionHandle): Promise<void> {
-  await handle.conn.close().catch(() => {});
-  await handle.db.close().catch(() => {});
+export async function closeLbugConnection(
+	handle: LbugConnectionHandle,
+): Promise<void> {
+	await handle.conn.close().catch(() => {});
+	await handle.db.close().catch(() => {});
 }
 
 /**
@@ -313,32 +330,34 @@ export async function closeLbugConnection(handle: LbugConnectionHandle): Promise
  *   - `try/finally` around `handle.close()` guarantees no fd leak even
  *     if close itself throws.
  */
-export const waitForWindowsHandleRelease = async (dbPath: string): Promise<boolean> => {
-  const mainReleased = await probeSinglePath(dbPath);
-  const walReleased = await probeSinglePath(dbPath + '.wal');
-  return mainReleased && walReleased;
+export const waitForWindowsHandleRelease = async (
+	dbPath: string,
+): Promise<boolean> => {
+	const mainReleased = await probeSinglePath(dbPath);
+	const walReleased = await probeSinglePath(dbPath + ".wal");
+	return mainReleased && walReleased;
 };
 
 const probeSinglePath = async (filePath: string): Promise<boolean> => {
-  for (let attempt = 1; attempt <= HANDLE_RELEASE_PROBE_ATTEMPTS; attempt++) {
-    let handle: fs.FileHandle | undefined;
-    try {
-      handle = await fs.open(filePath, 'r+');
-      return true;
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException | undefined)?.code;
-      if (!code || !HANDLE_RELEASE_LOCK_CODES.has(code)) return true; // ENOENT / unrelated → not our problem
-      if (attempt === HANDLE_RELEASE_PROBE_ATTEMPTS) return false;
-      await sleep(HANDLE_RELEASE_PROBE_DELAY_MS * attempt);
-    } finally {
-      if (handle) {
-        try {
-          await handle.close();
-        } catch {
-          /* swallow — caller cannot do anything useful with a probe-close failure */
-        }
-      }
-    }
-  }
-  return false;
+	for (let attempt = 1; attempt <= HANDLE_RELEASE_PROBE_ATTEMPTS; attempt++) {
+		let handle: fs.FileHandle | undefined;
+		try {
+			handle = await fs.open(filePath, "r+");
+			return true;
+		} catch (err) {
+			const code = (err as NodeJS.ErrnoException | undefined)?.code;
+			if (!code || !HANDLE_RELEASE_LOCK_CODES.has(code)) return true; // ENOENT / unrelated → not our problem
+			if (attempt === HANDLE_RELEASE_PROBE_ATTEMPTS) return false;
+			await sleep(HANDLE_RELEASE_PROBE_DELAY_MS * attempt);
+		} finally {
+			if (handle) {
+				try {
+					await handle.close();
+				} catch {
+					/* swallow — caller cannot do anything useful with a probe-close failure */
+				}
+			}
+		}
+	}
+	return false;
 };

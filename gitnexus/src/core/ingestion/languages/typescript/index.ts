@@ -86,10 +86,21 @@
  * either the legacy or registry-primary run.
  */
 
-export { emitTsScopeCaptures } from './captures.js';
-export { getTypescriptCaptureCacheStats, resetTypescriptCaptureCacheStats } from './cache-stats.js';
-export { interpretTsImport, interpretTsTypeBinding } from './interpret.js';
-export { typescriptMergeBindings } from './merge-bindings.js';
-export { typescriptArityCompatibility } from './arity.js';
-export { resolveTsImportTarget, resolveTsTarget, type TsResolveContext } from './import-target.js';
-export { tsBindingScopeFor, tsImportOwningScope, tsReceiverBinding } from './simple-hooks.js';
+export { typescriptArityCompatibility } from "./arity.js";
+export {
+	getTypescriptCaptureCacheStats,
+	resetTypescriptCaptureCacheStats,
+} from "./cache-stats.js";
+export { emitTsScopeCaptures } from "./captures.js";
+export {
+	resolveTsImportTarget,
+	resolveTsTarget,
+	type TsResolveContext,
+} from "./import-target.js";
+export { interpretTsImport, interpretTsTypeBinding } from "./interpret.js";
+export { typescriptMergeBindings } from "./merge-bindings.js";
+export {
+	tsBindingScopeFor,
+	tsImportOwningScope,
+	tsReceiverBinding,
+} from "./simple-hooks.js";

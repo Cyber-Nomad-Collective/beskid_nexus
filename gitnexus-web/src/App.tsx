@@ -1,38 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-
-import { GraphExplorerLayout, SymbolSearch } from './components/graph-explorer-layout';
-import { LoadingOverlay } from './components/LoadingOverlay';
-import { NexusAppShell } from './components/nexus-app-shell';
-import { NexusServiceUnavailable } from './components/NexusServiceUnavailable';
-import { OAuthSetupWizard } from './components/OAuthSetupWizard';
-import { RepoSelector } from './components/repo-selector';
-import { ERROR_RESET_DELAY_MS } from './config/ui-constants';
-import { createKnowledgeGraph } from './core/graph/graph';
-import { useAppState } from './hooks/useAppState';
-import { AppStateProvider } from './hooks/useAppState';
-import { useCatalogBootstrap } from './hooks/useCatalogBootstrap';
+import type { PipelineProgress } from "gitnexus-shared";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { GraphCanvasHandle } from "./components/GraphCanvas";
 import {
+	GraphExplorerLayout,
+	SymbolSearch,
+} from "./components/graph-explorer-layout";
+import { LoadingOverlay } from "./components/LoadingOverlay";
+import { NexusServiceUnavailable } from "./components/NexusServiceUnavailable";
+import { NexusAppShell } from "./components/nexus-app-shell";
+import { OAuthSetupWizard } from "./components/OAuthSetupWizard";
+import { RepoSelector } from "./components/repo-selector";
+import { ERROR_RESET_DELAY_MS } from "./config/ui-constants";
+import { createKnowledgeGraph } from "./core/graph/graph";
+import { AppStateProvider, useAppState } from "./hooks/useAppState";
+import { useCatalogBootstrap } from "./hooks/useCatalogBootstrap";
+import {
+	type ConnectResult,
 	connectHeartbeat,
 	connectToServer,
+	ensureBackendUrlFromPage,
 	fetchRepos,
 	normalizeServerUrl,
-	type ConnectResult,
-} from './services/backend-client';
-import { ensureBackendUrlFromPage, probeBackend } from './services/backend-client';
+	probeBackend,
+} from "./services/backend-client";
 import {
+	type AuthUser,
 	fetchAuthMe,
 	fetchPublicCatalog,
 	fetchSetupStatus,
 	githubLoginUrl,
-	type AuthUser,
-} from './services/nexus-api';
-import type { GraphCanvasHandle } from './components/GraphCanvas';
-import type { PipelineProgress } from 'gitnexus-shared';
+} from "./services/nexus-api";
 
-type ShellPhase = 'boot' | 'setup' | 'server-down' | 'explorer';
+type ShellPhase = "boot" | "setup" | "server-down" | "explorer";
 
 const AppContent = () => {
-	const [shellPhase, setShellPhase] = useState<ShellPhase>('boot');
+	const [shellPhase, setShellPhase] = useState<ShellPhase>("boot");
 	const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 	const [serverDisconnected, setServerDisconnected] = useState(false);
 	const bootstrapped = useRef(false);
@@ -57,8 +59,8 @@ const AppContent = () => {
 			const repoPath = result.repoInfo.repoPath ?? result.repoInfo.path;
 			const projectName =
 				repoName ||
-				(repoPath || '').replace(/\\/g, '/').split('/').filter(Boolean).pop() ||
-				'';
+				(repoPath || "").replace(/\\/g, "/").split("/").filter(Boolean).pop() ||
+				"";
 
 			setProjectName(projectName);
 			setCurrentRepo(projectName);
@@ -69,11 +71,11 @@ const AppContent = () => {
 			setGraph(graph);
 
 			setServerBaseUrl(normalizeServerUrl(serverUrl));
-			setViewMode('exploring');
+			setViewMode("exploring");
 			setProgress(null);
 			fetchRepos()
 				.then(setAvailableRepos)
-				.catch((err) => console.warn('Failed to fetch repo list:', err));
+				.catch((err) => console.warn("Failed to fetch repo list:", err));
 		},
 		[
 			setAvailableRepos,
@@ -88,30 +90,30 @@ const AppContent = () => {
 
 	const connectProject = useCallback(
 		(project: string, serverUrl = window.location.origin) => {
-			setViewMode('loading');
+			setViewMode("loading");
 			setProgress({
-				phase: 'extracting',
+				phase: "extracting",
 				percent: 0,
-				message: 'Connecting to server…',
+				message: "Connecting to server…",
 				detail: project,
 			});
 
 			connectToServer(
 				serverUrl,
 				(phase, downloaded, total) => {
-					if (phase === 'validating') {
+					if (phase === "validating") {
 						setProgress({
-							phase: 'extracting',
+							phase: "extracting",
 							percent: 5,
-							message: 'Connecting to server…',
-							detail: 'Validating backend',
+							message: "Connecting to server…",
+							detail: "Validating backend",
 						});
-					} else if (phase === 'downloading') {
+					} else if (phase === "downloading") {
 						const pct = total ? Math.round((downloaded! / total) * 90) + 5 : 50;
 						setProgress({
-							phase: 'extracting',
+							phase: "extracting",
 							percent: pct,
-							message: 'Loading graph…',
+							message: "Loading graph…",
 							detail: `${((downloaded ?? 0) / (1024 * 1024)).toFixed(1)} MB`,
 						});
 					}
@@ -122,15 +124,15 @@ const AppContent = () => {
 			)
 				.then((result) => applyConnectResult(result, serverUrl))
 				.catch((err) => {
-					console.error('Connect failed:', err);
+					console.error("Connect failed:", err);
 					setProgress({
-						phase: 'error',
+						phase: "error",
 						percent: 0,
-						message: 'Failed to connect',
-						detail: err instanceof Error ? err.message : 'Unknown error',
+						message: "Failed to connect",
+						detail: err instanceof Error ? err.message : "Unknown error",
 					});
 					setTimeout(() => {
-						setViewMode('exploring');
+						setViewMode("exploring");
 						setProgress(null);
 					}, ERROR_RESET_DELAY_MS);
 				});
@@ -143,7 +145,7 @@ const AppContent = () => {
 
 		const serverUp = await probeBackend().catch(() => false);
 		if (!serverUp) {
-			setShellPhase('server-down');
+			setShellPhase("server-down");
 			return;
 		}
 
@@ -152,19 +154,19 @@ const AppContent = () => {
 			authHubConfigured: true,
 			authHubUrl: null,
 			adminConfigured: true,
-			oauthSource: 'hub' as const,
+			oauthSource: "hub" as const,
 			hasSessionSecret: false,
 			hasSetupToken: false,
 		}));
 
 		if (!setup.oauthConfigured) {
-			setShellPhase('setup');
+			setShellPhase("setup");
 			return;
 		}
 
 		const me = await fetchAuthMe().catch(() => null);
 		setAuthUser(me);
-		setShellPhase('explorer');
+		setShellPhase("explorer");
 	}, []);
 
 	useEffect(() => {
@@ -180,11 +182,16 @@ const AppContent = () => {
 		[connectProject],
 	);
 
-	const { catalog, activeEntry, loading: catalogLoading, error: catalogError, selectRepo } =
-		useCatalogBootstrap({
-			enabled: shellPhase === 'explorer',
-			onSelectRepo: (registryName) => handleSelectRepo(registryName),
-		});
+	const {
+		catalog,
+		activeEntry,
+		loading: catalogLoading,
+		error: catalogError,
+		selectRepo,
+	} = useCatalogBootstrap({
+		enabled: shellPhase === "explorer",
+		onSelectRepo: (registryName) => handleSelectRepo(registryName),
+	});
 
 	const refreshCatalog = useCallback(async () => {
 		const me = await fetchAuthMe().catch(() => null);
@@ -192,7 +199,7 @@ const AppContent = () => {
 		try {
 			const entries = await fetchPublicCatalog();
 			const params = new URLSearchParams(window.location.search);
-			const repoParam = params.get('repo') ?? params.get('project');
+			const repoParam = params.get("repo") ?? params.get("project");
 			const match = entries.find(
 				(entry) =>
 					entry.id === repoParam ||
@@ -203,12 +210,12 @@ const AppContent = () => {
 				selectRepo(match);
 			}
 		} catch (err) {
-			console.warn('Failed to refresh catalog:', err);
+			console.warn("Failed to refresh catalog:", err);
 		}
 	}, [activeEntry?.id, selectRepo]);
 
 	useEffect(() => {
-		if (viewMode !== 'exploring') return;
+		if (viewMode !== "exploring") return;
 		return connectHeartbeat(
 			() => setServerDisconnected(false),
 			() => setServerDisconnected(true),
@@ -220,26 +227,27 @@ const AppContent = () => {
 	}, []);
 
 	const indexedEntries = catalog.filter((entry) => entry.indexed);
-	const showEmptyCatalog = shellPhase === 'explorer' && !catalogLoading && indexedEntries.length === 0;
+	const showEmptyCatalog =
+		shellPhase === "explorer" && !catalogLoading && indexedEntries.length === 0;
 
 	const repoSelector = (
 		<RepoSelector
 			entries={catalog}
 			activeEntryId={activeEntry?.id}
 			onSelect={selectRepo}
-			disabled={catalogLoading || (viewMode === 'loading' && !!progress)}
+			disabled={catalogLoading || (viewMode === "loading" && !!progress)}
 		/>
 	);
 
-	if (shellPhase === 'boot') {
+	if (shellPhase === "boot") {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-background">
 				<LoadingOverlay
 					progress={
 						{
-							phase: 'extracting',
+							phase: "extracting",
 							percent: 0,
-							message: 'Starting Beskid Nexus…',
+							message: "Starting Beskid Nexus…",
 						} as PipelineProgress
 					}
 				/>
@@ -247,7 +255,7 @@ const AppContent = () => {
 		);
 	}
 
-	if (shellPhase === 'setup') {
+	if (shellPhase === "setup") {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-background p-4">
 				<OAuthSetupWizard
@@ -260,7 +268,7 @@ const AppContent = () => {
 		);
 	}
 
-	if (shellPhase === 'server-down') {
+	if (shellPhase === "server-down") {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-background p-4">
 				<NexusServiceUnavailable
@@ -273,7 +281,7 @@ const AppContent = () => {
 		);
 	}
 
-	if (viewMode === 'loading' && progress) {
+	if (viewMode === "loading" && progress) {
 		return (
 			<NexusAppShell
 				authUser={authUser}
@@ -301,10 +309,12 @@ const AppContent = () => {
 				<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
 					<h1 className="text-2xl font-semibold">No indexed repositories yet</h1>
 					<p className="max-w-md text-muted-foreground">
-						Beskid Nexus publishes knowledge graphs for registered repositories. When indexing
-						completes, the first repo opens here automatically.
+						Beskid Nexus publishes knowledge graphs for registered repositories. When
+						indexing completes, the first repo opens here automatically.
 					</p>
-					{catalogError ? <p className="text-sm text-destructive">{catalogError}</p> : null}
+					{catalogError ? (
+						<p className="text-sm text-destructive">{catalogError}</p>
+					) : null}
 					{!authUser ? (
 						<a
 							href={githubLoginUrl()}

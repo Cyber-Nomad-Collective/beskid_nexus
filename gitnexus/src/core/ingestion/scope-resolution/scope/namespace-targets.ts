@@ -32,31 +32,31 @@
  * reference-site scope chain (mirror `findExportedDefByName`).
  */
 
-import type { ParsedFile } from 'gitnexus-shared';
-import type { ScopeResolutionIndexes } from '../../model/scope-resolution-indexes.js';
+import type { ParsedFile } from "gitnexus-shared";
+import type { ScopeResolutionIndexes } from "../../model/scope-resolution-indexes.js";
 
 export function collectNamespaceTargets(
-  parsed: ParsedFile,
-  scopes: ScopeResolutionIndexes,
+	parsed: ParsedFile,
+	scopes: ScopeResolutionIndexes,
 ): Map<string, string[]> {
-  const out = new Map<string, string[]>();
-  const moduleEdges = scopes.imports.get(parsed.moduleScope);
-  if (moduleEdges === undefined) return out;
+	const out = new Map<string, string[]>();
+	const moduleEdges = scopes.imports.get(parsed.moduleScope);
+	if (moduleEdges === undefined) return out;
 
-  const namespaceLocals = new Set<string>();
-  for (const imp of parsed.parsedImports) {
-    if (imp.kind === 'namespace') namespaceLocals.add(imp.localName);
-  }
+	const namespaceLocals = new Set<string>();
+	for (const imp of parsed.parsedImports) {
+		if (imp.kind === "namespace") namespaceLocals.add(imp.localName);
+	}
 
-  for (const edge of moduleEdges) {
-    if (edge.targetFile === null) continue;
-    if (!namespaceLocals.has(edge.localName)) continue;
-    let targets = out.get(edge.localName);
-    if (targets === undefined) {
-      targets = [];
-      out.set(edge.localName, targets);
-    }
-    if (!targets.includes(edge.targetFile)) targets.push(edge.targetFile);
-  }
-  return out;
+	for (const edge of moduleEdges) {
+		if (edge.targetFile === null) continue;
+		if (!namespaceLocals.has(edge.localName)) continue;
+		let targets = out.get(edge.localName);
+		if (targets === undefined) {
+			targets = [];
+			out.set(edge.localName, targets);
+		}
+		if (!targets.includes(edge.targetFile)) targets.push(edge.targetFile);
+	}
+	return out;
 }

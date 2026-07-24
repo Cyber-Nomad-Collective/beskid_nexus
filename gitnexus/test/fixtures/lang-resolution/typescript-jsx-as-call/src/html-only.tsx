@@ -4,8 +4,8 @@
 // predicate filters these out, so this caller must NOT emit any CALLS
 // edges to identifiers `div` / `span` / `button`.
 export const useHtml = () => (
-  <div>
-    <span>text</span>
-    <button>click</button>
-  </div>
+	<div>
+		<span>text</span>
+		<button>click</button>
+	</div>
 );

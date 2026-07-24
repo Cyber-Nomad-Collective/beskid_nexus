@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { fetchPublicCatalog, type PublicCatalogEntry } from '../services/nexus-api';
+import {
+	fetchPublicCatalog,
+	type PublicCatalogEntry,
+} from "../services/nexus-api";
 
 export function pickInitialCatalogEntry(
 	entries: PublicCatalogEntry[],
@@ -25,9 +28,14 @@ export interface UseCatalogBootstrapOptions {
 	onSelectRepo: (registryName: string, entry: PublicCatalogEntry) => void;
 }
 
-export function useCatalogBootstrap({ enabled = true, onSelectRepo }: UseCatalogBootstrapOptions) {
+export function useCatalogBootstrap({
+	enabled = true,
+	onSelectRepo,
+}: UseCatalogBootstrapOptions) {
 	const [catalog, setCatalog] = useState<PublicCatalogEntry[]>([]);
-	const [activeEntry, setActiveEntry] = useState<PublicCatalogEntry | null>(null);
+	const [activeEntry, setActiveEntry] = useState<PublicCatalogEntry | null>(
+		null,
+	);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const bootstrapped = useRef(false);
@@ -39,9 +47,9 @@ export function useCatalogBootstrap({ enabled = true, onSelectRepo }: UseCatalog
 			setActiveEntry(entry);
 
 			const url = new URL(window.location.href);
-			url.searchParams.set('repo', entry.id);
-			url.searchParams.delete('project');
-			window.history.replaceState(null, '', url.toString());
+			url.searchParams.set("repo", entry.id);
+			url.searchParams.delete("project");
+			window.history.replaceState(null, "", url.toString());
 
 			onSelectRepo(registryName, entry);
 		},
@@ -62,7 +70,7 @@ export function useCatalogBootstrap({ enabled = true, onSelectRepo }: UseCatalog
 				setCatalog(entries);
 
 				const params = new URLSearchParams(window.location.search);
-				const repoParam = params.get('repo') ?? params.get('project');
+				const repoParam = params.get("repo") ?? params.get("project");
 				const initial = pickInitialCatalogEntry(entries, repoParam);
 				setActiveEntry(initial);
 
@@ -71,7 +79,7 @@ export function useCatalogBootstrap({ enabled = true, onSelectRepo }: UseCatalog
 				}
 			} catch (err) {
 				if (!cancelled) {
-					setError(err instanceof Error ? err.message : 'Failed to load catalog');
+					setError(err instanceof Error ? err.message : "Failed to load catalog");
 				}
 			} finally {
 				if (!cancelled) setLoading(false);

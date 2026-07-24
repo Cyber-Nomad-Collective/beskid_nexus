@@ -19,14 +19,13 @@
  * pressure. `clearScopeIdInternPool` is exported for test isolation.
  */
 
-import type { Range } from './types.js';
-import type { ScopeId, ScopeKind } from './types.js';
+import type { Range, ScopeId, ScopeKind } from "./types.js";
 
 /** Inputs required to construct a canonical `ScopeId`. */
 export interface ScopeIdInput {
-  readonly filePath: string;
-  readonly range: Range;
-  readonly kind: ScopeKind;
+	readonly filePath: string;
+	readonly range: Range;
+	readonly kind: ScopeKind;
 }
 
 /**
@@ -36,11 +35,11 @@ export interface ScopeIdInput {
  * returns the same string reference for the lifetime of the pool.
  */
 export function makeScopeId(input: ScopeIdInput): ScopeId {
-  const raw = `scope:${input.filePath}#${input.range.startLine}:${input.range.startCol}-${input.range.endLine}:${input.range.endCol}:${input.kind}`;
-  const existing = INTERN_POOL.get(raw);
-  if (existing !== undefined) return existing;
-  INTERN_POOL.set(raw, raw);
-  return raw;
+	const raw = `scope:${input.filePath}#${input.range.startLine}:${input.range.startCol}-${input.range.endLine}:${input.range.endCol}:${input.kind}`;
+	const existing = INTERN_POOL.get(raw);
+	if (existing !== undefined) return existing;
+	INTERN_POOL.set(raw, raw);
+	return raw;
 }
 
 /**
@@ -50,7 +49,7 @@ export function makeScopeId(input: ScopeIdInput): ScopeId {
  * equality for existing scope ids.
  */
 export function clearScopeIdInternPool(): void {
-  INTERN_POOL.clear();
+	INTERN_POOL.clear();
 }
 
 /** Internal: shared intern pool (process-local). */

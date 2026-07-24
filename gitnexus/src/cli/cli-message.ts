@@ -27,14 +27,14 @@
  * data on stdout for piping (`gitnexus query | jq`). User banners on
  * stdout would corrupt that pipeline.
  */
-import { logger } from '../core/logger.js';
+import { logger } from "../core/logger.js";
 
 function writeStderr(msg: string): void {
-  // Direct write — bypassing `console.*` so it cannot be intercepted by
-  // progress-bar redirection (see `cli/analyze.ts:barLog`) or other
-  // routing. The structured tee below still goes through the logger so
-  // log aggregation works either way.
-  process.stderr.write(msg.endsWith('\n') ? msg : msg + '\n');
+	// Direct write — bypassing `console.*` so it cannot be intercepted by
+	// progress-bar redirection (see `cli/analyze.ts:barLog`) or other
+	// routing. The structured tee below still goes through the logger so
+	// log aggregation works either way.
+	process.stderr.write(msg.endsWith("\n") ? msg : msg + "\n");
 }
 
 /**
@@ -42,8 +42,8 @@ function writeStderr(msg: string): void {
  * and any message the user expects to read in plain text.
  */
 export function cliInfo(msg: string, fields?: Record<string, unknown>): void {
-  writeStderr(msg);
-  logger.info(fields ?? {}, msg);
+	writeStderr(msg);
+	logger.info(fields ?? {}, msg);
 }
 
 /**
@@ -51,8 +51,8 @@ export function cliInfo(msg: string, fields?: Record<string, unknown>): void {
  * indicates the command can still proceed in some form.
  */
 export function cliWarn(msg: string, fields?: Record<string, unknown>): void {
-  writeStderr(msg);
-  logger.warn(fields ?? {}, msg);
+	writeStderr(msg);
+	logger.warn(fields ?? {}, msg);
 }
 
 /**
@@ -60,6 +60,6 @@ export function cliWarn(msg: string, fields?: Record<string, unknown>): void {
  * paired with a non-zero exit code at the call site.
  */
 export function cliError(msg: string, fields?: Record<string, unknown>): void {
-  writeStderr(msg);
-  logger.error(fields ?? {}, msg);
+	writeStderr(msg);
+	logger.error(fields ?? {}, msg);
 }

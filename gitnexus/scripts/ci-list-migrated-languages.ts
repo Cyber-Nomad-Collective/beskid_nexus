@@ -11,14 +11,14 @@
  * workflow can pipe it straight into `$GITHUB_OUTPUT`.
  */
 
-import { MIGRATED_LANGUAGES } from '../src/core/ingestion/registry-primary-flag.js';
+import { MIGRATED_LANGUAGES } from "../src/core/ingestion/registry-primary-flag.js";
 
 const entries = [...MIGRATED_LANGUAGES].map((slug) => {
-  const s = String(slug);
-  return {
-    slug: s,
-    envvar: s.toUpperCase().replace(/-/g, '_'),
-  };
+	const s = String(slug);
+	return {
+		slug: s,
+		envvar: s.toUpperCase().replace(/-/g, "_"),
+	};
 });
 
 process.stdout.write(JSON.stringify(entries));

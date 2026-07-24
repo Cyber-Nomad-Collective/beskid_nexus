@@ -11,20 +11,24 @@
  * via `AbortSignal.timeout` on the underlying fetch.
  */
 
-import { CircuitOpenError, ResilientFetchExhaustedError, resilientFetch } from 'gitnexus-shared';
+import {
+	CircuitOpenError,
+	ResilientFetchExhaustedError,
+	resilientFetch,
+} from "gitnexus-shared";
 
 const HTTP_TIMEOUT_MS = 30_000;
 const HTTP_MAX_RETRIES = 2;
 const HTTP_RETRY_BACKOFF_MS = 1_000;
 const HTTP_BATCH_SIZE = 64;
 const DEFAULT_DIMS = 384;
-const HTTP_BREAKER_KEY = 'embeddings-http';
+const HTTP_BREAKER_KEY = "embeddings-http";
 
 interface HttpConfig {
-  baseUrl: string;
-  model: string;
-  apiKey: string;
-  dimensions?: number;
+	baseUrl: string;
+	model: string;
+	apiKey: string;
+	dimensions?: number;
 }
 
 /**
@@ -33,29 +37,33 @@ interface HttpConfig {
  * Not cached — env vars are read fresh so late configuration takes effect.
  */
 const readConfig = (): HttpConfig | null => {
-  const baseUrl = process.env.GITNEXUS_EMBEDDING_URL;
-  const model = process.env.GITNEXUS_EMBEDDING_MODEL;
-  if (!baseUrl || !model) return null;
+	const baseUrl = process.env.GITNEXUS_EMBEDDING_URL;
+	const model = process.env.GITNEXUS_EMBEDDING_MODEL;
+	if (!baseUrl || !model) return null;
 
-  const rawDims = process.env.GITNEXUS_EMBEDDING_DIMS;
-  let dimensions: number | undefined;
-  if (rawDims !== undefined) {
-    if (!/^\d+$/.test(rawDims)) {
-      throw new Error(`GITNEXUS_EMBEDDING_DIMS must be a positive integer, got "${rawDims}"`);
-    }
-    const parsed = parseInt(rawDims, 10);
-    if (parsed <= 0) {
-      throw new Error(`GITNEXUS_EMBEDDING_DIMS must be a positive integer, got "${rawDims}"`);
-    }
-    dimensions = parsed;
-  }
+	const rawDims = process.env.GITNEXUS_EMBEDDING_DIMS;
+	let dimensions: number | undefined;
+	if (rawDims !== undefined) {
+		if (!/^\d+$/.test(rawDims)) {
+			throw new Error(
+				`GITNEXUS_EMBEDDING_DIMS must be a positive integer, got "${rawDims}"`,
+			);
+		}
+		const parsed = parseInt(rawDims, 10);
+		if (parsed <= 0) {
+			throw new Error(
+				`GITNEXUS_EMBEDDING_DIMS must be a positive integer, got "${rawDims}"`,
+			);
+		}
+		dimensions = parsed;
+	}
 
-  return {
-    baseUrl: baseUrl.replace(/\/+$/, ''),
-    model,
-    apiKey: process.env.GITNEXUS_EMBEDDING_API_KEY ?? 'unused',
-    dimensions,
-  };
+	return {
+		baseUrl: baseUrl.replace(/\/+$/, ""),
+		model,
+		apiKey: process.env.GITNEXUS_EMBEDDING_API_KEY ?? "unused",
+		dimensions,
+	};
 };
 
 /**
@@ -67,23 +75,24 @@ export const isHttpMode = (): boolean => readConfig() !== null;
  * Return the configured embedding dimensions for HTTP mode, or undefined
  * if HTTP mode is not active or no explicit dimensions are set.
  */
-export const getHttpDimensions = (): number | undefined => readConfig()?.dimensions;
+export const getHttpDimensions = (): number | undefined =>
+	readConfig()?.dimensions;
 
 /**
  * Return a safe representation of a URL for error messages.
  * Strips query string (may contain tokens) and userinfo.
  */
 const safeUrl = (url: string): string => {
-  try {
-    const u = new URL(url);
-    return `${u.protocol}//${u.host}${u.pathname}`;
-  } catch {
-    return '<invalid-url>';
-  }
+	try {
+		const u = new URL(url);
+		return `${u.protocol}//${u.host}${u.pathname}`;
+	} catch {
+		return "<invalid-url>";
+	}
 };
 
 interface EmbeddingItem {
-  embedding: number[];
+	embedding: number[];
 }
 
 /**
@@ -103,69 +112,74 @@ interface EmbeddingItem {
  *   unknown fields.
  */
 const httpEmbedBatch = async (
-  url: string,
-  batch: string[],
-  model: string,
-  apiKey: string,
-  batchIndex = 0,
-  dimensions?: number,
+	url: string,
+	batch: string[],
+	model: string,
+	apiKey: string,
+	batchIndex = 0,
+	dimensions?: number,
 ): Promise<EmbeddingItem[]> => {
-  const requestBody: { input: string[]; model: string; dimensions?: number } = {
-    input: batch,
-    model,
-  };
-  if (dimensions !== undefined) {
-    requestBody.dimensions = dimensions;
-  }
+	const requestBody: { input: string[]; model: string; dimensions?: number } = {
+		input: batch,
+		model,
+	};
+	if (dimensions !== undefined) {
+		requestBody.dimensions = dimensions;
+	}
 
-  let resp: Response;
-  try {
-    resp = await resilientFetch(
-      url,
-      {
-        method: 'POST',
-        signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(requestBody),
-      },
-      {
-        breakerKey: HTTP_BREAKER_KEY,
-        retry: { maxAttempts: HTTP_MAX_RETRIES + 1, baseDelayMs: HTTP_RETRY_BACKOFF_MS },
-      },
-    );
-  } catch (err) {
-    if (err instanceof CircuitOpenError) {
-      throw new Error(
-        `Embedding endpoint circuit open (${safeUrl(url)}, batch ${batchIndex}): retry in ${Math.ceil(err.retryAfterMs / 1000)}s`,
-      );
-    }
-    if (err instanceof DOMException && err.name === 'TimeoutError') {
-      throw new Error(
-        `Embedding request timed out after ${HTTP_TIMEOUT_MS}ms (${safeUrl(url)}, batch ${batchIndex})`,
-      );
-    }
-    if (err instanceof ResilientFetchExhaustedError) {
-      throw new Error(
-        `Embedding endpoint returned ${err.response.status} (${safeUrl(url)}, batch ${batchIndex})`,
-      );
-    }
-    const reason = err instanceof Error ? err.message : String(err);
-    throw new Error(`Embedding request failed (${safeUrl(url)}, batch ${batchIndex}): ${reason}`);
-  }
+	let resp: Response;
+	try {
+		resp = await resilientFetch(
+			url,
+			{
+				method: "POST",
+				signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${apiKey}`,
+				},
+				body: JSON.stringify(requestBody),
+			},
+			{
+				breakerKey: HTTP_BREAKER_KEY,
+				retry: {
+					maxAttempts: HTTP_MAX_RETRIES + 1,
+					baseDelayMs: HTTP_RETRY_BACKOFF_MS,
+				},
+			},
+		);
+	} catch (err) {
+		if (err instanceof CircuitOpenError) {
+			throw new Error(
+				`Embedding endpoint circuit open (${safeUrl(url)}, batch ${batchIndex}): retry in ${Math.ceil(err.retryAfterMs / 1000)}s`,
+			);
+		}
+		if (err instanceof DOMException && err.name === "TimeoutError") {
+			throw new Error(
+				`Embedding request timed out after ${HTTP_TIMEOUT_MS}ms (${safeUrl(url)}, batch ${batchIndex})`,
+			);
+		}
+		if (err instanceof ResilientFetchExhaustedError) {
+			throw new Error(
+				`Embedding endpoint returned ${err.response.status} (${safeUrl(url)}, batch ${batchIndex})`,
+			);
+		}
+		const reason = err instanceof Error ? err.message : String(err);
+		throw new Error(
+			`Embedding request failed (${safeUrl(url)}, batch ${batchIndex}): ${reason}`,
+		);
+	}
 
-  if (!resp.ok) {
-    // resilientFetch already retried 5xx/429; any non-OK response here is
-    // a terminal client error (4xx other than 429).
-    throw new Error(
-      `Embedding endpoint returned ${resp.status} (${safeUrl(url)}, batch ${batchIndex})`,
-    );
-  }
+	if (!resp.ok) {
+		// resilientFetch already retried 5xx/429; any non-OK response here is
+		// a terminal client error (4xx other than 429).
+		throw new Error(
+			`Embedding endpoint returned ${resp.status} (${safeUrl(url)}, batch ${batchIndex})`,
+		);
+	}
 
-  const data = (await resp.json()) as { data: EmbeddingItem[] };
-  return data.data;
+	const data = (await resp.json()) as { data: EmbeddingItem[] };
+	return data.data;
 };
 
 /**
@@ -176,53 +190,53 @@ const httpEmbedBatch = async (
  * @returns Array of Float32Array embedding vectors
  */
 export const httpEmbed = async (texts: string[]): Promise<Float32Array[]> => {
-  if (texts.length === 0) return [];
+	if (texts.length === 0) return [];
 
-  const config = readConfig();
-  if (!config) throw new Error('HTTP embedding not configured');
+	const config = readConfig();
+	if (!config) throw new Error("HTTP embedding not configured");
 
-  const url = `${config.baseUrl}/embeddings`;
-  const allVectors: Float32Array[] = [];
+	const url = `${config.baseUrl}/embeddings`;
+	const allVectors: Float32Array[] = [];
 
-  for (let i = 0; i < texts.length; i += HTTP_BATCH_SIZE) {
-    const batch = texts.slice(i, i + HTTP_BATCH_SIZE);
-    const batchIndex = Math.floor(i / HTTP_BATCH_SIZE);
-    const items = await httpEmbedBatch(
-      url,
-      batch,
-      config.model,
-      config.apiKey,
-      batchIndex,
-      config.dimensions,
-    );
+	for (let i = 0; i < texts.length; i += HTTP_BATCH_SIZE) {
+		const batch = texts.slice(i, i + HTTP_BATCH_SIZE);
+		const batchIndex = Math.floor(i / HTTP_BATCH_SIZE);
+		const items = await httpEmbedBatch(
+			url,
+			batch,
+			config.model,
+			config.apiKey,
+			batchIndex,
+			config.dimensions,
+		);
 
-    if (items.length !== batch.length) {
-      throw new Error(
-        `Embedding endpoint returned ${items.length} vectors for ${batch.length} texts ` +
-          `(${safeUrl(url)}, batch ${batchIndex})`,
-      );
-    }
+		if (items.length !== batch.length) {
+			throw new Error(
+				`Embedding endpoint returned ${items.length} vectors for ${batch.length} texts ` +
+					`(${safeUrl(url)}, batch ${batchIndex})`,
+			);
+		}
 
-    for (const item of items) {
-      const vec = new Float32Array(item.embedding);
-      // Fail fast on dimension mismatch rather than inserting bad vectors
-      // into the FLOAT[N] column which would cause a cryptic Kuzu error.
-      const expected = config.dimensions ?? DEFAULT_DIMS;
-      if (vec.length !== expected) {
-        const hint = config.dimensions
-          ? 'Update GITNEXUS_EMBEDDING_DIMS to match your model output.'
-          : `Set GITNEXUS_EMBEDDING_DIMS=${vec.length} to match your model output.`;
-        throw new Error(
-          `Embedding dimension mismatch: endpoint returned ${vec.length}d vector, ` +
-            `but expected ${expected}d. ${hint}`,
-        );
-      }
+		for (const item of items) {
+			const vec = new Float32Array(item.embedding);
+			// Fail fast on dimension mismatch rather than inserting bad vectors
+			// into the FLOAT[N] column which would cause a cryptic Kuzu error.
+			const expected = config.dimensions ?? DEFAULT_DIMS;
+			if (vec.length !== expected) {
+				const hint = config.dimensions
+					? "Update GITNEXUS_EMBEDDING_DIMS to match your model output."
+					: `Set GITNEXUS_EMBEDDING_DIMS=${vec.length} to match your model output.`;
+				throw new Error(
+					`Embedding dimension mismatch: endpoint returned ${vec.length}d vector, ` +
+						`but expected ${expected}d. ${hint}`,
+				);
+			}
 
-      allVectors.push(vec);
-    }
-  }
+			allVectors.push(vec);
+		}
+	}
 
-  return allVectors;
+	return allVectors;
 };
 
 /**
@@ -233,34 +247,36 @@ export const httpEmbed = async (texts: string[]): Promise<Float32Array[]> => {
  * @returns Embedding vector as number array
  */
 export const httpEmbedQuery = async (text: string): Promise<number[]> => {
-  const config = readConfig();
-  if (!config) throw new Error('HTTP embedding not configured');
+	const config = readConfig();
+	if (!config) throw new Error("HTTP embedding not configured");
 
-  const url = `${config.baseUrl}/embeddings`;
-  const items = await httpEmbedBatch(
-    url,
-    [text],
-    config.model,
-    config.apiKey,
-    0,
-    config.dimensions,
-  );
-  if (!items.length) {
-    throw new Error(`Embedding endpoint returned empty response (${safeUrl(url)})`);
-  }
+	const url = `${config.baseUrl}/embeddings`;
+	const items = await httpEmbedBatch(
+		url,
+		[text],
+		config.model,
+		config.apiKey,
+		0,
+		config.dimensions,
+	);
+	if (!items.length) {
+		throw new Error(
+			`Embedding endpoint returned empty response (${safeUrl(url)})`,
+		);
+	}
 
-  const embedding = items[0].embedding;
-  // Same dimension checks as httpEmbed — catch mismatches before they
-  // reach the Kuzu FLOAT[N] cast in search queries.
-  const expected = config.dimensions ?? DEFAULT_DIMS;
-  if (embedding.length !== expected) {
-    const hint = config.dimensions
-      ? 'Update GITNEXUS_EMBEDDING_DIMS to match your model output.'
-      : `Set GITNEXUS_EMBEDDING_DIMS=${embedding.length} to match your model output.`;
-    throw new Error(
-      `Embedding dimension mismatch: endpoint returned ${embedding.length}d vector, ` +
-        `but expected ${expected}d. ${hint}`,
-    );
-  }
-  return embedding;
+	const embedding = items[0].embedding;
+	// Same dimension checks as httpEmbed — catch mismatches before they
+	// reach the Kuzu FLOAT[N] cast in search queries.
+	const expected = config.dimensions ?? DEFAULT_DIMS;
+	if (embedding.length !== expected) {
+		const hint = config.dimensions
+			? "Update GITNEXUS_EMBEDDING_DIMS to match your model output."
+			: `Set GITNEXUS_EMBEDDING_DIMS=${embedding.length} to match your model output.`;
+		throw new Error(
+			`Embedding dimension mismatch: endpoint returned ${embedding.length}d vector, ` +
+				`but expected ${expected}d. ${hint}`,
+		);
+	}
+	return embedding;
 };

@@ -1,7 +1,7 @@
-import { A } from './a';
+import { A } from "./a";
 export class B {
-  doB(): void {}
+	doB(): void {}
 }
 export function getB(): B {
-  return new B();
+	return new B();
 }

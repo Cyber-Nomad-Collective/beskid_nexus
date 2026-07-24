@@ -35,7 +35,7 @@
  * map may use either depending on the OS that wrote it.
  */
 
-const SHADOW_EXTS = ['.d.ts', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'];
+const SHADOW_EXTS = [".d.ts", ".tsx", ".ts", ".jsx", ".js", ".mjs", ".cjs"];
 
 /**
  * Enumerate pre-existing paths whose import-resolution `added` can steal.
@@ -45,32 +45,34 @@ const SHADOW_EXTS = ['.d.ts', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'];
  *          any known-files set — caller does that)
  */
 export const shadowCandidatesFor = (added: string): string[] => {
-  const ext = SHADOW_EXTS.find((e) => added.endsWith(e));
-  if (!ext) return [];
+	const ext = SHADOW_EXTS.find((e) => added.endsWith(e));
+	if (!ext) return [];
 
-  const noExt = added.slice(0, -ext.length);
-  const out = new Set<string>();
+	const noExt = added.slice(0, -ext.length);
+	const out = new Set<string>();
 
-  // (a) Same basename, different extension.
-  for (const alt of SHADOW_EXTS) {
-    if (alt !== ext) out.add(noExt + alt);
-  }
+	// (a) Same basename, different extension.
+	for (const alt of SHADOW_EXTS) {
+		if (alt !== ext) out.add(noExt + alt);
+	}
 
-  // (b) Bare file beats sibling directory-style index.
-  for (const idx of SHADOW_EXTS) {
-    out.add(`${noExt}/index${idx}`);
-    out.add(`${noExt}\\index${idx}`);
-  }
+	// (b) Bare file beats sibling directory-style index.
+	for (const idx of SHADOW_EXTS) {
+		out.add(`${noExt}/index${idx}`);
+		out.add(`${noExt}\\index${idx}`);
+	}
 
-  // (c) New `foo/index.ext` shadows old `foo.ext`.
-  const idxSuffixSlash = '/index';
-  const idxSuffixBack = '\\index';
-  let dir: string | null = null;
-  if (noExt.endsWith(idxSuffixSlash)) dir = noExt.slice(0, -idxSuffixSlash.length);
-  else if (noExt.endsWith(idxSuffixBack)) dir = noExt.slice(0, -idxSuffixBack.length);
-  if (dir !== null) {
-    for (const alt of SHADOW_EXTS) out.add(dir + alt);
-  }
+	// (c) New `foo/index.ext` shadows old `foo.ext`.
+	const idxSuffixSlash = "/index";
+	const idxSuffixBack = "\\index";
+	let dir: string | null = null;
+	if (noExt.endsWith(idxSuffixSlash))
+		dir = noExt.slice(0, -idxSuffixSlash.length);
+	else if (noExt.endsWith(idxSuffixBack))
+		dir = noExt.slice(0, -idxSuffixBack.length);
+	if (dir !== null) {
+		for (const alt of SHADOW_EXTS) out.add(dir + alt);
+	}
 
-  return [...out];
+	return [...out];
 };

@@ -1,4 +1,4 @@
-import { Container } from './namespaced';
+import { Container } from "./namespaced";
 
 // Namespaced JSX — `<Container.Title />`. The query's
 // `@reference.call.member` capture splits this into:

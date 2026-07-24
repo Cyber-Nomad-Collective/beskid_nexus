@@ -1,97 +1,97 @@
 export interface NexusCatalogEntry {
-  id: string;
-  displayName: string;
-  description: string;
-  gitUrl: string;
-  defaultBranch?: string;
-  enabled: boolean;
-  sortOrder: number;
-  registryName?: string;
-  lastIndexedCommit?: string;
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	displayName: string;
+	description: string;
+	gitUrl: string;
+	defaultBranch?: string;
+	enabled: boolean;
+	sortOrder: number;
+	registryName?: string;
+	lastIndexedCommit?: string;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface NexusCatalogFile {
-  version: 1;
-  entries: NexusCatalogEntry[];
+	version: 1;
+	entries: NexusCatalogEntry[];
 }
 
 export interface NexusConfigFile {
-  ownerLogin: string;
-  adminLogins: string[];
-  authHubUrl?: string;
-  /** @deprecated use authHubServiceToken */
-  authHubHandoffSecret?: string;
-  authHubServiceToken?: string;
-  openRouter?: {
-    apiKey?: string;
-    model?: string;
-  };
+	ownerLogin: string;
+	adminLogins: string[];
+	authHubUrl?: string;
+	/** @deprecated use authHubServiceToken */
+	authHubHandoffSecret?: string;
+	authHubServiceToken?: string;
+	openRouter?: {
+		apiKey?: string;
+		model?: string;
+	};
 }
 
 export interface NexusSessionPayload {
-  login: string;
-  avatarUrl: string;
-  name: string | null;
-  hubUserToken: string;
-  hubSessionId: string;
+	login: string;
+	avatarUrl: string;
+	name: string | null;
+	hubUserToken: string;
+	hubSessionId: string;
 }
 
 /** Repo-scoped AI code documentation — separate from platform spec body text. */
 export interface CodeDocRecord {
-  entityId: string;
-  entityKind: 'node' | 'cluster';
-  /** Describes what this code does in the repo. Must NOT contain platform-spec prose. */
-  codeDoc: string;
-  /** 0–3 canonical OpenSpec catalog links. href must exist in the revisioned index. */
-  specLinks: StandardLink[];
-  contentHash: string;
-  updatedAt: string;
+	entityId: string;
+	entityKind: "node" | "cluster";
+	/** Describes what this code does in the repo. Must NOT contain platform-spec prose. */
+	codeDoc: string;
+	/** 0–3 canonical OpenSpec catalog links. href must exist in the revisioned index. */
+	specLinks: StandardLink[];
+	contentHash: string;
+	updatedAt: string;
 }
 
 export interface StandardLink {
-  /** Omitted only for version-1 persisted records. New records always use `spec`. */
-  type?: 'spec';
-  stableId?: string;
-  title: string;
-  href: string;
-  revision?: string;
+	/** Omitted only for version-1 persisted records. New records always use `spec`. */
+	type?: "spec";
+	stableId?: string;
+	title: string;
+	href: string;
+	revision?: string;
 }
 
 /** A Tracker entity at the exact OpenSpec catalog revision it cites. */
 export interface TrackerDeliveryNode {
-  id: string;
-  trackerId: string;
-  catalogRevision: string;
+	id: string;
+	trackerId: string;
+	catalogRevision: string;
 }
 
 /** Typed Tracker-to-OpenSpec relation retained in the Nexus graph. */
 export interface TrackerDeliveryRelation {
-  id: string;
-  from: string;
-  to: string;
-  relation: 'implements' | 'verifies' | 'blocks' | 'relates';
-  catalogRevision: string;
+	id: string;
+	from: string;
+	to: string;
+	relation: "implements" | "verifies" | "blocks" | "relates";
+	catalogRevision: string;
 }
 
 export interface PublicCatalogEntry {
-  id: string;
-  displayName: string;
-  description: string;
-  gitUrl: string;
-  defaultBranch?: string;
-  sortOrder: number;
-  indexed: boolean;
-  registryName?: string;
-  lastIndexedCommit?: string;
-  indexedAt?: string;
-  stats?: {
-    files?: number;
-    nodes?: number;
-    edges?: number;
-    communities?: number;
-    processes?: number;
-  };
-  docStatus?: 'idle' | 'running' | 'failed' | 'ready';
+	id: string;
+	displayName: string;
+	description: string;
+	gitUrl: string;
+	defaultBranch?: string;
+	sortOrder: number;
+	indexed: boolean;
+	registryName?: string;
+	lastIndexedCommit?: string;
+	indexedAt?: string;
+	stats?: {
+		files?: number;
+		nodes?: number;
+		edges?: number;
+		communities?: number;
+		processes?: number;
+	};
+	docStatus?: "idle" | "running" | "failed" | "ready";
 }

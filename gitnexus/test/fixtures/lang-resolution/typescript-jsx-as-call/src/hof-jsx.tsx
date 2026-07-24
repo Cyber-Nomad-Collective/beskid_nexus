@@ -1,4 +1,4 @@
-import { Foo } from './components';
+import { Foo } from "./components";
 
 // Combined fix verification: an arrow-typed component (the HOF-callback
 // fix's central case — `const fn = () => ...`) whose body returns JSX

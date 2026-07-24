@@ -33,7 +33,7 @@
  *   5. Empty input returns empty output.
  */
 
-import type { SymbolDefinition } from 'gitnexus-shared';
+import type { SymbolDefinition } from "gitnexus-shared";
 
 /**
  * Per-slot conversion-rank function. Returns a numeric cost for
@@ -49,75 +49,76 @@ import type { SymbolDefinition } from 'gitnexus-shared';
 export type ConversionRankFn = (argType: string, paramType: string) => number;
 
 export function narrowOverloadCandidates(
-  overloads: readonly SymbolDefinition[],
-  argCount: number | undefined,
-  argTypes: readonly string[] | undefined,
-  conversionRankFn?: ConversionRankFn,
+	overloads: readonly SymbolDefinition[],
+	argCount: number | undefined,
+	argTypes: readonly string[] | undefined,
+	conversionRankFn?: ConversionRankFn,
 ): readonly SymbolDefinition[] {
-  if (overloads.length === 0) return [];
+	if (overloads.length === 0) return [];
 
-  const arityMatches: readonly SymbolDefinition[] =
-    argCount === undefined
-      ? overloads
-      : overloads.filter((d) => {
-          const max = d.parameterCount;
-          const min = d.requiredParameterCount;
-          if (max !== undefined && argCount > max) {
-            // Variadic marker check is C#-specific (the 'params' keyword).
-            // Other languages use their own marker — PHP uses '...' (see
-            // `languages/php/arity-metadata.ts:46`), Python uses '*args'-
-            // shaped metadata that lives outside `parameterTypes` entirely.
-            // This branch is dead code for those languages because they
-            // set `parameterCount = undefined` for variadic functions,
-            // which keeps `max` undefined and skips this check entirely.
-            // Adding new variadic markers here changes behavior for those
-            // other languages too — don't extend without auditing each
-            // adapter's `arity-metadata.ts`. Finding 9 of PR #1497.
-            const variadic =
-              d.parameterTypes !== undefined &&
-              d.parameterTypes.some((t) => t === 'params' || t.startsWith('params '));
-            if (!variadic) return false;
-          }
-          if (min !== undefined && argCount < min) return false;
-          return true;
-        });
+	const arityMatches: readonly SymbolDefinition[] =
+		argCount === undefined
+			? overloads
+			: overloads.filter((d) => {
+					const max = d.parameterCount;
+					const min = d.requiredParameterCount;
+					if (max !== undefined && argCount > max) {
+						// Variadic marker check is C#-specific (the 'params' keyword).
+						// Other languages use their own marker — PHP uses '...' (see
+						// `languages/php/arity-metadata.ts:46`), Python uses '*args'-
+						// shaped metadata that lives outside `parameterTypes` entirely.
+						// This branch is dead code for those languages because they
+						// set `parameterCount = undefined` for variadic functions,
+						// which keeps `max` undefined and skips this check entirely.
+						// Adding new variadic markers here changes behavior for those
+						// other languages too — don't extend without auditing each
+						// adapter's `arity-metadata.ts`. Finding 9 of PR #1497.
+						const variadic =
+							d.parameterTypes !== undefined &&
+							d.parameterTypes.some((t) => t === "params" || t.startsWith("params "));
+						if (!variadic) return false;
+					}
+					if (min !== undefined && argCount < min) return false;
+					return true;
+				});
 
-  // When the arity filter empties the set, only fall back to the full
-  // overload list if some candidate had unknown bounds — otherwise the
-  // empty result is authoritative (every candidate definitively failed
-  // arity, e.g., PHP variadic with required-prefix called with too few
-  // args).
-  const anyUnknownBounds = overloads.some(
-    (d) => d.parameterCount === undefined && d.requiredParameterCount === undefined,
-  );
-  const candidates: readonly SymbolDefinition[] =
-    arityMatches.length > 0 ? arityMatches : anyUnknownBounds ? overloads : [];
+	// When the arity filter empties the set, only fall back to the full
+	// overload list if some candidate had unknown bounds — otherwise the
+	// empty result is authoritative (every candidate definitively failed
+	// arity, e.g., PHP variadic with required-prefix called with too few
+	// args).
+	const anyUnknownBounds = overloads.some(
+		(d) =>
+			d.parameterCount === undefined && d.requiredParameterCount === undefined,
+	);
+	const candidates: readonly SymbolDefinition[] =
+		arityMatches.length > 0 ? arityMatches : anyUnknownBounds ? overloads : [];
 
-  if (argTypes !== undefined && argTypes.length > 0) {
-    const typed = candidates.filter((d) => {
-      const params = d.parameterTypes;
-      if (params === undefined) return false;
-      for (let i = 0; i < argTypes.length && i < params.length; i++) {
-        if (argTypes[i] === '') continue;
-        if (argTypes[i] !== params[i]) return false;
-      }
-      return true;
-    });
-    if (typed.length > 0) return typed;
+	if (argTypes !== undefined && argTypes.length > 0) {
+		const typed = candidates.filter((d) => {
+			const params = d.parameterTypes;
+			if (params === undefined) return false;
+			for (let i = 0; i < argTypes.length && i < params.length; i++) {
+				if (argTypes[i] === "") continue;
+				if (argTypes[i] !== params[i]) return false;
+			}
+			return true;
+		});
+		if (typed.length > 0) return typed;
 
-    // ── Conversion-rank scoring (step 4b) ──────────────────────────
-    // The exact-type filter above rejected every candidate. When a
-    // per-language conversion-rank function is available, rank via
-    // pairwise dominance: F1 beats F2 only when F1 is not worse for
-    // every arg and better for at least one. Non-dominated candidates
-    // are returned; multiple survivors are genuinely ambiguous.
-    if (conversionRankFn !== undefined) {
-      const ranked = rankByConversion(candidates, argTypes, conversionRankFn);
-      if (ranked.length > 0) return ranked;
-    }
-  }
+		// ── Conversion-rank scoring (step 4b) ──────────────────────────
+		// The exact-type filter above rejected every candidate. When a
+		// per-language conversion-rank function is available, rank via
+		// pairwise dominance: F1 beats F2 only when F1 is not worse for
+		// every arg and better for at least one. Non-dominated candidates
+		// are returned; multiple survivors are genuinely ambiguous.
+		if (conversionRankFn !== undefined) {
+			const ranked = rankByConversion(candidates, argTypes, conversionRankFn);
+			if (ranked.length > 0) return ranked;
+		}
+	}
 
-  return candidates;
+	return candidates;
 }
 
 /**
@@ -133,47 +134,47 @@ export function narrowOverloadCandidates(
  * type) are excluded before pairwise comparison begins.
  */
 function rankByConversion(
-  candidates: readonly SymbolDefinition[],
-  argTypes: readonly string[],
-  rankFn: ConversionRankFn,
+	candidates: readonly SymbolDefinition[],
+	argTypes: readonly string[],
+	rankFn: ConversionRankFn,
 ): readonly SymbolDefinition[] {
-  // Step 1: compute per-slot ranks and exclude non-viable candidates.
-  const viable: Array<{ def: SymbolDefinition; ranks: number[] }> = [];
-  for (const d of candidates) {
-    const params = d.parameterTypes;
-    if (params === undefined) continue;
-    const ranks: number[] = [];
-    let ok = true;
-    for (let i = 0; i < argTypes.length && i < params.length; i++) {
-      if (argTypes[i] === '') {
-        ranks.push(0); // unknown arg → any-match (rank 0)
-        continue;
-      }
-      const r = rankFn(argTypes[i], params[i]);
-      if (!isFinite(r)) {
-        ok = false;
-        break;
-      }
-      ranks.push(r);
-    }
-    if (!ok) continue;
-    viable.push({ def: d, ranks });
-  }
-  if (viable.length <= 1) return viable.map((v) => v.def);
+	// Step 1: compute per-slot ranks and exclude non-viable candidates.
+	const viable: Array<{ def: SymbolDefinition; ranks: number[] }> = [];
+	for (const d of candidates) {
+		const params = d.parameterTypes;
+		if (params === undefined) continue;
+		const ranks: number[] = [];
+		let ok = true;
+		for (let i = 0; i < argTypes.length && i < params.length; i++) {
+			if (argTypes[i] === "") {
+				ranks.push(0); // unknown arg → any-match (rank 0)
+				continue;
+			}
+			const r = rankFn(argTypes[i], params[i]);
+			if (!isFinite(r)) {
+				ok = false;
+				break;
+			}
+			ranks.push(r);
+		}
+		if (!ok) continue;
+		viable.push({ def: d, ranks });
+	}
+	if (viable.length <= 1) return viable.map((v) => v.def);
 
-  // Step 2: pairwise dominance — remove candidates dominated by any other.
-  const dominated = new Set<number>();
-  for (let i = 0; i < viable.length; i++) {
-    if (dominated.has(i)) continue;
-    for (let j = i + 1; j < viable.length; j++) {
-      if (dominated.has(j)) continue;
-      const cmp = pairwiseCompare(viable[i].ranks, viable[j].ranks);
-      if (cmp < 0)
-        dominated.add(j); // i dominates j
-      else if (cmp > 0) dominated.add(i); // j dominates i
-    }
-  }
-  return viable.filter((_, idx) => !dominated.has(idx)).map((v) => v.def);
+	// Step 2: pairwise dominance — remove candidates dominated by any other.
+	const dominated = new Set<number>();
+	for (let i = 0; i < viable.length; i++) {
+		if (dominated.has(i)) continue;
+		for (let j = i + 1; j < viable.length; j++) {
+			if (dominated.has(j)) continue;
+			const cmp = pairwiseCompare(viable[i].ranks, viable[j].ranks);
+			if (cmp < 0)
+				dominated.add(j); // i dominates j
+			else if (cmp > 0) dominated.add(i); // j dominates i
+		}
+	}
+	return viable.filter((_, idx) => !dominated.has(idx)).map((v) => v.def);
 }
 
 /**
@@ -182,18 +183,21 @@ function rankByConversion(
  *          +1 if `b` dominates `a`,
  *           0 if neither dominates (incomparable or equal).
  */
-function pairwiseCompare(a: readonly number[], b: readonly number[]): -1 | 0 | 1 {
-  let aBetter = false;
-  let bBetter = false;
-  const len = Math.min(a.length, b.length);
-  for (let i = 0; i < len; i++) {
-    if (a[i] < b[i]) aBetter = true;
-    else if (b[i] < a[i]) bBetter = true;
-    if (aBetter && bBetter) return 0; // incomparable — early exit
-  }
-  if (aBetter && !bBetter) return -1;
-  if (bBetter && !aBetter) return 1;
-  return 0;
+function pairwiseCompare(
+	a: readonly number[],
+	b: readonly number[],
+): -1 | 0 | 1 {
+	let aBetter = false;
+	let bBetter = false;
+	const len = Math.min(a.length, b.length);
+	for (let i = 0; i < len; i++) {
+		if (a[i] < b[i]) aBetter = true;
+		else if (b[i] < a[i]) bBetter = true;
+		if (aBetter && bBetter) return 0; // incomparable — early exit
+	}
+	if (aBetter && !bBetter) return -1;
+	if (bBetter && !aBetter) return 1;
+	return 0;
 }
 
 /**
@@ -225,33 +229,33 @@ function pairwiseCompare(a: readonly number[], b: readonly number[]): -1 | 0 | 1
  * effectively C++-only in practice.
  */
 export function isOverloadAmbiguousAfterNormalization(
-  candidates: readonly SymbolDefinition[],
-  argCount?: number,
+	candidates: readonly SymbolDefinition[],
+	argCount?: number,
 ): boolean {
-  if (candidates.length < 2) return false;
-  const first = candidates[0].parameterTypes;
-  if (first === undefined) return false;
-  // When argCount is provided, compare only the first `argCount` slots —
-  // this catches default-argument ambiguity: `void f(int); void f(int, int = 0);`
-  // called with `f(1)` (argCount=1) leaves both candidates viable because
-  // default args make them arity-compatible, and their first slot is
-  // identical even though full parameterTypes lengths differ.
-  // Without argCount, fall back to full-sequence comparison (the original
-  // int/long normalization-collapse case).
-  const compareUpTo = argCount !== undefined ? argCount : first.length;
-  if (compareUpTo === 0) return false;
-  if (first.length < compareUpTo) return false;
-  for (let i = 1; i < candidates.length; i++) {
-    const p = candidates[i].parameterTypes;
-    if (p === undefined) return false;
-    if (p.length < compareUpTo) return false;
-    for (let j = 0; j < compareUpTo; j++) {
-      if (p[j] !== first[j]) return false;
-    }
-    // When argCount is NOT provided, also require length equality so
-    // distinct-arity candidates that happen to share a prefix don't
-    // collapse to ambiguous (preserves the original int/long contract).
-    if (argCount === undefined && p.length !== first.length) return false;
-  }
-  return true;
+	if (candidates.length < 2) return false;
+	const first = candidates[0].parameterTypes;
+	if (first === undefined) return false;
+	// When argCount is provided, compare only the first `argCount` slots —
+	// this catches default-argument ambiguity: `void f(int); void f(int, int = 0);`
+	// called with `f(1)` (argCount=1) leaves both candidates viable because
+	// default args make them arity-compatible, and their first slot is
+	// identical even though full parameterTypes lengths differ.
+	// Without argCount, fall back to full-sequence comparison (the original
+	// int/long normalization-collapse case).
+	const compareUpTo = argCount !== undefined ? argCount : first.length;
+	if (compareUpTo === 0) return false;
+	if (first.length < compareUpTo) return false;
+	for (let i = 1; i < candidates.length; i++) {
+		const p = candidates[i].parameterTypes;
+		if (p === undefined) return false;
+		if (p.length < compareUpTo) return false;
+		for (let j = 0; j < compareUpTo; j++) {
+			if (p[j] !== first[j]) return false;
+		}
+		// When argCount is NOT provided, also require length equality so
+		// distinct-arity candidates that happen to share a prefix don't
+		// collapse to ambiguous (preserves the original int/long contract).
+		if (argCount === undefined && p.length !== first.length) return false;
+	}
+	return true;
 }

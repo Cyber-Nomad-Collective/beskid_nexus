@@ -10,4 +10,4 @@
  * 5. Add file extension mapping in utils.ts getLanguageFromFilename()
  * 6. Run full test suite
  */
-export { SupportedLanguages } from 'gitnexus-shared';
+export { SupportedLanguages } from "gitnexus-shared";

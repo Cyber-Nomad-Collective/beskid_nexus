@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  const grants = await fetchGrants();
-  return NextResponse.json({ data: grants, pagination: { page: 1 } });
+	const grants = await fetchGrants();
+	return NextResponse.json({ data: grants, pagination: { page: 1 } });
 }

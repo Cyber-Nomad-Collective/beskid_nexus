@@ -30,63 +30,67 @@
  * disposes on the failure path). Do not silently rely on the GC.
  */
 
-import type { PipelinePhase, PipelineContext, PhaseResult } from './types.js';
-import { getPhaseOutput } from './types.js';
-import type { ParseOutput } from './parse.js';
-import { runCrossFileBindingPropagation } from './cross-file-impl.js';
-import { isDev } from '../utils/env.js';
-
-import { logger } from '../../logger.js';
+import { logger } from "../../logger.js";
+import { isDev } from "../utils/env.js";
+import { runCrossFileBindingPropagation } from "./cross-file-impl.js";
+import type { ParseOutput } from "./parse.js";
+import type { PhaseResult, PipelineContext, PipelinePhase } from "./types.js";
+import { getPhaseOutput } from "./types.js";
 export interface CrossFileOutput {
-  /** Number of files re-processed during cross-file propagation. */
-  filesReprocessed: number;
+	/** Number of files re-processed during cross-file propagation. */
+	filesReprocessed: number;
 }
 
 export const crossFilePhase: PipelinePhase<CrossFileOutput> = {
-  name: 'crossFile',
-  deps: ['parse', 'routes', 'tools', 'orm'],
+	name: "crossFile",
+	deps: ["parse", "routes", "tools", "orm"],
 
-  async execute(
-    ctx: PipelineContext,
-    deps: ReadonlyMap<string, PhaseResult<unknown>>,
-  ): Promise<CrossFileOutput> {
-    const { exportedTypeMap, allPathSet, totalFiles, bindingAccumulator, resolutionContext } =
-      getPhaseOutput<ParseOutput>(deps, 'parse');
+	async execute(
+		ctx: PipelineContext,
+		deps: ReadonlyMap<string, PhaseResult<unknown>>,
+	): Promise<CrossFileOutput> {
+		const {
+			exportedTypeMap,
+			allPathSet,
+			totalFiles,
+			bindingAccumulator,
+			resolutionContext,
+		} = getPhaseOutput<ParseOutput>(deps, "parse");
 
-    try {
-      // Telemetry must run BEFORE dispose: totalBindings, fileCount, and
-      // estimateMemoryBytes() all return 0 once dispose() clears the
-      // internal maps.
-      if (isDev) {
-        if (bindingAccumulator.totalBindings > 0) {
-          const memKB = Math.round(bindingAccumulator.estimateMemoryBytes() / 1024);
-          logger.info(
-            `📦 BindingAccumulator: ${bindingAccumulator.totalBindings} bindings across ${bindingAccumulator.fileCount} files (~${memKB} KB)`,
-          );
-        } else if (totalFiles > 0) {
-          logger.info(
-            `📦 BindingAccumulator: EMPTY — 0 bindings across 0 files despite ${totalFiles} parsed files. If the codebase has typed bindings, this indicates an upstream regression.`,
-          );
-        }
-      }
+		try {
+			// Telemetry must run BEFORE dispose: totalBindings, fileCount, and
+			// estimateMemoryBytes() all return 0 once dispose() clears the
+			// internal maps.
+			if (isDev) {
+				if (bindingAccumulator.totalBindings > 0) {
+					const memKB = Math.round(bindingAccumulator.estimateMemoryBytes() / 1024);
+					logger.info(
+						`📦 BindingAccumulator: ${bindingAccumulator.totalBindings} bindings across ${bindingAccumulator.fileCount} files (~${memKB} KB)`,
+					);
+				} else if (totalFiles > 0) {
+					logger.info(
+						`📦 BindingAccumulator: EMPTY — 0 bindings across 0 files despite ${totalFiles} parsed files. If the codebase has typed bindings, this indicates an upstream regression.`,
+					);
+				}
+			}
 
-      const filesReprocessed = await runCrossFileBindingPropagation(
-        ctx.graph,
-        resolutionContext,
-        exportedTypeMap,
-        allPathSet,
-        totalFiles,
-        ctx.repoPath,
-        ctx.pipelineStart,
-        ctx.onProgress,
-      );
+			const filesReprocessed = await runCrossFileBindingPropagation(
+				ctx.graph,
+				resolutionContext,
+				exportedTypeMap,
+				allPathSet,
+				totalFiles,
+				ctx.repoPath,
+				ctx.pipelineStart,
+				ctx.onProgress,
+			);
 
-      return { filesReprocessed };
-    } finally {
-      // Single dispose call site for the accumulator — runs on both the
-      // happy path and the throw path so the heap is always released
-      // before the runner moves on (or surfaces the error).
-      bindingAccumulator.dispose();
-    }
-  },
+			return { filesReprocessed };
+		} finally {
+			// Single dispose call site for the accumulator — runs on both the
+			// happy path and the throw path so the heap is always released
+			// before the runner moves on (or surfaces the error).
+			bindingAccumulator.dispose();
+		}
+	},
 };

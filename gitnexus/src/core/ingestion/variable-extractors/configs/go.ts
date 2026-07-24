@@ -1,10 +1,12 @@
 // gitnexus/src/core/ingestion/variable-extractors/configs/go.ts
 
-import { SupportedLanguages } from 'gitnexus-shared';
-import type { VariableExtractionConfig } from '../../variable-types.js';
-import type { VariableVisibility } from '../../variable-types.js';
-import { extractSimpleTypeName } from '../../type-extractors/shared.js';
-import type { SyntaxNode } from '../../utils/ast-helpers.js';
+import { SupportedLanguages } from "gitnexus-shared";
+import { extractSimpleTypeName } from "../../type-extractors/shared.js";
+import type { SyntaxNode } from "../../utils/ast-helpers.js";
+import type {
+	VariableExtractionConfig,
+	VariableVisibility,
+} from "../../variable-types.js";
 
 /**
  * Go variable extraction config.
@@ -22,70 +24,74 @@ import type { SyntaxNode } from '../../utils/ast-helpers.js';
  */
 
 function extractGoVarName(node: SyntaxNode): string | undefined {
-  // var_declaration/const_declaration → var_spec/const_spec → identifier
-  for (let i = 0; i < node.namedChildCount; i++) {
-    const child = node.namedChild(i);
-    if (child?.type === 'var_spec' || child?.type === 'const_spec') {
-      const name = child.childForFieldName('name');
-      if (name) return name.text;
-      // Fallback: first identifier child
-      for (let j = 0; j < child.namedChildCount; j++) {
-        const gc = child.namedChild(j);
-        if (gc?.type === 'identifier') return gc.text;
-      }
-    }
-  }
-  // short_var_declaration: x := 5 → expression_list → identifier
-  if (node.type === 'short_var_declaration') {
-    const left = node.childForFieldName('left');
-    if (left?.type === 'expression_list') {
-      const firstIdent = left.namedChildren.find((c: SyntaxNode) => c.type === 'identifier');
-      if (firstIdent) return firstIdent.text;
-    }
-  }
-  return undefined;
+	// var_declaration/const_declaration → var_spec/const_spec → identifier
+	for (let i = 0; i < node.namedChildCount; i++) {
+		const child = node.namedChild(i);
+		if (child?.type === "var_spec" || child?.type === "const_spec") {
+			const name = child.childForFieldName("name");
+			if (name) return name.text;
+			// Fallback: first identifier child
+			for (let j = 0; j < child.namedChildCount; j++) {
+				const gc = child.namedChild(j);
+				if (gc?.type === "identifier") return gc.text;
+			}
+		}
+	}
+	// short_var_declaration: x := 5 → expression_list → identifier
+	if (node.type === "short_var_declaration") {
+		const left = node.childForFieldName("left");
+		if (left?.type === "expression_list") {
+			const firstIdent = left.namedChildren.find(
+				(c: SyntaxNode) => c.type === "identifier",
+			);
+			if (firstIdent) return firstIdent.text;
+		}
+	}
+	return undefined;
 }
 
 function extractGoVarType(node: SyntaxNode): string | undefined {
-  for (let i = 0; i < node.namedChildCount; i++) {
-    const child = node.namedChild(i);
-    if (child?.type === 'var_spec' || child?.type === 'const_spec') {
-      const typeNode = child.childForFieldName('type');
-      if (typeNode) return extractSimpleTypeName(typeNode) ?? typeNode.text?.trim();
-    }
-  }
-  return undefined;
+	for (let i = 0; i < node.namedChildCount; i++) {
+		const child = node.namedChild(i);
+		if (child?.type === "var_spec" || child?.type === "const_spec") {
+			const typeNode = child.childForFieldName("type");
+			if (typeNode)
+				return extractSimpleTypeName(typeNode) ?? typeNode.text?.trim();
+		}
+	}
+	return undefined;
 }
 
 export const goVariableConfig: VariableExtractionConfig = {
-  language: SupportedLanguages.Go,
-  constNodeTypes: ['const_declaration'],
-  staticNodeTypes: [],
-  variableNodeTypes: ['var_declaration', 'short_var_declaration'],
+	language: SupportedLanguages.Go,
+	constNodeTypes: ["const_declaration"],
+	staticNodeTypes: [],
+	variableNodeTypes: ["var_declaration", "short_var_declaration"],
 
-  extractName: extractGoVarName,
-  extractType: extractGoVarType,
+	extractName: extractGoVarName,
+	extractType: extractGoVarType,
 
-  extractVisibility(node): VariableVisibility {
-    const name = extractGoVarName(node);
-    if (!name) return 'package';
-    // Go visibility: uppercase first letter = exported
-    const firstChar = name.charAt(0);
-    return firstChar === firstChar.toUpperCase() && firstChar !== firstChar.toLowerCase()
-      ? 'public'
-      : 'package';
-  },
+	extractVisibility(node): VariableVisibility {
+		const name = extractGoVarName(node);
+		if (!name) return "package";
+		// Go visibility: uppercase first letter = exported
+		const firstChar = name.charAt(0);
+		return firstChar === firstChar.toUpperCase() &&
+			firstChar !== firstChar.toLowerCase()
+			? "public"
+			: "package";
+	},
 
-  isConst(node) {
-    return node.type === 'const_declaration';
-  },
+	isConst(node) {
+		return node.type === "const_declaration";
+	},
 
-  isStatic(_node) {
-    // Go does not have static declarations
-    return false;
-  },
+	isStatic(_node) {
+		// Go does not have static declarations
+		return false;
+	},
 
-  isMutable(node) {
-    return node.type !== 'const_declaration';
-  },
+	isMutable(node) {
+		return node.type !== "const_declaration";
+	},
 };

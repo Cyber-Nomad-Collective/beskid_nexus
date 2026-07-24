@@ -1,3 +1,3 @@
 export class Database {
-  persist(): void {}
+	persist(): void {}
 }

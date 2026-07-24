@@ -17,10 +17,15 @@
  * migrate.
  */
 
-import type { NodeLabel, ScopeId, SymbolDefinition } from 'gitnexus-shared';
-import type { ScopeResolutionIndexes } from '../../model/scope-resolution-indexes.js';
-import { generateId } from '../../../../lib/utils.js';
-import { qualifiedKey, simpleKey, type GraphNodeLookup } from '../graph-bridge/node-lookup.js';
+import type { NodeLabel, ScopeId, SymbolDefinition } from "gitnexus-shared";
+import { generateId } from "../../../../lib/utils.js";
+import type { ScopeResolutionIndexes } from "../../model/scope-resolution-indexes.js";
+import {
+	type GraphNodeLookup,
+	qualifiedKey,
+	simpleKey,
+} from "../graph-bridge/node-lookup.js";
+
 /**
  * Labels that may legitimately ANCHOR a CALLS/ACCESSES edge as the
  * source ("caller"). A Variable / Property can be the TARGET of an
@@ -41,15 +46,15 @@ import { qualifiedKey, simpleKey, type GraphNodeLookup } from '../graph-bridge/n
  * through to the File-node fallback at the bottom of the walk.
  */
 function isCallerAnchorLabel(label: NodeLabel): boolean {
-  return (
-    label === 'Function' ||
-    label === 'Method' ||
-    label === 'Constructor' ||
-    label === 'Class' ||
-    label === 'Interface' ||
-    label === 'Struct' ||
-    label === 'Enum'
-  );
+	return (
+		label === "Function" ||
+		label === "Method" ||
+		label === "Constructor" ||
+		label === "Class" ||
+		label === "Interface" ||
+		label === "Struct" ||
+		label === "Enum"
+	);
 }
 
 /**
@@ -70,56 +75,65 @@ function isCallerAnchorLabel(label: NodeLabel): boolean {
  * qualifiers).
  */
 export function resolveDefGraphId(
-  filePath: string,
-  def: {
-    qualifiedName?: string;
-    type?: NodeLabel;
-    parameterTypes?: readonly string[];
-    templateArguments?: readonly string[];
-  },
-  nodeLookup: GraphNodeLookup,
+	filePath: string,
+	def: {
+		qualifiedName?: string;
+		type?: NodeLabel;
+		parameterTypes?: readonly string[];
+		templateArguments?: readonly string[];
+	},
+	nodeLookup: GraphNodeLookup,
 ): string | undefined {
-  const qn = def.qualifiedName;
-  if (qn === undefined || qn.length === 0) return undefined;
-  if (def.type !== undefined) {
-    // Overload disambiguation: when the def carries parameter types,
-    // try the parameter-typed key first so same-name same-arity
-    // overloads route to their distinct graph nodes.
-    if (
-      def.type === 'Method' &&
-      def.parameterTypes !== undefined &&
-      def.parameterTypes.length > 0
-    ) {
-      const pKey = qualifiedKey(filePath, def.type, `${qn}~${def.parameterTypes.join(',')}`);
-      const pHit = nodeLookup.get(pKey);
-      if (pHit !== undefined) return pHit;
-    }
-    if (
-      (def.type === 'Class' ||
-        def.type === 'Struct' ||
-        def.type === 'Interface' ||
-        def.type === 'Enum' ||
-        def.type === 'Record') &&
-      def.templateArguments !== undefined &&
-      def.templateArguments.length > 0
-    ) {
-      const tKey = qualifiedKey(filePath, def.type, `${qn}~${def.templateArguments.join(',')}`);
-      const tHit = nodeLookup.get(tKey);
-      if (tHit !== undefined) return tHit;
-    }
-    const qualifiedHit = nodeLookup.get(qualifiedKey(filePath, def.type, qn));
-    if (qualifiedHit !== undefined) return qualifiedHit;
-  }
-  const simpleName = qn.lastIndexOf('.') === -1 ? qn : qn.slice(qn.lastIndexOf('.') + 1);
-  return nodeLookup.get(simpleKey(filePath, simpleName));
+	const qn = def.qualifiedName;
+	if (qn === undefined || qn.length === 0) return undefined;
+	if (def.type !== undefined) {
+		// Overload disambiguation: when the def carries parameter types,
+		// try the parameter-typed key first so same-name same-arity
+		// overloads route to their distinct graph nodes.
+		if (
+			def.type === "Method" &&
+			def.parameterTypes !== undefined &&
+			def.parameterTypes.length > 0
+		) {
+			const pKey = qualifiedKey(
+				filePath,
+				def.type,
+				`${qn}~${def.parameterTypes.join(",")}`,
+			);
+			const pHit = nodeLookup.get(pKey);
+			if (pHit !== undefined) return pHit;
+		}
+		if (
+			(def.type === "Class" ||
+				def.type === "Struct" ||
+				def.type === "Interface" ||
+				def.type === "Enum" ||
+				def.type === "Record") &&
+			def.templateArguments !== undefined &&
+			def.templateArguments.length > 0
+		) {
+			const tKey = qualifiedKey(
+				filePath,
+				def.type,
+				`${qn}~${def.templateArguments.join(",")}`,
+			);
+			const tHit = nodeLookup.get(tKey);
+			if (tHit !== undefined) return tHit;
+		}
+		const qualifiedHit = nodeLookup.get(qualifiedKey(filePath, def.type, qn));
+		if (qualifiedHit !== undefined) return qualifiedHit;
+	}
+	const simpleName =
+		qn.lastIndexOf(".") === -1 ? qn : qn.slice(qn.lastIndexOf(".") + 1);
+	return nodeLookup.get(simpleKey(filePath, simpleName));
 }
 
 /** Derive the simple (unqualified) name of a def from its `qualifiedName`. */
 export function simpleQualifiedName(def: SymbolDefinition): string | undefined {
-  const q = def.qualifiedName;
-  if (q === undefined || q.length === 0) return undefined;
-  const dot = q.lastIndexOf('.');
-  return dot === -1 ? q : q.slice(dot + 1);
+	const q = def.qualifiedName;
+	if (q === undefined || q.length === 0) return undefined;
+	const dot = q.lastIndexOf(".");
+	return dot === -1 ? q : q.slice(dot + 1);
 }
 
 /**
@@ -134,40 +148,41 @@ export function simpleQualifiedName(def: SymbolDefinition): string | undefined {
  * edges originate from the file symbol.
  */
 export function resolveCallerGraphId(
-  startScope: ScopeId,
-  scopes: ScopeResolutionIndexes,
-  nodeLookup: GraphNodeLookup,
+	startScope: ScopeId,
+	scopes: ScopeResolutionIndexes,
+	nodeLookup: GraphNodeLookup,
 ): string | undefined {
-  let current: ScopeId | null = startScope;
-  const visited = new Set<ScopeId>();
-  let lastFilePath: string | undefined;
-  while (current !== null) {
-    if (visited.has(current)) return undefined;
-    visited.add(current);
-    const scope = scopes.scopeTree.getScope(current);
-    if (scope === undefined) break;
-    lastFilePath = scope.filePath;
+	let current: ScopeId | null = startScope;
+	const visited = new Set<ScopeId>();
+	let lastFilePath: string | undefined;
+	while (current !== null) {
+		if (visited.has(current)) return undefined;
+		visited.add(current);
+		const scope = scopes.scopeTree.getScope(current);
+		if (scope === undefined) break;
+		lastFilePath = scope.filePath;
 
-    // Prefer Function/Method/Constructor anchors; fall back to
-    // Class/Interface/Struct/Enum. Variable/Property are NOT valid
-    // caller anchors — see `isCallerAnchorLabel` for why.
-    const fnDef = scope.ownedDefs.find(
-      (d) => d.type === 'Function' || d.type === 'Method' || d.type === 'Constructor',
-    );
-    if (fnDef !== undefined) {
-      const id = resolveDefGraphId(scope.filePath, fnDef, nodeLookup);
-      if (id !== undefined) return id;
-    }
-    const classDef = scope.ownedDefs.find((d) => isCallerAnchorLabel(d.type));
-    if (classDef !== undefined) {
-      const id = resolveDefGraphId(scope.filePath, classDef, nodeLookup);
-      if (id !== undefined) return id;
-    }
-    current = scope.parent;
-  }
-  // Module-level calls — fall back to the File node for the scope's filePath.
-  if (lastFilePath !== undefined) {
-    return generateId('File', lastFilePath);
-  }
-  return undefined;
+		// Prefer Function/Method/Constructor anchors; fall back to
+		// Class/Interface/Struct/Enum. Variable/Property are NOT valid
+		// caller anchors — see `isCallerAnchorLabel` for why.
+		const fnDef = scope.ownedDefs.find(
+			(d) =>
+				d.type === "Function" || d.type === "Method" || d.type === "Constructor",
+		);
+		if (fnDef !== undefined) {
+			const id = resolveDefGraphId(scope.filePath, fnDef, nodeLookup);
+			if (id !== undefined) return id;
+		}
+		const classDef = scope.ownedDefs.find((d) => isCallerAnchorLabel(d.type));
+		if (classDef !== undefined) {
+			const id = resolveDefGraphId(scope.filePath, classDef, nodeLookup);
+			if (id !== undefined) return id;
+		}
+		current = scope.parent;
+	}
+	// Module-level calls — fall back to the File node for the scope's filePath.
+	if (lastFilePath !== undefined) {
+		return generateId("File", lastFilePath);
+	}
+	return undefined;
 }

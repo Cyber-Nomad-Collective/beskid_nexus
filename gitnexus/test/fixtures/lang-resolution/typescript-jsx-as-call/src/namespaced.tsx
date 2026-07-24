@@ -9,6 +9,6 @@
 // capture decomposes the member chain so the downstream member-call
 // resolver can route the edge to the right `Title` definition.
 
-const Title = () => 'title';
+const Title = () => "title";
 
 export const Container = { Title };

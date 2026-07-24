@@ -31,8 +31,8 @@
  * tree-sitter init cost per file.
  */
 
-import Parser from 'tree-sitter';
-import CSharp from 'tree-sitter-c-sharp';
+import Parser from "tree-sitter";
+import CSharp from "tree-sitter-c-sharp";
 
 const CSHARP_SCOPE_QUERY = `
 ;; Scopes
@@ -511,16 +511,19 @@ let _parser: Parser | null = null;
 let _query: Parser.Query | null = null;
 
 export function getCsharpParser(): Parser {
-  if (_parser === null) {
-    _parser = new Parser();
-    _parser.setLanguage(CSharp as Parameters<Parser['setLanguage']>[0]);
-  }
-  return _parser;
+	if (_parser === null) {
+		_parser = new Parser();
+		_parser.setLanguage(CSharp as Parameters<Parser["setLanguage"]>[0]);
+	}
+	return _parser;
 }
 
 export function getCsharpScopeQuery(): Parser.Query {
-  if (_query === null) {
-    _query = new Parser.Query(CSharp as Parameters<Parser['setLanguage']>[0], CSHARP_SCOPE_QUERY);
-  }
-  return _query;
+	if (_query === null) {
+		_query = new Parser.Query(
+			CSharp as Parameters<Parser["setLanguage"]>[0],
+			CSHARP_SCOPE_QUERY,
+		);
+	}
+	return _query;
 }

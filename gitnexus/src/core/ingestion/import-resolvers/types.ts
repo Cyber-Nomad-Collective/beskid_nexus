@@ -4,15 +4,15 @@
  * Extracted from import-resolution.ts to co-locate types with their consumers.
  */
 
+import type { SupportedLanguages } from "gitnexus-shared";
 import type {
-  TsconfigPaths,
-  GoModuleConfig,
-  CSharpProjectConfig,
-  ComposerConfig,
-} from '../language-config.js';
-import type { SwiftPackageConfig } from '../language-config.js';
-import type { SuffixIndex } from './utils.js';
-import type { SupportedLanguages } from 'gitnexus-shared';
+	ComposerConfig,
+	CSharpProjectConfig,
+	GoModuleConfig,
+	SwiftPackageConfig,
+	TsconfigPaths,
+} from "../language-config.js";
+import type { SuffixIndex } from "./utils.js";
 
 /**
  * Result of resolving an import via language-specific dispatch.
@@ -21,38 +21,38 @@ import type { SupportedLanguages } from 'gitnexus-shared';
  * - null: no resolution (external dependency, etc.)
  */
 export type ImportResult =
-  | { kind: 'files'; files: string[] }
-  | { kind: 'package'; files: string[]; dirSuffix: string }
-  | null;
+	| { kind: "files"; files: string[] }
+	| { kind: "package"; files: string[]; dirSuffix: string }
+	| null;
 
 /** Bundled language-specific configs loaded once per ingestion run. */
 export interface ImportConfigs {
-  tsconfigPaths: TsconfigPaths | null;
-  goModule: GoModuleConfig | null;
-  composerConfig: ComposerConfig | null;
-  swiftPackageConfig: SwiftPackageConfig | null;
-  csharpConfigs: CSharpProjectConfig[];
+	tsconfigPaths: TsconfigPaths | null;
+	goModule: GoModuleConfig | null;
+	composerConfig: ComposerConfig | null;
+	swiftPackageConfig: SwiftPackageConfig | null;
+	csharpConfigs: CSharpProjectConfig[];
 }
 
 /** Pre-built lookup structures for import resolution. Build once, reuse across chunks. */
 export interface ImportResolutionContext {
-  allFilePaths: Set<string>;
-  allFileList: string[];
-  normalizedFileList: string[];
-  index: SuffixIndex;
-  resolveCache: Map<string, string | null>;
+	allFilePaths: Set<string>;
+	allFileList: string[];
+	normalizedFileList: string[];
+	index: SuffixIndex;
+	resolveCache: Map<string, string | null>;
 }
 
 /** Full context for import resolution: file lookups + language configs. */
 export interface ResolveCtx extends ImportResolutionContext {
-  configs: ImportConfigs;
+	configs: ImportConfigs;
 }
 
 /** Per-language import resolver -- function alias matching ExportChecker/CallRouter pattern. */
 export type ImportResolverFn = (
-  rawImportPath: string,
-  filePath: string,
-  resolveCtx: ResolveCtx,
+	rawImportPath: string,
+	filePath: string,
+	resolveCtx: ResolveCtx,
 ) => ImportResult;
 
 /**
@@ -70,12 +70,12 @@ export type ImportResolverStrategy = ImportResolverFn;
  * The factory (`createImportResolver`) chains them: first non-null result wins.
  */
 export interface ImportResolutionConfig {
-  /**
-   * Documentation-only metadata identifying which language this config serves.
-   * **Not used by `createImportResolver`** — the factory only iterates `strategies`.
-   * Useful for logging, debugging, and compile-time exhaustiveness checks when
-   * mapping `SupportedLanguages → ImportResolutionConfig` in language providers.
-   */
-  readonly language: SupportedLanguages;
-  readonly strategies: readonly ImportResolverStrategy[];
+	/**
+	 * Documentation-only metadata identifying which language this config serves.
+	 * **Not used by `createImportResolver`** — the factory only iterates `strategies`.
+	 * Useful for logging, debugging, and compile-time exhaustiveness checks when
+	 * mapping `SupportedLanguages → ImportResolutionConfig` in language providers.
+	 */
+	readonly language: SupportedLanguages;
+	readonly strategies: readonly ImportResolverStrategy[];
 }

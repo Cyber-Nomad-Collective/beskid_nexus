@@ -1,9 +1,9 @@
-import { User } from './user';
-import { Repo } from './repo';
+import { Repo } from "./repo";
+import { User } from "./user";
 
 export function processEntities(): void {
-  const user = new User('alice');
-  const repo = new Repo('/tmp/repo');
-  user.save();
-  repo.save();
+	const user = new User("alice");
+	const repo = new Repo("/tmp/repo");
+	user.save();
+	repo.save();
 }

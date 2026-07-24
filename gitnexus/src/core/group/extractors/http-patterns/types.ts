@@ -1,4 +1,4 @@
-import type Parser from 'tree-sitter';
+import type Parser from "tree-sitter";
 
 /**
  * Shared types for the http-route-extractor language plugins.
@@ -11,7 +11,7 @@ import type Parser from 'tree-sitter';
  * belongs in the plugins.
  */
 
-export type HttpRole = 'provider' | 'consumer';
+export type HttpRole = "provider" | "consumer";
 
 /**
  * One raw HTTP detection produced by a plugin's `scan()` function. The
@@ -23,21 +23,21 @@ export type HttpRole = 'provider' | 'consumer';
  * runs the appropriate normalizer for provider vs. consumer paths.
  */
 export interface HttpDetection {
-  role: HttpRole;
-  /** Short framework label, e.g. `'spring'`, `'nest'`, `'express'`. */
-  framework: string;
-  /** HTTP method in upper case (`'GET'`, `'POST'`, ...). */
-  method: string;
-  /** Raw path literal as seen in source (template placeholders intact). */
-  path: string;
-  /**
-   * Symbol name of the handler (for providers) or calling function
-   * (for consumers) when the plugin can determine it structurally.
-   * Null when no good candidate is available.
-   */
-  name: string | null;
-  /** Confidence in (0, 1]. Source-scan plugins typically use 0.7–0.8. */
-  confidence: number;
+	role: HttpRole;
+	/** Short framework label, e.g. `'spring'`, `'nest'`, `'express'`. */
+	framework: string;
+	/** HTTP method in upper case (`'GET'`, `'POST'`, ...). */
+	method: string;
+	/** Raw path literal as seen in source (template placeholders intact). */
+	path: string;
+	/**
+	 * Symbol name of the handler (for providers) or calling function
+	 * (for consumers) when the plugin can determine it structurally.
+	 * Null when no good candidate is available.
+	 */
+	name: string | null;
+	/** Confidence in (0, 1]. Source-scan plugins typically use 0.7–0.8. */
+	confidence: number;
 }
 
 /**
@@ -52,14 +52,14 @@ export interface HttpDetection {
  * grammar modules export different shapes.
  */
 export interface HttpLanguagePlugin {
-  /** Human-readable plugin name for diagnostics. */
-  name: string;
-  /** tree-sitter grammar object (passed to the shared parser). */
-  language: unknown;
-  /**
-   * Scan a parsed tree and return zero or more HTTP detections. Plugins
-   * must not throw — they should swallow per-match errors so a single
-   * malformed construct does not abort the whole file.
-   */
-  scan(tree: Parser.Tree): HttpDetection[];
+	/** Human-readable plugin name for diagnostics. */
+	name: string;
+	/** tree-sitter grammar object (passed to the shared parser). */
+	language: unknown;
+	/**
+	 * Scan a parsed tree and return zero or more HTTP detections. Plugins
+	 * must not throw — they should swallow per-match errors so a single
+	 * malformed construct does not abort the whole file.
+	 */
+	scan(tree: Parser.Tree): HttpDetection[];
 }

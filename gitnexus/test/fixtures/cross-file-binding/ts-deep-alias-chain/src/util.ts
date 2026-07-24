@@ -1,2 +1,2 @@
-import { user } from './service';
+import { user } from "./service";
 export const alias = user;
