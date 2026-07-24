@@ -9,7 +9,7 @@
 #     --build-context web_common=../beskid_web_common \
 #     --build-context openspec=../openspec .
 
-FROM node:22.12.0 AS builder
+FROM node:22-bookworm AS builder
 
 # Layout mirrors the superrepo so gitnexus-web file:../../beskid_web_common resolves.
 WORKDIR /src/beskid_nexus
@@ -17,26 +17,26 @@ WORKDIR /src/beskid_nexus
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
+RUN npm install -g pnpm@10.17.1
 
 # Generate .npmrc inline so the Dockerfile doesn't depend on the file being
 # tracked in the submodule. CI prepare-secure-dockerfile.sh strips the ARG/ENV
 # below and injects NODE_AUTH_TOKEN via BuildKit secret mount at build time.
-RUN printf '@beskid:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > .npmrc \
+RUN mkdir -p gitnexus-shared gitnexus gitnexus-web \
+    && printf '@beskid:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > .npmrc \
       && cp .npmrc gitnexus-shared/ \
     && cp .npmrc gitnexus/ \
       && cp .npmrc gitnexus-web/
 
 ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
-COPY --from=web_common package.json pnpm-lock.yaml tsconfig.base.json /src/beskid_web_common/
+COPY --from=web_common package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json /src/beskid_web_common/
 COPY --from=web_common packages /src/beskid_web_common/packages
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /src/beskid_web_common --frozen-lockfile
+RUN pnpm install --dir /src/beskid_web_common --frozen-lockfile
 
   COPY gitnexus-shared/package.json gitnexus-shared/pnpm-lock.yaml ./gitnexus-shared/
   COPY gitnexus-shared ./gitnexus-shared
-  RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-      pnpm install --dir gitnexus-shared --frozen-lockfile && pnpm --dir gitnexus-shared build
+  RUN pnpm install --dir gitnexus-shared --frozen-lockfile && pnpm --dir gitnexus-shared build
 
   COPY gitnexus/package.json gitnexus/pnpm-lock.yaml ./gitnexus/
   COPY gitnexus ./gitnexus
@@ -45,7 +45,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /
 
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm --dir gitnexus install --frozen-lockfile \
+RUN pnpm --dir gitnexus install --frozen-lockfile \
   && pnpm --dir gitnexus add --save-optional @ladybugdb/core-linux-x64@0.16.1 \
   && ln -sf ../core-linux-x64/lbugjs.node gitnexus/node_modules/@ladybugdb/core/lbugjs.node \
   && pnpm --dir gitnexus build
