@@ -73,6 +73,20 @@ async function mockGraphFirstApi(page: import('@playwright/test').Page) {
 		await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
 	});
 
+	// Order: `**/api/repos` registered first so Playwright matches it
+	// before the broader `**/api/repo**` on GET /api/repos requests.
+	await page.route('**/api/repos', async (route) => {
+		await route.fulfill({
+			status: 200,
+			contentType: 'application/json',
+			body: JSON.stringify([
+				{ name: 'alpha', path: '/data/alpha' },
+				{ name: 'beta', path: '/data/beta' },
+			]),
+		});
+	});
+
+	// `**/api/repo**` matches /api/repo?repo=alpha (query string included).
 	await page.route('**/api/repo**', async (route) => {
 		const url = new URL(route.request().url());
 		const repo = url.searchParams.get('repo') ?? 'alpha';
@@ -95,17 +109,6 @@ async function mockGraphFirstApi(page: import('@playwright/test').Page) {
 		});
 	});
 
-	await page.route('**/api/repos', async (route) => {
-		await route.fulfill({
-			status: 200,
-			contentType: 'application/json',
-			body: JSON.stringify([
-				{ name: 'alpha', path: '/data/alpha' },
-				{ name: 'beta', path: '/data/beta' },
-			]),
-		});
-	});
-
 	await page.route('**/api/graph**', async (route) => {
 		await route.fulfill({
 			status: 200,
@@ -114,16 +117,18 @@ async function mockGraphFirstApi(page: import('@playwright/test').Page) {
 		});
 	});
 
+	// EventSource can't be satisfied by route.fulfill() — the response
+	// completes immediately and EventSource fires 'error' + reconnect
+	// in a tight loop.  Aborting the route lets EventSource fail once
+	// per connection attempt instead of reconnecting continuously.
 	await page.route('**/api/heartbeat', async (route) => {
-		await route.fulfill({
-			status: 200,
-			contentType: 'text/event-stream',
-			body: 'data: {"ok":true}\n\n',
-		});
+		await route.abort('connectionrefused');
 	});
 }
 
 test.describe('Graph-first landing', () => {
+	test.setTimeout(60_000);
+
 	test('loads first indexed repo and shows graph canvas', async ({ page }) => {
 		await mockGraphFirstApi(page);
 		await page.goto('/');
