@@ -19,23 +19,29 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
 
-COPY --from=web_common package.json pnpm-lock.yaml tsconfig.base.json /src/beskid_web_common/
-COPY --from=web_common packages /src/beskid_web_common/packages
-ARG NODE_AUTH_TOKEN
+# Generate .npmrc inline so the Dockerfile doesn't depend on the file being
+# tracked in the submodule. CI prepare-secure-dockerfile.sh strips the ARG/ENV
+# below and injects NODE_AUTH_TOKEN via BuildKit secret mount at build time.
+RUN printf '@beskid:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > .npmrc \
+      && cp .npmrc gitnexus-shared/ \
+    && cp .npmrc gitnexus/ \
+      && cp .npmrc gitnexus-web/
+
+  COPY --from=web_common package.json pnpm-lock.yaml tsconfig.base.json /src/beskid_web_common/
+  COPY --from=web_common packages /src/beskid_web_common/packages
+  ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /src/beskid_web_common --frozen-lockfile
+  RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /src/beskid_web_common --frozen-lockfile
 
-COPY .npmrc ./
-COPY gitnexus-shared/package.json gitnexus-shared/pnpm-lock.yaml ./gitnexus-shared/
-COPY gitnexus-shared ./gitnexus-shared
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir gitnexus-shared --frozen-lockfile && pnpm --dir gitnexus-shared build
+  COPY gitnexus-shared/package.json gitnexus-shared/pnpm-lock.yaml ./gitnexus-shared/
+  COPY gitnexus-shared ./gitnexus-shared
+  RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+      pnpm install --dir gitnexus-shared --frozen-lockfile && pnpm --dir gitnexus-shared build
 
-COPY gitnexus/package.json gitnexus/pnpm-lock.yaml ./gitnexus/
-COPY gitnexus ./gitnexus
-COPY .npmrc ./gitnexus/.npmrc
-COPY gitnexus-web/package.json gitnexus-web/pnpm-lock.yaml ./gitnexus-web/
-COPY gitnexus-web ./gitnexus-web
-COPY .npmrc ./gitnexus-web/.npmrc
+  COPY gitnexus/package.json gitnexus/pnpm-lock.yaml ./gitnexus/
+  COPY gitnexus ./gitnexus
+  COPY gitnexus-web/package.json gitnexus-web/pnpm-lock.yaml ./gitnexus-web/
+  COPY gitnexus-web ./gitnexus-web
 
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
