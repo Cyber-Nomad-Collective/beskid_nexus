@@ -27,11 +27,11 @@ RUN printf '@beskid:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_
     && cp .npmrc gitnexus/ \
       && cp .npmrc gitnexus-web/
 
-  COPY --from=web_common package.json pnpm-lock.yaml tsconfig.base.json /src/beskid_web_common/
-  COPY --from=web_common packages /src/beskid_web_common/packages
-  ARG NODE_AUTH_TOKEN
+ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
-  RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /src/beskid_web_common --frozen-lockfile
+COPY --from=web_common package.json pnpm-lock.yaml tsconfig.base.json /src/beskid_web_common/
+COPY --from=web_common packages /src/beskid_web_common/packages
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --dir /src/beskid_web_common --frozen-lockfile
 
   COPY gitnexus-shared/package.json gitnexus-shared/pnpm-lock.yaml ./gitnexus-shared/
   COPY gitnexus-shared ./gitnexus-shared
