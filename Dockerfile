@@ -19,14 +19,13 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm@10.17.1
 
-# Generate .npmrc inline so the Dockerfile doesn't depend on the file being
-# tracked in the submodule. CI prepare-secure-dockerfile.sh strips the ARG/ENV
-# below and injects NODE_AUTH_TOKEN via BuildKit secret mount at build time.
+# .npmrc is COPY'd from repository root — CI prepare-secure-dockerfile.sh
+# strips ARG/ENV below and injects NODE_AUTH_TOKEN via BuildKit secret mount.
+COPY .npmrc ./
 RUN mkdir -p gitnexus-shared gitnexus gitnexus-web \
-    && printf '@beskid:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > .npmrc \
-      && cp .npmrc gitnexus-shared/ \
+    && cp .npmrc gitnexus-shared/ \
     && cp .npmrc gitnexus/ \
-      && cp .npmrc gitnexus-web/
+    && cp .npmrc gitnexus-web/
 
 ARG NODE_AUTH_TOKEN
 ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
