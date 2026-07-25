@@ -145,7 +145,7 @@ export function emitFreeCallFallback(
 								// overloads) — mirrors ADL merged-candidate path behavior.
 								// Cross-file candidates are shadowing; keep first-match.
 								const sameFile = narrowed.every(
-									(d) => d.filePath === narrowed[0]!.filePath,
+									(d) => d.filePath === narrowed[0]?.filePath,
 								);
 								if (sameFile) {
 									handledSites.add(
@@ -205,7 +205,7 @@ export function emitFreeCallFallback(
 								// Multiple survivors — suppress when same-file (true
 								// overloads), mirrors ADL merged-candidate behavior.
 								const sameFile = narrowed.every(
-									(d) => d.filePath === narrowed[0]!.filePath,
+									(d) => d.filePath === narrowed[0]?.filePath,
 								);
 								if (sameFile) {
 									handledSites.add(siteKey);
@@ -268,7 +268,7 @@ export function emitFreeCallFallback(
 					site.arity,
 					options.isCallableVisibleFromCaller !== undefined
 						? (candidate) =>
-								options.isCallableVisibleFromCaller!({
+								options.isCallableVisibleFromCaller?.({
 									callerParsed: parsed,
 									candidate,
 									callerScope: site.inScope,

@@ -18,10 +18,10 @@
  * `npx gitnexus`.
  */
 
-import { spawnSync } from "child_process";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runHook } from "../utils/hook-test-helpers.js";
 
@@ -502,7 +502,7 @@ describe("Cursor hook concurrency guard", () => {
 
 describe("Cursor hook concurrency guard (integration)", () => {
 	it("exits silently when all MAX_INFLIGHT slots hold live pids", async () => {
-		const { spawn } = await import("child_process");
+		const { spawn } = await import("node:child_process");
 		const lockDir = path.join(guardGitNexusDir, ".hook-locks");
 		fs.mkdirSync(lockDir, { recursive: true });
 

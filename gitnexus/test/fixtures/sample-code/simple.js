@@ -1,4 +1,4 @@
-const path = require("path");
+const _path = require("node:path");
 
 class EventEmitter {
 	constructor() {

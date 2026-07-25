@@ -7,8 +7,6 @@ export class Address {
 }
 
 export class User {
-	#secret: string;
-
 	constructor(
 		public name: string,
 		public address: Address,

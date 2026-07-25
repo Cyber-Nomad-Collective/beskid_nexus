@@ -81,7 +81,7 @@ const resolveHeritageId = (
 		if (resolved.tier === "global" && resolved.candidates.length > 1) {
 			return {
 				id: generateId(fallbackLabel, fallbackKey ?? name),
-				confidence: TIER_CONFIDENCE["global"],
+				confidence: TIER_CONFIDENCE.global,
 			};
 		}
 		return {
@@ -92,7 +92,7 @@ const resolveHeritageId = (
 	// Unresolved: use global-tier confidence as fallback
 	return {
 		id: generateId(fallbackLabel, fallbackKey ?? name),
-		confidence: TIER_CONFIDENCE["global"],
+		confidence: TIER_CONFIDENCE.global,
 	};
 };
 
@@ -240,7 +240,7 @@ export const processHeritage = async (
 				tree = parseSourceSafe(parser, parseContent, undefined, {
 					bufferSize: getTreeSitterBufferSize(parseContent),
 				});
-			} catch (parseError) {
+			} catch (_parseError) {
 				// Skip files that can't be parsed
 				continue;
 			}
@@ -483,11 +483,11 @@ export async function extractExtractedHeritageFromFiles(
 			// `provider.heritageExtractor?.extractFromCall` branch there. We only
 			// need call-based records here; other @call captures are consumed by
 			// processCalls later in the sequential loop.
-			if (callBasedEnabled && captureMap["call"] && captureMap["call.name"]) {
+			if (callBasedEnabled && captureMap.call && captureMap["call.name"]) {
 				const calledName: string = captureMap["call.name"].text;
-				const heritageItems = provider.heritageExtractor!.extractFromCall!(
+				const heritageItems = provider.heritageExtractor?.extractFromCall?.(
 					calledName,
-					captureMap["call"],
+					captureMap.call,
 					{ filePath: file.path, language },
 				);
 				if (heritageItems) {

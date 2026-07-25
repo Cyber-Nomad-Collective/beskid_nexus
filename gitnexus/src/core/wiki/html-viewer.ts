@@ -5,8 +5,8 @@
  * module tree, and metadata — viewable offline in any browser.
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { sanitizeMermaidMarkdown } from "./mermaid-sanitizer.js";
 
 interface ModuleTreeNode {
@@ -91,7 +91,7 @@ function buildHTML(
 	parts.push(
 		'<meta name="viewport" content="width=device-width, initial-scale=1.0">',
 	);
-	parts.push("<title>" + esc(projectName) + " — Wiki</title>");
+	parts.push(`<title>${esc(projectName)} — Wiki</title>`);
 	parts.push(
 		'<script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>',
 	);
@@ -131,9 +131,9 @@ function buildHTML(
 
 	// ── Script ──
 	parts.push("<script>");
-	parts.push("var PAGES = " + pagesJSON + ";");
-	parts.push("var TREE = " + treeJSON + ";");
-	parts.push("var META = " + metaJSON + ";");
+	parts.push(`var PAGES = ${pagesJSON};`);
+	parts.push(`var TREE = ${treeJSON};`);
+	parts.push(`var META = ${metaJSON};`);
 	parts.push(JS_APP);
 	parts.push("</script>");
 

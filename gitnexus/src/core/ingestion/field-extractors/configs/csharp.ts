@@ -129,7 +129,7 @@ export const csharpConfig: FieldExtractionConfig = {
 
 		for (let i = 0; i < paramList.namedChildCount; i++) {
 			const param = paramList.namedChild(i);
-			if (!param || param.type !== "parameter") continue;
+			if (param?.type !== "parameter") continue;
 
 			const nameNode = param.childForFieldName("name");
 			const typeNode = param.childForFieldName("type");

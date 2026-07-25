@@ -1,5 +1,7 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { performance } from "node:perf_hooks";
-import fs from "fs/promises";
 import {
 	buildUqDispatchPayload,
 	isValidOwnerRepo,
@@ -7,8 +9,6 @@ import {
 	stripGitSuffix,
 	UNDERSTAND_QUICKLY_TOKEN_ENV,
 } from "gitnexus-shared";
-import os from "os";
-import path from "path";
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 
 describe("understand-quickly helpers (gitnexus-shared)", () => {
@@ -49,7 +49,7 @@ describe("understand-quickly helpers (gitnexus-shared)", () => {
 		});
 
 		test("linear time on adversarial trailing slashes (regression for ReDoS)", () => {
-			const adversarial = "https://github.com/o/r" + "/".repeat(10_000);
+			const adversarial = `https://github.com/o/r${"/".repeat(10_000)}`;
 			const start = performance.now();
 			const result = stripGitSuffix(adversarial);
 			const elapsed = performance.now() - start;
@@ -58,7 +58,7 @@ describe("understand-quickly helpers (gitnexus-shared)", () => {
 		});
 
 		test("parseOwnerRepoFromRemote terminates quickly on adversarial input", () => {
-			const adversarial = "https://github.com/o/r.git" + "/".repeat(10_000);
+			const adversarial = `https://github.com/o/r.git${"/".repeat(10_000)}`;
 			const start = performance.now();
 			const result = parseOwnerRepoFromRemote(adversarial);
 			const elapsed = performance.now() - start;

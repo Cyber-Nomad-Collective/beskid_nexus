@@ -334,12 +334,12 @@ describe("extractCobolSymbolsWithRegex", () => {
 
 			const wsName = r.dataItems.find((d) => d.name === "WS-NAME");
 			expect(wsName).toBeDefined();
-			expect(wsName!.level).toBe(5);
-			expect(wsName!.pic).toMatch(/^X\(30\)/);
+			expect(wsName?.level).toBe(5);
+			expect(wsName?.pic).toMatch(/^X\(30\)/);
 
 			const wsAmount = r.dataItems.find((d) => d.name === "WS-AMOUNT");
 			expect(wsAmount).toBeDefined();
-			expect(wsAmount!.usage).toBe("COMP-3");
+			expect(wsAmount?.usage).toBe("COMP-3");
 		});
 
 		it("extracts 88-level condition names with values", () => {
@@ -355,12 +355,12 @@ describe("extractCobolSymbolsWithRegex", () => {
 			const r = extractCobolSymbolsWithRegex(src, "test.cbl");
 			const active = r.dataItems.find((d) => d.name === "WS-ACTIVE");
 			expect(active).toBeDefined();
-			expect(active!.level).toBe(88);
-			expect(active!.values).toEqual(["A"]);
+			expect(active?.level).toBe(88);
+			expect(active?.values).toEqual(["A"]);
 
 			const inactive = r.dataItems.find((d) => d.name === "WS-INACTIVE");
 			expect(inactive).toBeDefined();
-			expect(inactive!.values).toEqual(["I"]);
+			expect(inactive?.values).toEqual(["I"]);
 		});
 
 		it("extracts FD entries with record name linkage", () => {
@@ -412,15 +412,15 @@ describe("extractCobolSymbolsWithRegex", () => {
 
 			const fileRec = r.dataItems.find((d) => d.name === "FILE-REC");
 			expect(fileRec).toBeDefined();
-			expect(fileRec!.section).toBe("file");
+			expect(fileRec?.section).toBe("file");
 
 			const wsVar = r.dataItems.find((d) => d.name === "WS-VAR");
 			expect(wsVar).toBeDefined();
-			expect(wsVar!.section).toBe("working-storage");
+			expect(wsVar?.section).toBe("working-storage");
 
 			const lkVar = r.dataItems.find((d) => d.name === "LK-VAR");
 			expect(lkVar).toBeDefined();
-			expect(lkVar!.section).toBe("linkage");
+			expect(lkVar?.section).toBe("linkage");
 		});
 	});
 
@@ -1042,8 +1042,8 @@ describe("extractCobolSymbolsWithRegex", () => {
 			const r = extractCobolSymbolsWithRegex(src, "test.cbl");
 			const table = r.dataItems.find((d) => d.name === "WS-TABLE");
 			expect(table).toBeDefined();
-			expect(table!.dependingOn).toBe("WS-COUNT");
-			expect(table!.occurs).toBe(1);
+			expect(table?.dependingOn).toBe("WS-COUNT");
+			expect(table?.occurs).toBe(1);
 		});
 
 		it("VALUE clause extracts quoted string", () => {
@@ -1276,9 +1276,9 @@ describe("extractCobolSymbolsWithRegex", () => {
 			const r = extractCobolSymbolsWithRegex(src, "test.cbl");
 			const inner = r.programs.find((p) => p.name === "INNER-PGM");
 			expect(inner).toBeDefined();
-			expect(inner!.isCommon).toBe(true);
+			expect(inner?.isCommon).toBe(true);
 			const outer = r.programs.find((p) => p.name === "OUTER-PGM");
-			expect(outer!.isCommon).toBeFalsy();
+			expect(outer?.isCommon).toBeFalsy();
 		});
 
 		it("IS EXTERNAL and IS GLOBAL as boolean properties", () => {
@@ -1520,7 +1520,7 @@ describe("extractCobolSymbolsWithRegex", () => {
 			// PERFORM before first paragraph — caller should be null (module-level)
 			const innerPerform = r.performs.find((p) => p.target === "INNER-INIT");
 			expect(innerPerform).toBeDefined();
-			expect(innerPerform!.caller).toBeNull();
+			expect(innerPerform?.caller).toBeNull();
 		});
 	});
 
@@ -1916,8 +1916,8 @@ describe("extractCobolSymbolsWithRegex", () => {
 			const r = extractCobolSymbolsWithRegex(src, "test.cbl");
 			const hex = r.dataItems.find((d) => d.name === "WS-HEX");
 			expect(hex).toBeDefined();
-			expect(hex!.values).toBeDefined();
-			expect(hex!.values![0]).toContain("F1F2F3F4");
+			expect(hex?.values).toBeDefined();
+			expect(hex?.values?.[0]).toContain("F1F2F3F4");
 		});
 
 		it("VALUE with negative numeric", () => {
@@ -1943,7 +1943,7 @@ describe("extractCobolSymbolsWithRegex", () => {
 			const r = extractCobolSymbolsWithRegex(src, "test.cbl");
 			const stars = r.dataItems.find((d) => d.name === "WS-STARS");
 			expect(stars?.values).toBeDefined();
-			expect(stars!.values![0]).toContain("*");
+			expect(stars?.values?.[0]).toContain("*");
 		});
 	});
 
@@ -2425,7 +2425,7 @@ describe("extractCobolSymbolsWithRegex", () => {
 			// INPUT PROCEDURE should produce a perform with thruTarget
 			const inputProc = r.performs.find((p) => p.target === "BUILD-INPUT");
 			expect(inputProc).toBeDefined();
-			expect(inputProc!.thruTarget).toBe("BUILD-END");
+			expect(inputProc?.thruTarget).toBe("BUILD-END");
 			// OUTPUT PROCEDURE should be captured too
 			expect(r.performs.find((p) => p.target === "WRITE-OUTPUT")).toBeDefined();
 		});

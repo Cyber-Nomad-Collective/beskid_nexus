@@ -1,6 +1,6 @@
-import { randomUUID } from "crypto";
-import fs from "fs/promises";
-import path from "path";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { parseRepoNameFromUrl } from "../../storage/git.js";
 import {
 	getGlobalDir,

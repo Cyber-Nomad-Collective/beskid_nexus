@@ -66,7 +66,7 @@ export function createMethodExtractor(
 	} else {
 		const missing = config.typeDeclarationNodes.filter(
 			(t) =>
-				STATIC_IMPLYING_OWNER_TYPES.has(t) && !config.staticOwnerTypes!.has(t),
+				STATIC_IMPLYING_OWNER_TYPES.has(t) && !config.staticOwnerTypes?.has(t),
 		);
 		// Explicit empty Set is the opt-out signal; don't second-guess it.
 		if (missing.length > 0 && config.staticOwnerTypes.size > 0) {

@@ -1,6 +1,6 @@
-import { createHash } from "crypto";
-import fs from "fs/promises";
-import path from "path";
+import { createHash } from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { getGlobalDir } from "../../storage/repo-manager.js";
 import type { TrackerDeliveryNode, TrackerDeliveryRelation } from "./types.js";
 

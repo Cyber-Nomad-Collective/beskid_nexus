@@ -164,7 +164,7 @@ export function emitTsScopeCaptures(
 		// (`@scope.`, `@declaration.`, …) work.
 		const grouped: Record<string, Capture> = {};
 		for (const c of m.captures) {
-			const tag = "@" + c.name;
+			const tag = `@${c.name}`;
 			grouped[tag] = nodeToCapture(tag, c.node);
 		}
 		if (Object.keys(grouped).length === 0) continue;

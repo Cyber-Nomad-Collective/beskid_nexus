@@ -106,7 +106,7 @@ describe("emitCppScopeCaptures — class declarations", () => {
 			t.includes("@declaration.class"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Foo");
+		expect(m?.["@declaration.name"].text).toBe("Foo");
 	});
 
 	it("captures named struct with @declaration.struct", () => {
@@ -114,7 +114,7 @@ describe("emitCppScopeCaptures — class declarations", () => {
 			t.includes("@declaration.struct"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Point");
+		expect(m?.["@declaration.name"].text).toBe("Point");
 	});
 
 	it("captures template class with @declaration.class", () => {
@@ -123,7 +123,7 @@ describe("emitCppScopeCaptures — class declarations", () => {
 			(t) => t.includes("@declaration.class"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Container");
+		expect(m?.["@declaration.name"].text).toBe("Container");
 	});
 });
 
@@ -135,7 +135,7 @@ describe("emitCppScopeCaptures — namespace declarations", () => {
 			t.includes("@declaration.namespace"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("foo");
+		expect(m?.["@declaration.name"].text).toBe("foo");
 	});
 
 	it("anonymous namespace has no @declaration.namespace (only @scope.namespace)", () => {
@@ -155,7 +155,7 @@ describe("emitCppScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("foo");
+		expect(m?.["@declaration.name"].text).toBe("foo");
 	});
 
 	it("captures function with pointer return as @declaration.function", () => {
@@ -163,7 +163,7 @@ describe("emitCppScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("create");
+		expect(m?.["@declaration.name"].text).toBe("create");
 	});
 
 	it("captures out-of-class method (qualified_identifier) as @declaration.method", () => {
@@ -171,7 +171,7 @@ describe("emitCppScopeCaptures — function declarations", () => {
 			t.includes("@declaration.method"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("bar");
+		expect(m?.["@declaration.name"].text).toBe("bar");
 	});
 
 	it("captures destructor as @declaration.method", () => {
@@ -180,14 +180,14 @@ describe("emitCppScopeCaptures — function declarations", () => {
 		);
 		expect(m).toBeDefined();
 		// destructor_name includes the ~
-		expect(m!["@declaration.name"].text).toContain("~");
+		expect(m?.["@declaration.name"].text).toContain("~");
 	});
 
 	it("captures inline method (field_identifier) as @declaration.method", () => {
 		const src = "class Foo { void bar() {} };";
 		const m = findMatch(src, (t) => t.includes("@declaration.method"));
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("bar");
+		expect(m?.["@declaration.name"].text).toBe("bar");
 	});
 
 	it("captures function prototype as @declaration.function", () => {
@@ -195,7 +195,7 @@ describe("emitCppScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("foo");
+		expect(m?.["@declaration.name"].text).toBe("foo");
 	});
 
 	it("captures template function as @declaration.function", () => {
@@ -203,7 +203,7 @@ describe("emitCppScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("foo");
+		expect(m?.["@declaration.name"].text).toBe("foo");
 	});
 });
 
@@ -215,7 +215,7 @@ describe("emitCppScopeCaptures — field declarations", () => {
 			t.includes("@declaration.field"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("val");
+		expect(m?.["@declaration.name"].text).toBe("val");
 	});
 
 	it("captures pointer field", () => {
@@ -223,7 +223,7 @@ describe("emitCppScopeCaptures — field declarations", () => {
 			t.includes("@declaration.field"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("ptr");
+		expect(m?.["@declaration.name"].text).toBe("ptr");
 	});
 
 	it("captures reference field", () => {
@@ -231,7 +231,7 @@ describe("emitCppScopeCaptures — field declarations", () => {
 			t.includes("@declaration.field"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("ref");
+		expect(m?.["@declaration.name"].text).toBe("ref");
 	});
 });
 
@@ -243,7 +243,7 @@ describe("emitCppScopeCaptures — variable declarations", () => {
 			t.includes("@declaration.variable"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("x");
+		expect(m?.["@declaration.name"].text).toBe("x");
 	});
 });
 
@@ -255,7 +255,7 @@ describe("emitCppScopeCaptures — enum declarations", () => {
 			t.includes("@declaration.enum"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Color");
+		expect(m?.["@declaration.name"].text).toBe("Color");
 	});
 
 	it("captures enum constants with @declaration.const", () => {
@@ -276,7 +276,7 @@ describe("emitCppScopeCaptures — typedef/alias declarations", () => {
 			t.includes("@declaration.typedef"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("MyInt");
+		expect(m?.["@declaration.name"].text).toBe("MyInt");
 	});
 
 	it("captures using alias as @declaration.typedef", () => {
@@ -284,7 +284,7 @@ describe("emitCppScopeCaptures — typedef/alias declarations", () => {
 			t.includes("@declaration.typedef"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("MyInt");
+		expect(m?.["@declaration.name"].text).toBe("MyInt");
 	});
 });
 
@@ -296,7 +296,7 @@ describe("emitCppScopeCaptures — macro declarations", () => {
 			t.includes("@declaration.macro"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("MAX");
+		expect(m?.["@declaration.name"].text).toBe("MAX");
 	});
 
 	it("captures #define function as @declaration.macro", () => {
@@ -304,7 +304,7 @@ describe("emitCppScopeCaptures — macro declarations", () => {
 			t.includes("@declaration.macro"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("ADD");
+		expect(m?.["@declaration.name"].text).toBe("ADD");
 	});
 });
 
@@ -314,9 +314,9 @@ describe("emitCppScopeCaptures — imports", () => {
 	it("captures #include local as wildcard import", () => {
 		const m = findMatch('#include "foo.h"', (t) => t.includes("@import.source"));
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("foo.h");
-		expect(m!["@import.kind"].text).toBe("wildcard");
-		expect(m!["@import.system"]).toBeUndefined();
+		expect(m?.["@import.source"].text).toBe("foo.h");
+		expect(m?.["@import.kind"].text).toBe("wildcard");
+		expect(m?.["@import.system"]).toBeUndefined();
 	});
 
 	it("captures #include system with system marker", () => {
@@ -324,8 +324,8 @@ describe("emitCppScopeCaptures — imports", () => {
 			t.includes("@import.source"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("iostream");
-		expect(m!["@import.system"]).toBeDefined();
+		expect(m?.["@import.source"].text).toBe("iostream");
+		expect(m?.["@import.system"]).toBeDefined();
 	});
 
 	it("captures using namespace as wildcard import", () => {
@@ -333,16 +333,16 @@ describe("emitCppScopeCaptures — imports", () => {
 			t.includes("@import.using-namespace"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("std");
-		expect(m!["@import.kind"].text).toBe("wildcard");
+		expect(m?.["@import.source"].text).toBe("std");
+		expect(m?.["@import.kind"].text).toBe("wildcard");
 	});
 
 	it("captures using declaration as named import", () => {
 		const m = findMatch("using std::vector;", (t) => t.includes("@import.name"));
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("std");
-		expect(m!["@import.name"].text).toBe("vector");
-		expect(m!["@import.kind"].text).toBe("named");
+		expect(m?.["@import.source"].text).toBe("std");
+		expect(m?.["@import.name"].text).toBe("vector");
+		expect(m?.["@import.kind"].text).toBe("named");
 	});
 });
 
@@ -353,42 +353,42 @@ describe("emitCppScopeCaptures — references", () => {
 		const src = "void f() { foo(); }";
 		const m = findMatch(src, (t) => t.includes("@reference.call.free"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("foo");
+		expect(m?.["@reference.name"].text).toBe("foo");
 	});
 
 	it("captures member call (obj.method())", () => {
 		const src = "void f() { obj.method(); }";
 		const m = findMatch(src, (t) => t.includes("@reference.call.member"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("method");
+		expect(m?.["@reference.name"].text).toBe("method");
 	});
 
 	it("captures member call (ptr->method())", () => {
 		const src = "void f() { ptr->method(); }";
 		const m = findMatch(src, (t) => t.includes("@reference.call.member"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("method");
+		expect(m?.["@reference.name"].text).toBe("method");
 	});
 
 	it("captures qualified call (Namespace::func())", () => {
 		const src = "void f() { Foo::bar(); }";
 		const m = findMatch(src, (t) => t.includes("@reference.call.qualified"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("bar");
+		expect(m?.["@reference.name"].text).toBe("bar");
 	});
 
 	it("captures field read", () => {
 		const src = "void f() { int x = obj.val; }";
 		const m = findMatch(src, (t) => t.includes("@reference.read"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("val");
+		expect(m?.["@reference.name"].text).toBe("val");
 	});
 
 	it("captures field write", () => {
 		const src = "void f() { obj.val = 42; }";
 		const m = findMatch(src, (t) => t.includes("@reference.write"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("val");
+		expect(m?.["@reference.name"].text).toBe("val");
 	});
 });
 
@@ -399,14 +399,14 @@ describe("emitCppScopeCaptures — type bindings", () => {
 		const src = "void foo(int x) {}";
 		const m = findMatch(src, (t) => t.includes("@type-binding.parameter"));
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("x");
+		expect(m?.["@type-binding.name"].text).toBe("x");
 	});
 
 	it("captures variable type binding", () => {
 		const src = "int x = 42;";
 		const m = findMatch(src, (t) => t.includes("@type-binding.assignment"));
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("x");
+		expect(m?.["@type-binding.name"].text).toBe("x");
 	});
 });
 
@@ -418,7 +418,7 @@ describe("emitCppScopeCaptures — arity enrichment", () => {
 			t.includes("@declaration.parameter-count"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("2");
+		expect(m?.["@declaration.parameter-count"].text).toBe("2");
 	});
 
 	it("enriches zero-parameter function", () => {
@@ -426,7 +426,7 @@ describe("emitCppScopeCaptures — arity enrichment", () => {
 			t.includes("@declaration.parameter-count"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("0");
+		expect(m?.["@declaration.parameter-count"].text).toBe("0");
 	});
 
 	it("detects default parameters (required < total)", () => {
@@ -434,15 +434,15 @@ describe("emitCppScopeCaptures — arity enrichment", () => {
 			t.includes("@declaration.required-parameter-count"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.required-parameter-count"].text).toBe("1");
-		expect(m!["@declaration.parameter-count"].text).toBe("2");
+		expect(m?.["@declaration.required-parameter-count"].text).toBe("1");
+		expect(m?.["@declaration.parameter-count"].text).toBe("2");
 	});
 
 	it("enriches call reference with arity", () => {
 		const src = "void f() { foo(1, 2, 3); }";
 		const m = findMatch(src, (t) => t.includes("@reference.arity"));
 		expect(m).toBeDefined();
-		expect(m!["@reference.arity"].text).toBe("3");
+		expect(m?.["@reference.arity"].text).toBe("3");
 	});
 });
 

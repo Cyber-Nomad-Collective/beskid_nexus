@@ -21,7 +21,7 @@ export function resolveRustImportInternal(
 		rustPath = importPath.slice(7).replace(/::/g, "/");
 
 		// Try from src/ (standard layout)
-		const fromSrc = tryRustModulePath("src/" + rustPath, allFiles);
+		const fromSrc = tryRustModulePath(`src/${rustPath}`, allFiles);
 		if (fromSrc) return fromSrc;
 
 		// Try from repo root (non-standard)
@@ -68,19 +68,19 @@ export function tryRustModulePath(
 	allFiles: Set<string>,
 ): string | null {
 	// Try direct: path.rs
-	if (allFiles.has(modulePath + ".rs")) return modulePath + ".rs";
+	if (allFiles.has(`${modulePath}.rs`)) return `${modulePath}.rs`;
 	// Try directory: path/mod.rs
-	if (allFiles.has(modulePath + "/mod.rs")) return modulePath + "/mod.rs";
+	if (allFiles.has(`${modulePath}/mod.rs`)) return `${modulePath}/mod.rs`;
 	// Try path/lib.rs (for crate root)
-	if (allFiles.has(modulePath + "/lib.rs")) return modulePath + "/lib.rs";
+	if (allFiles.has(`${modulePath}/lib.rs`)) return `${modulePath}/lib.rs`;
 
 	// The last segment might be a symbol (function, struct, etc.), not a module.
 	// Strip it and try again.
 	const lastSlash = modulePath.lastIndexOf("/");
 	if (lastSlash > 0) {
 		const parentPath = modulePath.substring(0, lastSlash);
-		if (allFiles.has(parentPath + ".rs")) return parentPath + ".rs";
-		if (allFiles.has(parentPath + "/mod.rs")) return parentPath + "/mod.rs";
+		if (allFiles.has(`${parentPath}.rs`)) return `${parentPath}.rs`;
+		if (allFiles.has(`${parentPath}/mod.rs`)) return `${parentPath}/mod.rs`;
 	}
 
 	return null;

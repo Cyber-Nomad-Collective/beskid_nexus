@@ -106,7 +106,7 @@ export const knowledgeGraphToGraphology = (
 			if (!parentToChildren.has(rel.sourceId)) {
 				parentToChildren.set(rel.sourceId, []);
 			}
-			parentToChildren.get(rel.sourceId)!.push(rel.targetId);
+			parentToChildren.get(rel.sourceId)?.push(rel.targetId);
 			childToParent.set(rel.targetId, rel.sourceId);
 		}
 	});

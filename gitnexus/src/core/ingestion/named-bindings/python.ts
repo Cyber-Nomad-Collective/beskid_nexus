@@ -41,7 +41,7 @@ export function extractPythonNamedBindings(
 		const bindings: NamedBinding[] = [];
 		for (let i = 0; i < importNode.namedChildCount; i++) {
 			const child = importNode.namedChild(i);
-			if (!child || child.type !== "aliased_import") continue;
+			if (child?.type !== "aliased_import") continue;
 
 			const dottedName = findChild(child, "dotted_name");
 			const aliasIdent = findChild(child, "identifier");

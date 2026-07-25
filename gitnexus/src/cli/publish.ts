@@ -21,6 +21,7 @@
  * `npx @understand-quickly/cli add` path documented in the protocol.
  */
 
+import path from "node:path";
 import {
 	buildUqDispatchPayload,
 	isValidOwnerRepo,
@@ -28,7 +29,6 @@ import {
 	UNDERSTAND_QUICKLY_DISPATCH_URL,
 	UNDERSTAND_QUICKLY_TOKEN_ENV,
 } from "gitnexus-shared";
-import path from "path";
 import {
 	getCurrentCommit,
 	getGitRoot,

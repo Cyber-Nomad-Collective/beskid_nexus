@@ -545,7 +545,7 @@ export function emitReceiverBoundCalls(
 
 			// ── Case 3: dotted typeBinding (`u: models.User`) ────────────
 			const typeRef = findReceiverTypeBinding(site.inScope, receiverName, scopes);
-			if (typeRef !== undefined && typeRef.rawName.includes(".")) {
+			if (typeRef?.rawName.includes(".")) {
 				const [nsName, ...classNameParts] = typeRef.rawName.split(".");
 				const className = classNameParts.join(".");
 				const targetFiles3 = namespaceTargets.get(nsName);
@@ -580,9 +580,7 @@ export function emitReceiverBoundCalls(
 
 			// ── Case 3b: chain-typebinding (`city → user.get_city`) ──────
 			const chainHead =
-				typeRef !== undefined &&
-				typeRef.rawName.includes(".") &&
-				!typeRef.rawName.includes("(")
+				typeRef?.rawName.includes(".") && !typeRef.rawName.includes("(")
 					? (typeRef.rawName.split(".", 1)[0] ?? "")
 					: undefined;
 			if (
@@ -603,7 +601,7 @@ export function emitReceiverBoundCalls(
 				);
 				if (ownerDef === undefined) {
 					ownerDef = resolveCompoundReceiverClass(
-						typeRef.rawName + "()",
+						`${typeRef.rawName}()`,
 						typeRef.declaredAtScope,
 						scopes,
 						index,

@@ -328,9 +328,9 @@ function phpEmitUnresolvedReceiverEdges(
 			// `argCount >= required` semantics (already enforced by the first-
 			// stage check, so no extra work here).
 			const min = fnDef.requiredParameterCount;
-			const hasVarArgs =
-				fnDef.parameterTypes !== undefined &&
-				fnDef.parameterTypes.some((t) => t === "..." || t.startsWith("..."));
+			const hasVarArgs = fnDef.parameterTypes?.some(
+				(t) => t === "..." || t.startsWith("..."),
+			);
 			if (
 				min !== undefined &&
 				Number.isFinite(site.arity) &&

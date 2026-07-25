@@ -115,7 +115,7 @@ describe("Monorepo sync integration", () => {
 		// Expect at least topic match (user.logged-in: auth→orders)
 		const topicLink = matched.find((l) => l.contractId.includes("topic::"));
 		expect(topicLink).toBeDefined();
-		expect(topicLink!.type).toBe("topic");
+		expect(topicLink?.type).toBe("topic");
 
 		// Expect HTTP match (POST /api/orders: orders→gateway)
 		const httpLink = matched.find((l) => l.contractId.includes("http::"));

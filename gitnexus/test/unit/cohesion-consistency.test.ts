@@ -110,7 +110,7 @@ describe("calculateCohesion — internal edge ratio", () => {
 		const result = await processCommunities(graph);
 
 		// Find the community containing the clique nodes
-		const cliqueMemberSet = new Set(clique);
+		const _cliqueMemberSet = new Set(clique);
 		const membershipMap = new Map<string, string>();
 		for (const m of result.memberships) {
 			membershipMap.set(m.nodeId, m.communityId);
@@ -134,8 +134,8 @@ describe("calculateCohesion — internal edge ratio", () => {
 		// Key assertion: cohesion should be < 1.0 (edge ratio with boundary edges)
 		// Graph density would be 1.0 since 4 nodes are fully connected internally.
 		// Edge ratio: 12 internal traversals / 14 total traversals = ~0.857
-		expect(cliqueCommunity!.cohesion).toBeLessThan(1.0);
-		expect(cliqueCommunity!.cohesion).toBeCloseTo(12 / 14, 2);
+		expect(cliqueCommunity?.cohesion).toBeLessThan(1.0);
+		expect(cliqueCommunity?.cohesion).toBeCloseTo(12 / 14, 2);
 	});
 
 	/**
@@ -208,7 +208,7 @@ describe("calculateCohesion — internal edge ratio", () => {
 		expect(communityB).toBeDefined();
 
 		// More external edges => lower cohesion
-		expect(communityB!.cohesion).toBeLessThan(communityA!.cohesion);
+		expect(communityB?.cohesion).toBeLessThan(communityA?.cohesion);
 	});
 
 	/**
@@ -274,7 +274,7 @@ describe("calculateCohesion — internal edge ratio", () => {
 		const graph = createKnowledgeGraph();
 
 		// Triangle clique
-		const tri = ["fn:t0", "fn:t1", "fn:t2"];
+		const _tri = ["fn:t0", "fn:t1", "fn:t2"];
 		graph.addNode(makeNode("fn:t0", "triFn0", "Function", "/src/tri/f0.ts"));
 		graph.addNode(makeNode("fn:t1", "triFn1", "Function", "/src/tri/f1.ts"));
 		graph.addNode(makeNode("fn:t2", "triFn2", "Function", "/src/tri/f2.ts"));
@@ -303,9 +303,9 @@ describe("calculateCohesion — internal edge ratio", () => {
 
 		// Hand-calculated edge ratio: 6 internal traversals / 7 total = 0.8571...
 		const expectedEdgeRatio = 6 / 7;
-		expect(triComm!.cohesion).toBeCloseTo(expectedEdgeRatio, 2);
+		expect(triComm?.cohesion).toBeCloseTo(expectedEdgeRatio, 2);
 
 		// Verify it's NOT graph density (which would be 3 / (3*2/2) = 1.0)
-		expect(triComm!.cohesion).not.toBeCloseTo(1.0, 2);
+		expect(triComm?.cohesion).not.toBeCloseTo(1.0, 2);
 	});
 });

@@ -6,10 +6,10 @@
  * stdin/stdout, these tests verify actual behavior with filesystem state.
  */
 
-import { spawnSync } from "child_process";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { parseHookOutput, runHook } from "../utils/hook-test-helpers.js";
 
@@ -93,8 +93,8 @@ describe.each(HOOKS)("hooks e2e ($name)", ({ name, path: hookPath }) => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).toContain("stale");
-			expect(output!.additionalContext).toContain("npx gitnexus analyze");
+			expect(output?.additionalContext).toContain("stale");
+			expect(output?.additionalContext).toContain("npx gitnexus analyze");
 		});
 
 		it("stays silent when meta.json lastCommit matches HEAD", () => {
@@ -143,7 +143,7 @@ describe.each(HOOKS)("hooks e2e ($name)", ({ name, path: hookPath }) => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).toContain("--embeddings");
+			expect(output?.additionalContext).toContain("--embeddings");
 		});
 
 		it("treats missing meta.json as stale", () => {
@@ -161,7 +161,7 @@ describe.each(HOOKS)("hooks e2e ($name)", ({ name, path: hookPath }) => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).toContain("stale");
+			expect(output?.additionalContext).toContain("stale");
 		});
 
 		it("ignores failed git commands (exit_code !== 0)", () => {
@@ -240,7 +240,7 @@ describe.each(HOOKS)("hooks e2e ($name)", ({ name, path: hookPath }) => {
 				});
 				const output = parseHookOutput(result.stdout);
 				expect(output).not.toBeNull();
-				expect(output!.additionalContext).toContain("stale");
+				expect(output?.additionalContext).toContain("stale");
 			}
 		});
 	});

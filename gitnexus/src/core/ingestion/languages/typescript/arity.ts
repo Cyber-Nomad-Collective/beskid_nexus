@@ -50,9 +50,9 @@ export function typescriptArityCompatibility(
 	// Variadic detection: the `arity-metadata` synthesizer appends the
 	// literal `'params'` marker to `parameterTypes` when the def has a
 	// rest parameter, to avoid re-parsing the AST here.
-	const hasRest =
-		def.parameterTypes !== undefined &&
-		def.parameterTypes.some((t) => t === "params" || t.startsWith("params "));
+	const hasRest = def.parameterTypes?.some(
+		(t) => t === "params" || t.startsWith("params "),
+	);
 
 	if (min !== undefined && argCount < min) return "incompatible";
 	if (max !== undefined && argCount > max && !hasRest) return "incompatible";

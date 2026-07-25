@@ -53,13 +53,13 @@ describe("CLASS_CONTAINER_TYPES", () => {
 
 describe("CONTAINER_TYPE_TO_LABEL", () => {
 	it("maps class-like types to correct labels", () => {
-		expect(CONTAINER_TYPE_TO_LABEL["class_declaration"]).toBe("Class");
-		expect(CONTAINER_TYPE_TO_LABEL["interface_declaration"]).toBe("Interface");
-		expect(CONTAINER_TYPE_TO_LABEL["struct_declaration"]).toBe("Struct");
-		expect(CONTAINER_TYPE_TO_LABEL["impl_item"]).toBe("Impl");
-		expect(CONTAINER_TYPE_TO_LABEL["trait_item"]).toBe("Trait");
-		expect(CONTAINER_TYPE_TO_LABEL["record_declaration"]).toBe("Record");
-		expect(CONTAINER_TYPE_TO_LABEL["protocol_declaration"]).toBe("Interface");
+		expect(CONTAINER_TYPE_TO_LABEL.class_declaration).toBe("Class");
+		expect(CONTAINER_TYPE_TO_LABEL.interface_declaration).toBe("Interface");
+		expect(CONTAINER_TYPE_TO_LABEL.struct_declaration).toBe("Struct");
+		expect(CONTAINER_TYPE_TO_LABEL.impl_item).toBe("Impl");
+		expect(CONTAINER_TYPE_TO_LABEL.trait_item).toBe("Trait");
+		expect(CONTAINER_TYPE_TO_LABEL.record_declaration).toBe("Record");
+		expect(CONTAINER_TYPE_TO_LABEL.protocol_declaration).toBe("Interface");
 	});
 });
 

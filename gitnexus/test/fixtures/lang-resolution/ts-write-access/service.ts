@@ -1,6 +1,6 @@
 import { Address, type User } from "./models";
 
-function updateUser(user: User) {
+function _updateUser(user: User) {
 	// Write access: user.name = "Alice"
 	user.name = "Alice";
 

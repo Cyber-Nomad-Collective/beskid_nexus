@@ -103,7 +103,7 @@ function extractParametersFromList(paramList: SyntaxNode): ParameterInfo[] {
 		// Regular named `parameter` node
 		if (child.isNamed && child.type === "parameter") {
 			const nameNode = child.childForFieldName("name");
-			if (nameNode && nameNode.text.trim()) {
+			if (nameNode?.text.trim()) {
 				const typeNode = child.childForFieldName("type");
 				let typeName: string | null = typeNode
 					? (extractSimpleTypeName(typeNode) ?? typeNode.text?.trim() ?? null)
@@ -112,7 +112,7 @@ function extractParametersFromList(paramList: SyntaxNode): ParameterInfo[] {
 				// Detect ref / out modifiers inside the parameter node — prefix the type string
 				for (let j = 0; j < child.namedChildCount; j++) {
 					const c = child.namedChild(j);
-					if (!c || c.type !== "modifier") continue;
+					if (c?.type !== "modifier") continue;
 					const modText = c.text.trim();
 					if (
 						modText === "out" ||
@@ -161,7 +161,7 @@ function extractCSharpAnnotations(node: SyntaxNode): string[] {
 	const annotations: string[] = [];
 	for (let i = 0; i < node.namedChildCount; i++) {
 		const child = node.namedChild(i);
-		if (!child || child.type !== "attribute_list") continue;
+		if (child?.type !== "attribute_list") continue;
 		// Skip targeted attribute lists (e.g. [return: ...], [method: ...])
 		let hasTarget = false;
 		for (let j = 0; j < child.namedChildCount; j++) {
@@ -173,9 +173,9 @@ function extractCSharpAnnotations(node: SyntaxNode): string[] {
 		if (hasTarget) continue;
 		for (let j = 0; j < child.namedChildCount; j++) {
 			const attr = child.namedChild(j);
-			if (!attr || attr.type !== "attribute") continue;
+			if (attr?.type !== "attribute") continue;
 			const nameNode = attr.childForFieldName("name");
-			if (nameNode) annotations.push("@" + nameNode.text);
+			if (nameNode) annotations.push(`@${nameNode.text}`);
 		}
 	}
 	return annotations;

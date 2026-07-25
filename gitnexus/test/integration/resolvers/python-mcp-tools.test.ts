@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	FIXTURES,
@@ -32,13 +32,13 @@ describe("Python @mcp.tool() detection", () => {
 
 		const weatherEdge = edges.find((e) => e.target === "get_weather");
 		expect(weatherEdge).toBeDefined();
-		expect(weatherEdge!.source).toBe("get_weather");
-		expect(weatherEdge!.sourceLabel).toBe("Function");
+		expect(weatherEdge?.source).toBe("get_weather");
+		expect(weatherEdge?.sourceLabel).toBe("Function");
 
 		const searchEdge = edges.find((e) => e.target === "search_docs");
 		expect(searchEdge).toBeDefined();
-		expect(searchEdge!.source).toBe("search_docs");
-		expect(searchEdge!.sourceLabel).toBe("Function");
+		expect(searchEdge?.source).toBe("search_docs");
+		expect(searchEdge?.sourceLabel).toBe("Function");
 	});
 
 	it("detects exactly 3 tools from the fixture", () => {

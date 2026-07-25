@@ -120,7 +120,7 @@ export const routesPhase: PipelinePhase<RoutesOutput> = {
 		}
 
 		const ensureSlash = (path: string) =>
-			path.startsWith("/") ? path : "/" + path;
+			path.startsWith("/") ? path : `/${path}`;
 		let duplicateRoutes = 0;
 		const addRoute = (url: string, entry: RouteEntry) => {
 			if (routeRegistry.has(url)) {
@@ -298,7 +298,7 @@ export const routesPhase: PipelinePhase<RoutesOutput> = {
 					let match;
 					while ((match = pattern.exec(content)) !== null) {
 						const url = match[2] ?? match[1];
-						if (url && url.startsWith("/")) {
+						if (url?.startsWith("/")) {
 							allFetchCalls.push({ filePath, fetchURL: url, lineNumber: 0 });
 						}
 					}

@@ -285,7 +285,7 @@ int main() { return 0; }`,
 			// Force regex fallback by producing a file larger than tree-sitter's
 			// 32 KB hard cap. The include we care about lives inside a block
 			// comment that spans the file.
-			const filler = "int dummy_" + "x".repeat(32) + " = 0;\n".repeat(1200);
+			const filler = `int dummy_${"x".repeat(32)}${" = 0;\n".repeat(1200)}`;
 			const content = `/*
  * Historical include, kept for reference only:
  * #include "legacy/old-api.h"
@@ -590,7 +590,7 @@ int auto_main() { return 0; }`,
 			process.env.GITNEXUS_MAX_FILE_SIZE = "1"; // 1 KB cap
 			try {
 				// 4 KB header — comfortably exceeds the cap.
-				const oversized = "#pragma once\n" + "x".repeat(4 * 1024);
+				const oversized = `#pragma once\n${"x".repeat(4 * 1024)}`;
 				writeFile("huge/big.h", oversized);
 				writeFile("small/tiny.h", "#pragma once");
 

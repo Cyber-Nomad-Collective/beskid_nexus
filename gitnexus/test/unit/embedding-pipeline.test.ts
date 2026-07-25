@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	contentHashForNode,
@@ -266,7 +266,7 @@ describe("runEmbeddingPipeline incremental filter", () => {
 		// Pipeline should reach 'ready' state
 		const readyProgress = progressUpdates.find((p) => p.phase === "ready");
 		expect(readyProgress).toBeDefined();
-		expect(readyProgress!.percent).toBe(100);
+		expect(readyProgress?.percent).toBe(100);
 	});
 
 	it("embeds new nodes not in existingEmbeddings", async () => {

@@ -95,7 +95,7 @@ function extractRustReceiverType(node: SyntaxNode): string | undefined {
 	const paramList = node.childForFieldName("parameters");
 	if (!paramList) return undefined;
 	const first = paramList.namedChild(0);
-	if (!first || first.type !== "self_parameter") return undefined;
+	if (first?.type !== "self_parameter") return undefined;
 	return first.text;
 }
 
@@ -191,7 +191,7 @@ export const rustMethodConfig: MethodExtractionConfig = {
 		const paramList = node.childForFieldName("parameters");
 		if (!paramList) return true;
 		const first = paramList.namedChild(0);
-		return !first || first.type !== "self_parameter";
+		return first?.type !== "self_parameter";
 	},
 
 	isAbstract(node, ownerNode) {

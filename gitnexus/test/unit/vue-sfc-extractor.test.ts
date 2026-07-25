@@ -18,11 +18,11 @@ const count = ref(0);
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.isSetup).toBe(true);
-		expect(result!.scriptContent).toContain("import { ref } from 'vue'");
-		expect(result!.scriptContent).toContain("const count = ref(0)");
+		expect(result?.isSetup).toBe(true);
+		expect(result?.scriptContent).toContain("import { ref } from 'vue'");
+		expect(result?.scriptContent).toContain("const count = ref(0)");
 		// Line 0-3 is template + blank, line 4 is <script setup>, content starts at line 5
-		expect(result!.lineOffset).toBe(5);
+		expect(result?.lineOffset).toBe(5);
 	});
 
 	it('extracts <script lang="ts"> (non-setup)', () => {
@@ -38,8 +38,8 @@ export default {
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.isSetup).toBe(false);
-		expect(result!.scriptContent).toContain("export default");
+		expect(result?.isSetup).toBe(false);
+		expect(result?.scriptContent).toContain("export default");
 	});
 
 	it("prefers <script setup> when both blocks exist", () => {
@@ -58,9 +58,9 @@ const name = ref('test');
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.isSetup).toBe(true);
-		expect(result!.scriptContent).toContain("const name = ref('test')");
-		expect(result!.scriptContent).not.toContain("inheritAttrs");
+		expect(result?.isSetup).toBe(true);
+		expect(result?.scriptContent).toContain("const name = ref('test')");
+		expect(result?.scriptContent).not.toContain("inheritAttrs");
 	});
 
 	it("returns null for .vue files with no <script> block", () => {
@@ -84,8 +84,8 @@ export default { name: 'NoLang' };
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.scriptContent).toContain("NoLang");
-		expect(result!.isSetup).toBe(false);
+		expect(result?.scriptContent).toContain("NoLang");
+		expect(result?.isSetup).toBe(false);
 	});
 
 	it("handles <script setup> without lang attribute", () => {
@@ -97,8 +97,8 @@ const x = 1;
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.isSetup).toBe(true);
-		expect(result!.scriptContent).toContain("const x = 1");
+		expect(result?.isSetup).toBe(true);
+		expect(result?.scriptContent).toContain("const x = 1");
 	});
 
 	it("computes correct lineOffset for script at top of file", () => {
@@ -111,7 +111,7 @@ const x = 1;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
 		// <script> tag is line 0, content starts at line 1
-		expect(result!.lineOffset).toBe(1);
+		expect(result?.lineOffset).toBe(1);
 	});
 
 	it("handles multiline script tag attributes", () => {
@@ -126,8 +126,8 @@ import { ref } from 'vue';
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.isSetup).toBe(true);
-		expect(result!.scriptContent).toContain("import { ref } from 'vue'");
+		expect(result?.isSetup).toBe(true);
+		expect(result?.scriptContent).toContain("import { ref } from 'vue'");
 	});
 });
 
@@ -207,7 +207,7 @@ const greeting = 'hi';
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.scriptContent).toContain("const greeting = 'hi'");
+		expect(result?.scriptContent).toContain("const greeting = 'hi'");
 	});
 
 	it("extracts content from mixed-case <Script> ... </Script>", () => {
@@ -221,7 +221,7 @@ export default { name: 'Mixed' };
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.scriptContent).toContain("name: 'Mixed'");
+		expect(result?.scriptContent).toContain("name: 'Mixed'");
 	});
 
 	it("handles whitespace AND uppercase together: </SCRIPT >", () => {
@@ -235,6 +235,6 @@ const x = 1;
 `;
 		const result = extractVueScript(vue);
 		expect(result).not.toBeNull();
-		expect(result!.scriptContent).toContain("const x = 1");
+		expect(result?.scriptContent).toContain("const x = 1");
 	});
 });

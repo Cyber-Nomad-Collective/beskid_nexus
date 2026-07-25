@@ -18,7 +18,7 @@ describe("server-side analyze integration", () => {
 			status: "cloning",
 			progress: { phase: "cloning", percent: 5, message: "Cloning..." },
 		});
-		expect(manager.getJob(job.id)!.status).toBe("cloning");
+		expect(manager.getJob(job.id)?.status).toBe("cloning");
 
 		// Simulate analyze phase
 		manager.updateJob(job.id, {
@@ -26,7 +26,7 @@ describe("server-side analyze integration", () => {
 			repoPath: "/tmp/test-repo",
 			progress: { phase: "parsing", percent: 30, message: "Parsing code" },
 		});
-		expect(manager.getJob(job.id)!.status).toBe("analyzing");
+		expect(manager.getJob(job.id)?.status).toBe("analyzing");
 
 		// Simulate completion
 		manager.updateJob(job.id, {

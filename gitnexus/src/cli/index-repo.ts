@@ -9,8 +9,8 @@
  * shared team index).
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { getGitRoot, getRemoteUrl, isGitRepo } from "../storage/git.js";
 import {
 	ensureGitNexusIgnored,

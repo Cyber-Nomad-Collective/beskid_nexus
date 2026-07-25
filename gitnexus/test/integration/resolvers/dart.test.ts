@@ -7,7 +7,7 @@
  * CALLS chain resolution, IMPORTS, call attribution, and ACCESSES field reads.
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SupportedLanguages } from "../../../src/config/supported-languages.js";
 import {
@@ -74,7 +74,7 @@ describe.skipIf(!dartAvailable)("Dart field-type resolution", () => {
 			(c) => c.target === "save" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(saveCalls.length).toBe(1);
-		expect(saveCalls[0]!.targetFilePath).toContain("models.dart");
+		expect(saveCalls[0]?.targetFilePath).toContain("models.dart");
 	});
 
 	it("attributes save() call source to processUser, not File", () => {
@@ -83,8 +83,8 @@ describe.skipIf(!dartAvailable)("Dart field-type resolution", () => {
 			(c) => c.target === "save" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(saveCalls.length).toBe(1);
-		expect(saveCalls[0]!.source).toBe("processUser");
-		expect(saveCalls[0]!.sourceLabel).toBe("Function");
+		expect(saveCalls[0]?.source).toBe("processUser");
+		expect(saveCalls[0]?.sourceLabel).toBe("Function");
 	});
 
 	it("creates IMPORTS edge between app.dart and models.dart", () => {
@@ -103,8 +103,8 @@ describe.skipIf(!dartAvailable)("Dart field-type resolution", () => {
 			(e) => e.target === "address" && e.rel.reason === "read",
 		);
 		expect(addressReads.length).toBe(1);
-		expect(addressReads[0]!.source).toBe("processUser");
-		expect(addressReads[0]!.targetLabel).toBe("Property");
+		expect(addressReads[0]?.source).toBe("processUser");
+		expect(addressReads[0]?.targetLabel).toBe("Property");
 	});
 });
 
@@ -134,7 +134,7 @@ describe.skipIf(!dartAvailable)("Dart call-result binding", () => {
 			(c) => c.target === "save" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(saveCalls.length).toBe(1);
-		expect(saveCalls[0]!.targetFilePath).toContain("models.dart");
+		expect(saveCalls[0]?.targetFilePath).toContain("models.dart");
 	});
 
 	it("resolves getUser() call", () => {
@@ -211,45 +211,45 @@ describe.skipIf(!dartAvailable)("Dart method enrichment", () => {
 			(n) => n.name === "speak" && n.properties.filePath === "animal.dart",
 		);
 		expect(speak).toBeDefined();
-		expect(speak!.properties.isAbstract).toBe(true);
+		expect(speak?.properties.isAbstract).toBe(true);
 	});
 
 	it("marks breathe as NOT isAbstract", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const breathe = methods.find((n) => n.name === "breathe");
 		expect(breathe).toBeDefined();
-		expect(breathe!.properties.isAbstract).toBe(false);
+		expect(breathe?.properties.isAbstract).toBe(false);
 	});
 
 	it("marks classify as isStatic", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const classify = methods.find((n) => n.name === "classify");
 		expect(classify).toBeDefined();
-		expect(classify!.properties.isStatic).toBe(true);
+		expect(classify?.properties.isStatic).toBe(true);
 	});
 
 	it("marks breathe as NOT isStatic", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const breathe = methods.find((n) => n.name === "breathe");
 		expect(breathe).toBeDefined();
-		expect(breathe!.properties.isStatic).toBe(false);
+		expect(breathe?.properties.isStatic).toBe(false);
 	});
 
 	it("abstract Animal.speak has isAbstract=true and concrete breathe does not", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const speak = methods.find((n) => n.name === "speak");
 		expect(speak).toBeDefined();
-		expect(speak!.properties.isAbstract).toBe(true);
+		expect(speak?.properties.isAbstract).toBe(true);
 		const breathe = methods.find((n) => n.name === "breathe");
 		expect(breathe).toBeDefined();
-		expect(breathe!.properties.isAbstract).toBe(false);
+		expect(breathe?.properties.isAbstract).toBe(false);
 	});
 
 	it("populates parameterTypes for classify", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const classify = methods.find((n) => n.name === "classify");
 		expect(classify).toBeDefined();
-		const params = classify!.properties.parameterTypes;
+		const params = classify?.properties.parameterTypes;
 		expect(params).toContain("String");
 	});
 
@@ -299,7 +299,7 @@ describe.skipIf(!dartAvailable)("Dart calls", () => {
 			(c) => c.target === "writeAudit" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(auditCall).toBeDefined();
-		expect(auditCall!.targetFilePath).toContain("one.dart");
+		expect(auditCall?.targetFilePath).toContain("one.dart");
 	});
 
 	it("resolves writeAuditSimple() CALLS edge", () => {
@@ -309,7 +309,7 @@ describe.skipIf(!dartAvailable)("Dart calls", () => {
 				c.target === "writeAuditSimple" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(simpleCall).toBeDefined();
-		expect(simpleCall!.targetFilePath).toContain("zero.dart");
+		expect(simpleCall?.targetFilePath).toContain("zero.dart");
 	});
 
 	it("attributes calls to run, not File", () => {
@@ -368,7 +368,7 @@ describe.skipIf(!dartAvailable)("Dart member calls", () => {
 			(c) => c.target === "save" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toContain("user.dart");
+		expect(saveCall?.targetFilePath).toContain("user.dart");
 	});
 
 	it("attributes save() call to processUser, not File", () => {
@@ -377,8 +377,8 @@ describe.skipIf(!dartAvailable)("Dart member calls", () => {
 			(c) => c.target === "save" && c.sourceFilePath.includes("app.dart"),
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.sourceLabel).toBe("Function");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.sourceLabel).toBe("Function");
 	});
 
 	it("creates IMPORTS edge from app.dart to user.dart", () => {
@@ -427,21 +427,21 @@ describe.skipIf(!dartAvailable)("Dart async method detection", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const fetchUser = methods.find((n) => n.name === "fetchUser");
 		expect(fetchUser).toBeDefined();
-		expect(fetchUser!.properties.isAsync).toBe(true);
+		expect(fetchUser?.properties.isAsync).toBe(true);
 	});
 
 	it("marks async* generator countUp as isAsync=true", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const countUp = methods.find((n) => n.name === "countUp");
 		expect(countUp).toBeDefined();
-		expect(countUp!.properties.isAsync).toBe(true);
+		expect(countUp?.properties.isAsync).toBe(true);
 	});
 
 	it("marks sync* generator generateNames as isAsync=true", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const generateNames = methods.find((n) => n.name === "generateNames");
 		expect(generateNames).toBeDefined();
-		expect(generateNames!.properties.isAsync).toBe(true);
+		expect(generateNames?.properties.isAsync).toBe(true);
 	});
 
 	it("marks regular sync method formatName as isAsync=false", () => {
@@ -450,21 +450,21 @@ describe.skipIf(!dartAvailable)("Dart async method detection", () => {
 		expect(formatName).toBeDefined();
 		// buildMethodProps only sets isAsync when truthy; for sync methods the
 		// property is absent (undefined), which is equivalent to false.
-		expect(formatName!.properties.isAsync ?? false).toBe(false);
+		expect(formatName?.properties.isAsync ?? false).toBe(false);
 	});
 
 	it("populates parameterTypes for fetchUser(int id)", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const fetchUser = methods.find((n) => n.name === "fetchUser");
 		expect(fetchUser).toBeDefined();
-		expect(fetchUser!.properties.parameterTypes).toContain("int");
+		expect(fetchUser?.properties.parameterTypes).toContain("int");
 	});
 
 	it("populates returnType for formatName", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const formatName = methods.find((n) => n.name === "formatName");
 		expect(formatName).toBeDefined();
-		expect(formatName!.properties.returnType).toBe("String");
+		expect(formatName?.properties.returnType).toBe("String");
 	});
 });
 
@@ -555,7 +555,7 @@ describe.skipIf(!dartAvailable)(
 					c.target === "parentMethod" && c.targetFilePath.includes("parent.dart"),
 			);
 			expect(parentMethodCall).toBeDefined();
-			expect(parentMethodCall!.source).toBe("run");
+			expect(parentMethodCall?.source).toBe("run");
 		});
 	},
 );

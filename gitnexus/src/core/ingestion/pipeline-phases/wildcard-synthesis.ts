@@ -330,7 +330,7 @@ export function synthesizeWildcardImportBindings(
 	// Enables `models.User()` to resolve without ambiguous symbol expansion.
 	for (const [filePath, importedFiles] of ctx.importMap) {
 		const provider = getProviderForFile(filePath);
-		if (!provider || provider.importSemantics !== "namespace") continue;
+		if (provider?.importSemantics !== "namespace") continue;
 		buildPythonModuleAliasForFile(ctx, filePath, importedFiles);
 	}
 

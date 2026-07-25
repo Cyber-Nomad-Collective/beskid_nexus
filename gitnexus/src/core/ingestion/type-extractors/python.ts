@@ -47,7 +47,7 @@ const extractDeclaration: TypeBindingExtractor = (
 	if (node.type === "expression_statement") {
 		// Standalone annotation: expression_statement > type { name: identifier, type: identifier }
 		const typeChild = node.firstNamedChild;
-		if (!typeChild || typeChild.type !== "type") return;
+		if (typeChild?.type !== "type") return;
 		const nameNode = typeChild.childForFieldName("name");
 		const typeNode = typeChild.childForFieldName("type");
 		if (!nameNode || !typeNode) return;
@@ -173,7 +173,7 @@ const scanConstructorBinding: ConstructorBindingScanner = (node) => {
 const FOR_LOOP_NODE_TYPES: ReadonlySet<string> = new Set(["for_statement"]);
 
 /** Python function/method node types that carry a parameters list. */
-const PY_FUNCTION_NODE_TYPES = new Set([
+const _PY_FUNCTION_NODE_TYPES = new Set([
 	"function_definition",
 	"decorated_definition",
 ]);

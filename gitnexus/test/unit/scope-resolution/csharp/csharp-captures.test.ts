@@ -33,7 +33,7 @@ describe("emitCsharpScopeCaptures — scopes", () => {
 			(t) => t.includes("@declaration.method"),
 		);
 		expect(match).toBeDefined();
-		expect(match!["@declaration.name"].text).toBe("AfterPadding");
+		expect(match?.["@declaration.name"].text).toBe("AfterPadding");
 	});
 
 	it("parses UTF-8-heavy cache-miss files with a byte-sized buffer", () => {
@@ -43,7 +43,7 @@ describe("emitCsharpScopeCaptures — scopes", () => {
 			(t) => t.includes("@declaration.method"),
 		);
 		expect(match).toBeDefined();
-		expect(match!["@declaration.name"].text).toBe("AfterPadding");
+		expect(match?.["@declaration.name"].text).toBe("AfterPadding");
 	});
 
 	it("captures block-scoped namespaces as @scope.namespace", () => {
@@ -94,7 +94,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.class"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("User");
+		expect(m?.["@declaration.name"].text).toBe("User");
 	});
 
 	it("captures interface declarations distinctly from class declarations", () => {
@@ -102,7 +102,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.interface"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("IUser");
+		expect(m?.["@declaration.name"].text).toBe("IUser");
 	});
 
 	it("captures struct, record, enum with their own declaration tags", () => {
@@ -122,7 +122,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.method"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Save");
+		expect(m?.["@declaration.name"].text).toBe("Save");
 	});
 
 	it("captures constructor declarations under @declaration.constructor", () => {
@@ -130,7 +130,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.constructor"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("A");
+		expect(m?.["@declaration.name"].text).toBe("A");
 	});
 
 	it("captures property declarations", () => {
@@ -138,7 +138,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.property"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Age");
+		expect(m?.["@declaration.name"].text).toBe("Age");
 	});
 
 	it("captures field declarations as @declaration.variable", () => {
@@ -146,7 +146,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.variable"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("_x");
+		expect(m?.["@declaration.name"].text).toBe("_x");
 	});
 
 	it("captures operator declarations as @declaration.method with the operator token as name", () => {
@@ -158,7 +158,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			(t) => t.includes("@declaration.method") && !t.includes("@scope.class"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("+");
+		expect(m?.["@declaration.name"].text).toBe("+");
 	});
 
 	it("captures conversion operator declarations with the target type as name", () => {
@@ -167,7 +167,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			(t) => t.includes("@declaration.method"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("int");
+		expect(m?.["@declaration.name"].text).toBe("int");
 	});
 
 	it("captures operator + conversion-operator as @scope.function", () => {
@@ -187,7 +187,7 @@ describe("emitCsharpScopeCaptures — declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Local");
+		expect(m?.["@declaration.name"].text).toBe("Local");
 	});
 });
 
@@ -214,8 +214,8 @@ describe("emitCsharpScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.parameter"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures local variable annotations", () => {
@@ -223,8 +223,8 @@ describe("emitCsharpScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.annotation"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures constructor-inferred `var u = new User();`", () => {
@@ -232,8 +232,8 @@ describe("emitCsharpScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.constructor"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures alias `var u = Factory();`", () => {
@@ -241,8 +241,8 @@ describe("emitCsharpScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.alias"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("Factory");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("Factory");
 	});
 });
 
@@ -256,8 +256,8 @@ describe("emitCsharpScopeCaptures — arity metadata synthesis", () => {
 				t.includes("@declaration.required-parameter-count"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("2");
-		expect(m!["@declaration.required-parameter-count"].text).toBe("1");
+		expect(m?.["@declaration.parameter-count"].text).toBe("2");
+		expect(m?.["@declaration.required-parameter-count"].text).toBe("1");
 	});
 
 	it("synthesizes parameter-types on method declarations", () => {
@@ -268,7 +268,7 @@ describe("emitCsharpScopeCaptures — arity metadata synthesis", () => {
 				t.includes("@declaration.parameter-types"),
 		);
 		expect(m).toBeDefined();
-		const types = JSON.parse(m!["@declaration.parameter-types"].text);
+		const types = JSON.parse(m?.["@declaration.parameter-types"].text);
 		expect(types).toEqual(["User", "int"]);
 	});
 
@@ -277,9 +277,9 @@ describe("emitCsharpScopeCaptures — arity metadata synthesis", () => {
 			t.includes("@declaration.method"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"]).toBeUndefined();
-		expect(m!["@declaration.required-parameter-count"]).toBeUndefined();
-		const types = JSON.parse(m!["@declaration.parameter-types"].text);
+		expect(m?.["@declaration.parameter-count"]).toBeUndefined();
+		expect(m?.["@declaration.required-parameter-count"]).toBeUndefined();
+		const types = JSON.parse(m?.["@declaration.parameter-types"].text);
 		expect(types).toContain("params");
 	});
 
@@ -288,8 +288,8 @@ describe("emitCsharpScopeCaptures — arity metadata synthesis", () => {
 			t.includes("@declaration.constructor"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("2");
-		expect(m!["@declaration.required-parameter-count"].text).toBe("2");
+		expect(m?.["@declaration.parameter-count"].text).toBe("2");
+		expect(m?.["@declaration.required-parameter-count"].text).toBe("2");
 	});
 
 	it("synthesizes arity on local function declarations", () => {
@@ -297,7 +297,7 @@ describe("emitCsharpScopeCaptures — arity metadata synthesis", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("1");
+		expect(m?.["@declaration.parameter-count"].text).toBe("1");
 	});
 });
 
@@ -307,8 +307,8 @@ describe("emitCsharpScopeCaptures — receiver-binding synthesis (`this` / `base
 			t.includes("@type-binding.self"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("this");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("this");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("emits both `this` and `base` when the class has a base class", () => {
@@ -322,7 +322,7 @@ describe("emitCsharpScopeCaptures — receiver-binding synthesis (`this` / `base
 		const baseMatch = receiverMatches.find(
 			(m) => m["@type-binding.name"].text === "base",
 		);
-		expect(baseMatch!["@type-binding.type"].text).toBe("BaseModel");
+		expect(baseMatch?.["@type-binding.type"].text).toBe("BaseModel");
 	});
 
 	it("does not emit `this` or `base` for static methods", () => {
@@ -388,7 +388,7 @@ describe("emitCsharpScopeCaptures — receiver-binding synthesis (`this` / `base
 			(m) => "@type-binding.self" in m && m["@type-binding.name"].text === "this",
 		);
 		expect(thisMatch).toBeDefined();
-		expect(thisMatch!["@type-binding.type"].text).toBe("User");
+		expect(thisMatch?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("emits `this` with innermost type for nested class methods", () => {
@@ -411,7 +411,7 @@ describe("emitCsharpScopeCaptures — references", () => {
 			t.includes("@reference.call.free"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("Foo");
+		expect(m?.["@reference.name"].text).toBe("Foo");
 	});
 
 	it("captures member call invocations with receiver + name", () => {
@@ -419,8 +419,8 @@ describe("emitCsharpScopeCaptures — references", () => {
 			t.includes("@reference.call.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.receiver"].text).toBe("obj");
-		expect(m!["@reference.name"].text).toBe("Save");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("Save");
 	});
 
 	it("captures null-conditional member calls `obj?.Save()` with a receiver", () => {
@@ -431,8 +431,8 @@ describe("emitCsharpScopeCaptures — references", () => {
 			t.includes("@reference.call.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("Save");
-		expect(m!["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("Save");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
 	});
 
 	it("captures object-creation expressions as constructor calls", () => {
@@ -440,7 +440,7 @@ describe("emitCsharpScopeCaptures — references", () => {
 			t.includes("@reference.call.constructor"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("User");
+		expect(m?.["@reference.name"].text).toBe("User");
 	});
 
 	it('captures member writes `obj.Name = "x"`', () => {
@@ -448,8 +448,8 @@ describe("emitCsharpScopeCaptures — references", () => {
 			t.includes("@reference.write.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.receiver"].text).toBe("obj");
-		expect(m!["@reference.name"].text).toBe("Name");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("Name");
 	});
 
 	it("captures member reads `obj.Name`", () => {
@@ -458,8 +458,8 @@ describe("emitCsharpScopeCaptures — references", () => {
 			(t) => t.includes("@reference.read.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.receiver"].text).toBe("obj");
-		expect(m!["@reference.name"].text).toBe("Name");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("Name");
 	});
 
 	it("does not capture member calls as member reads", () => {

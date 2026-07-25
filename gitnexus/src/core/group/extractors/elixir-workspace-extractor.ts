@@ -131,7 +131,7 @@ function matchModuleToApp(
 	knownApps: Map<string, string>,
 ): string | null {
 	for (const [prefix, appName] of knownApps) {
-		if (moduleName === prefix || moduleName.startsWith(prefix + ".")) {
+		if (moduleName === prefix || moduleName.startsWith(`${prefix}.`)) {
 			return appName;
 		}
 	}
@@ -165,12 +165,12 @@ async function findElixirFiles(repoPath: string): Promise<string[]> {
 			const childRel = rel ? `${rel}/${entry.name}` : entry.name;
 			if (entry.isDirectory()) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel + "/")) continue;
+				if (ig?.ignores(`${childRel}/`)) continue;
 				await walk(path.join(dir, entry.name), childRel);
 			} else if (entry.name.endsWith(".ex") || entry.name.endsWith(".exs")) {
 				if (entry.name === "mix.exs" || entry.name === "mix.lock") continue;
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel)) continue;
+				if (ig?.ignores(childRel)) continue;
 				results.push(childRel);
 			}
 		}

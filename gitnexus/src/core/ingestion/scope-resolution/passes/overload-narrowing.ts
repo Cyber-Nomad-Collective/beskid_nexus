@@ -73,9 +73,9 @@ export function narrowOverloadCandidates(
 						// Adding new variadic markers here changes behavior for those
 						// other languages too — don't extend without auditing each
 						// adapter's `arity-metadata.ts`. Finding 9 of PR #1497.
-						const variadic =
-							d.parameterTypes !== undefined &&
-							d.parameterTypes.some((t) => t === "params" || t.startsWith("params "));
+						const variadic = d.parameterTypes?.some(
+							(t) => t === "params" || t.startsWith("params "),
+						);
 						if (!variadic) return false;
 					}
 					if (min !== undefined && argCount < min) return false;
@@ -151,7 +151,7 @@ function rankByConversion(
 				continue;
 			}
 			const r = rankFn(argTypes[i], params[i]);
-			if (!isFinite(r)) {
+			if (!Number.isFinite(r)) {
 				ok = false;
 				break;
 			}

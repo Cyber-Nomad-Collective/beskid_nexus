@@ -32,9 +32,9 @@ describe("C import decomposition (splitCInclude)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCInclude(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.source"].text).toBe("foo.h");
-		expect(match!["@import.kind"].text).toBe("wildcard");
-		expect(match!["@import.system"]).toBeUndefined();
+		expect(match?.["@import.source"].text).toBe("foo.h");
+		expect(match?.["@import.kind"].text).toBe("wildcard");
+		expect(match?.["@import.system"]).toBeUndefined();
 	});
 
 	it('decomposes system include "#include <stdio.h>"', () => {
@@ -42,8 +42,8 @@ describe("C import decomposition (splitCInclude)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCInclude(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.source"].text).toBe("stdio.h");
-		expect(match!["@import.system"]).toBeDefined();
+		expect(match?.["@import.source"].text).toBe("stdio.h");
+		expect(match?.["@import.system"]).toBeDefined();
 	});
 
 	it("decomposes nested path include", () => {
@@ -51,7 +51,7 @@ describe("C import decomposition (splitCInclude)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCInclude(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.source"].text).toBe("utils/helpers.h");
+		expect(match?.["@import.source"].text).toBe("utils/helpers.h");
 	});
 });
 

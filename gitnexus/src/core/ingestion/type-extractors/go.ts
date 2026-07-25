@@ -298,7 +298,7 @@ const findGoParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const paramDecl = paramsNode.namedChild(i);
-					if (!paramDecl || paramDecl.type !== "parameter_declaration") continue;
+					if (paramDecl?.type !== "parameter_declaration") continue;
 					// parameter_declaration: name type — name field is the identifier
 					const nameNode = paramDecl.childForFieldName("name");
 					if (nameNode?.text === iterableName) {
@@ -506,7 +506,7 @@ const extractPendingAssignment: PendingAssignmentExtractor = (
 		}
 		for (const spec of specs) {
 			const nameNode = spec.childForFieldName("name");
-			if (!nameNode || nameNode.type !== "identifier") continue;
+			if (nameNode?.type !== "identifier") continue;
 			const lhs = nameNode.text;
 			if (scopeEnv.has(lhs)) continue;
 			// Check if the last named child is a bare identifier (no type annotation between name and value)

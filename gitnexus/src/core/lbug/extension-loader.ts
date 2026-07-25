@@ -1,5 +1,5 @@
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { spawn } from "child_process";
 import { logger } from "../logger.js";
 import { LBUG_MAX_DB_SIZE } from "./lbug-config.js";
 

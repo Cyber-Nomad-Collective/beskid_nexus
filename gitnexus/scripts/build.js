@@ -78,7 +78,7 @@ function rewriteFile(filePath) {
 	if (!content.includes("gitnexus-shared")) return;
 
 	const relDir = path.relative(path.dirname(filePath), SHARED_DEST);
-	const relImport = relDir.split(path.sep).join("/") + "/index.js";
+	const relImport = `${relDir.split(path.sep).join("/")}/index.js`;
 
 	const updated = content
 		.replace(/from\s+['"]gitnexus-shared['"]/g, `from '${relImport}'`)

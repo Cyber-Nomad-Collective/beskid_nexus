@@ -49,7 +49,7 @@ export function emitCppScopeCaptures(
 	for (const m of rawMatches) {
 		const grouped: Record<string, Capture> = {};
 		for (const c of m.captures) {
-			const tag = "@" + c.name;
+			const tag = `@${c.name}`;
 			if (tag.startsWith("@_")) continue;
 			grouped[tag] = nodeToCapture(tag, c.node);
 		}
@@ -284,11 +284,11 @@ export function emitCppScopeCaptures(
 		if (grouped["@reference.call.free"] !== undefined) {
 			const freeCallNode = findNodeAtRange(
 				tree.rootNode,
-				grouped["@reference.call.free"]!.range,
+				grouped["@reference.call.free"]?.range,
 				"call_expression",
 			);
 			if (freeCallNode !== null) {
-				const adlAnchorRange = grouped["@reference.call.free"]!.range;
+				const adlAnchorRange = grouped["@reference.call.free"]?.range;
 				if (isParenthesizedFunctionCall(freeCallNode)) {
 					markCppAdlSiteNoAdl(
 						filePath,

@@ -39,8 +39,8 @@ function makeSemantic(
 		nodeId: `node:${filePath}`,
 		name: filePath
 			.split("/")
-			.pop()!
-			.replace(/\.\w+$/, ""),
+			.pop()
+			?.replace(/\.\w+$/, ""),
 		label: "Function",
 		startLine: 1,
 		endLine: 10,

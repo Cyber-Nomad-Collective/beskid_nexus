@@ -57,7 +57,7 @@ export function isFileInPackageDir(
 	dirSuffix: string,
 ): boolean {
 	// Prepend '/' so paths like "internal/auth/service.go" match suffix "/internal/auth/"
-	const normalized = "/" + filePath.replace(/\\/g, "/");
+	const normalized = `/${filePath.replace(/\\/g, "/")}`;
 	if (!normalized.includes(dirSuffix)) return false;
 	const afterDir = normalized.substring(
 		normalized.indexOf(dirSuffix) + dirSuffix.length,

@@ -11,8 +11,8 @@ describe("detectFrameworkFromPath", () => {
 		it("detects Pages Router pages", () => {
 			const result = detectFrameworkFromPath("pages/users.tsx");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("nextjs-pages");
-			expect(result!.entryPointMultiplier).toBe(3.0);
+			expect(result?.framework).toBe("nextjs-pages");
+			expect(result?.entryPointMultiplier).toBe(3.0);
 		});
 
 		it("ignores _app and _document pages", () => {
@@ -22,25 +22,25 @@ describe("detectFrameworkFromPath", () => {
 		it("detects App Router page.tsx", () => {
 			const result = detectFrameworkFromPath("app/dashboard/page.tsx");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("nextjs-app");
+			expect(result?.framework).toBe("nextjs-app");
 		});
 
 		it("detects API routes in pages", () => {
 			const result = detectFrameworkFromPath("pages/api/users.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("nextjs-api");
+			expect(result?.framework).toBe("nextjs-api");
 		});
 
 		it("detects App Router API route.ts", () => {
 			const result = detectFrameworkFromPath("app/api/users/route.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("nextjs-api");
+			expect(result?.framework).toBe("nextjs-api");
 		});
 
 		it("detects layout files", () => {
 			const result = detectFrameworkFromPath("app/layout.tsx");
 			expect(result).not.toBeNull();
-			expect(result!.entryPointMultiplier).toBe(2.0);
+			expect(result?.entryPointMultiplier).toBe(2.0);
 		});
 	});
 
@@ -48,21 +48,21 @@ describe("detectFrameworkFromPath", () => {
 		it("detects _layout files", () => {
 			const result = detectFrameworkFromPath("app/_layout.tsx");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("expo-router");
-			expect(result!.reason).toBe("expo-layout");
+			expect(result?.framework).toBe("expo-router");
+			expect(result?.reason).toBe("expo-layout");
 		});
 		it("detects +api routes", () => {
 			const result = detectFrameworkFromPath("app/users+api.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("expo-router");
-			expect(result!.reason).toBe("expo-api-route");
+			expect(result?.framework).toBe("expo-router");
+			expect(result?.reason).toBe("expo-api-route");
 		});
 		it("detects screen files", () => {
 			const result = detectFrameworkFromPath("app/(tabs)/settings.tsx");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("expo-router");
-			expect(result!.reason).toBe("expo-screen");
-			expect(result!.entryPointMultiplier).toBe(2.5);
+			expect(result?.framework).toBe("expo-router");
+			expect(result?.reason).toBe("expo-screen");
+			expect(result?.entryPointMultiplier).toBe(2.5);
 		});
 	});
 
@@ -70,8 +70,8 @@ describe("detectFrameworkFromPath", () => {
 		it("detects route files", () => {
 			const result = detectFrameworkFromPath("routes/auth.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("express");
-			expect(result!.entryPointMultiplier).toBe(2.5);
+			expect(result?.framework).toBe("express");
+			expect(result?.entryPointMultiplier).toBe(2.5);
 		});
 	});
 
@@ -79,13 +79,13 @@ describe("detectFrameworkFromPath", () => {
 		it("detects controller folder", () => {
 			const result = detectFrameworkFromPath("controllers/UserController.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("mvc");
+			expect(result?.framework).toBe("mvc");
 		});
 
 		it("detects handlers folder", () => {
 			const result = detectFrameworkFromPath("handlers/auth.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("handlers");
+			expect(result?.framework).toBe("handlers");
 		});
 	});
 
@@ -93,9 +93,9 @@ describe("detectFrameworkFromPath", () => {
 		it("has React component detection rule for views/components folders", () => {
 			const result = detectFrameworkFromPath("views/Button.tsx");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("react");
-			expect(result!.entryPointMultiplier).toBe(1.5);
-			expect(result!.reason).toBe("react-component");
+			expect(result?.framework).toBe("react");
+			expect(result?.entryPointMultiplier).toBe(1.5);
+			expect(result?.reason).toBe("react-component");
 		});
 	});
 
@@ -103,20 +103,20 @@ describe("detectFrameworkFromPath", () => {
 		it("detects Django views", () => {
 			const result = detectFrameworkFromPath("myapp/views.py");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("django");
-			expect(result!.entryPointMultiplier).toBe(3.0);
+			expect(result?.framework).toBe("django");
+			expect(result?.entryPointMultiplier).toBe(3.0);
 		});
 
 		it("detects Django URLs", () => {
 			const result = detectFrameworkFromPath("myapp/urls.py");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("django");
+			expect(result?.framework).toBe("django");
 		});
 
 		it("detects FastAPI routers", () => {
 			const result = detectFrameworkFromPath("routers/users.py");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("fastapi");
+			expect(result?.framework).toBe("fastapi");
 		});
 	});
 
@@ -124,19 +124,19 @@ describe("detectFrameworkFromPath", () => {
 		it("detects Spring controllers folder", () => {
 			const result = detectFrameworkFromPath("controller/UserController.java");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("spring");
+			expect(result?.framework).toBe("spring");
 		});
 
 		it("detects Spring controller by filename", () => {
 			const result = detectFrameworkFromPath("src/UserController.java");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("spring");
+			expect(result?.framework).toBe("spring");
 		});
 
 		it("detects Java service layer", () => {
 			const result = detectFrameworkFromPath("service/UserService.java");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("java-service");
+			expect(result?.framework).toBe("java-service");
 		});
 	});
 
@@ -144,13 +144,13 @@ describe("detectFrameworkFromPath", () => {
 		it("detects ASP.NET controllers", () => {
 			const result = detectFrameworkFromPath("controllers/UsersController.cs");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("aspnet");
+			expect(result?.framework).toBe("aspnet");
 		});
 
 		it("detects Blazor pages", () => {
 			const result = detectFrameworkFromPath("pages/Index.razor");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("blazor");
+			expect(result?.framework).toBe("blazor");
 		});
 	});
 
@@ -158,13 +158,13 @@ describe("detectFrameworkFromPath", () => {
 		it("detects Go handlers", () => {
 			const result = detectFrameworkFromPath("handlers/user.go");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("go-http");
+			expect(result?.framework).toBe("go-http");
 		});
 
 		it("detects Go main.go", () => {
 			const result = detectFrameworkFromPath("cmd/server/main.go");
 			expect(result).not.toBeNull();
-			expect(result!.entryPointMultiplier).toBe(3.0);
+			expect(result?.entryPointMultiplier).toBe(3.0);
 		});
 
 		it("does NOT treat Go helper files under cmd/ as entry points", () => {
@@ -177,20 +177,20 @@ describe("detectFrameworkFromPath", () => {
 		it("detects Rust handlers", () => {
 			const result = detectFrameworkFromPath("handlers/auth.rs");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("rust-web");
+			expect(result?.framework).toBe("rust-web");
 		});
 
 		it("detects main.rs", () => {
 			const result = detectFrameworkFromPath("src/main.rs");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("rust");
-			expect(result!.entryPointMultiplier).toBe(3.0);
+			expect(result?.framework).toBe("rust");
+			expect(result?.entryPointMultiplier).toBe(3.0);
 		});
 
 		it("detects bin folder", () => {
 			const result = detectFrameworkFromPath("src/bin/cli.rs");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("rust");
+			expect(result?.framework).toBe("rust");
 		});
 	});
 
@@ -198,13 +198,13 @@ describe("detectFrameworkFromPath", () => {
 		it("detects main.c", () => {
 			const result = detectFrameworkFromPath("src/main.c");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("c-cpp");
+			expect(result?.framework).toBe("c-cpp");
 		});
 
 		it("detects main.cpp", () => {
 			const result = detectFrameworkFromPath("src/main.cpp");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("c-cpp");
+			expect(result?.framework).toBe("c-cpp");
 		});
 	});
 
@@ -212,8 +212,8 @@ describe("detectFrameworkFromPath", () => {
 		it("detects Laravel routes", () => {
 			const result = detectFrameworkFromPath("routes/web.php");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("laravel");
-			expect(result!.entryPointMultiplier).toBe(3.0);
+			expect(result?.framework).toBe("laravel");
+			expect(result?.entryPointMultiplier).toBe(3.0);
 		});
 
 		it("detects Laravel controllers", () => {
@@ -221,25 +221,25 @@ describe("detectFrameworkFromPath", () => {
 				"http/controllers/UserController.php",
 			);
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("laravel");
+			expect(result?.framework).toBe("laravel");
 		});
 
 		it("detects Laravel jobs", () => {
 			const result = detectFrameworkFromPath("jobs/SendEmail.php");
 			expect(result).not.toBeNull();
-			expect(result!.reason).toBe("laravel-job");
+			expect(result?.reason).toBe("laravel-job");
 		});
 
 		it("detects Laravel middleware", () => {
 			const result = detectFrameworkFromPath("http/middleware/Auth.php");
 			expect(result).not.toBeNull();
-			expect(result!.reason).toBe("laravel-middleware");
+			expect(result?.reason).toBe("laravel-middleware");
 		});
 
 		it("detects Laravel models", () => {
 			const result = detectFrameworkFromPath("models/User.php");
 			expect(result).not.toBeNull();
-			expect(result!.entryPointMultiplier).toBe(1.5);
+			expect(result?.entryPointMultiplier).toBe(1.5);
 		});
 	});
 
@@ -247,25 +247,25 @@ describe("detectFrameworkFromPath", () => {
 		it("detects AppDelegate", () => {
 			const result = detectFrameworkFromPath("Sources/AppDelegate.swift");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("ios");
+			expect(result?.framework).toBe("ios");
 		});
 
 		it("detects ViewControllers folder", () => {
 			const result = detectFrameworkFromPath("ViewControllers/LoginVC.swift");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("uikit");
+			expect(result?.framework).toBe("uikit");
 		});
 
 		it("detects Coordinator pattern", () => {
 			const result = detectFrameworkFromPath("Coordinators/AppCoordinator.swift");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("ios-coordinator");
+			expect(result?.framework).toBe("ios-coordinator");
 		});
 
 		it("detects SwiftUI views folder", () => {
 			const result = detectFrameworkFromPath("views/ContentView.swift");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("swiftui");
+			expect(result?.framework).toBe("swiftui");
 		});
 	});
 
@@ -277,7 +277,7 @@ describe("detectFrameworkFromPath", () => {
 		it("normalizes Windows backslashes", () => {
 			const result = detectFrameworkFromPath("routes\\auth.ts");
 			expect(result).not.toBeNull();
-			expect(result!.framework).toBe("express");
+			expect(result?.framework).toBe("express");
 		});
 	});
 });
@@ -292,38 +292,38 @@ describe("detectFrameworkFromAST", () => {
 	it("detects NestJS decorators in TypeScript", () => {
 		const result = detectFrameworkFromAST("typescript", '@Controller("/users")');
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("nestjs");
-		expect(result!.entryPointMultiplier).toBe(3.2);
+		expect(result?.framework).toBe("nestjs");
+		expect(result?.entryPointMultiplier).toBe(3.2);
 	});
 
 	it("detects NestJS decorators in JavaScript", () => {
 		const result = detectFrameworkFromAST("javascript", '@Get("/")');
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("nestjs");
+		expect(result?.framework).toBe("nestjs");
 	});
 
 	it("detects FastAPI decorators in Python", () => {
 		const result = detectFrameworkFromAST("python", '@app.get("/users")');
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("fastapi");
+		expect(result?.framework).toBe("fastapi");
 	});
 
 	it("detects Flask decorators in Python", () => {
 		const result = detectFrameworkFromAST("python", '@app.route("/users")');
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("flask");
+		expect(result?.framework).toBe("flask");
 	});
 
 	it("detects Spring annotations in Java", () => {
 		const result = detectFrameworkFromAST("java", "@RestController");
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("spring");
+		expect(result?.framework).toBe("spring");
 	});
 
 	it("detects ASP.NET attributes in C#", () => {
 		const result = detectFrameworkFromAST("csharp", "[ApiController]");
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("aspnet");
+		expect(result?.framework).toBe("aspnet");
 	});
 
 	it("detects Laravel route definitions in PHP", () => {
@@ -332,13 +332,13 @@ describe("detectFrameworkFromAST", () => {
 			"Route::get('/users', [UserController::class, 'index'])",
 		);
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("laravel");
+		expect(result?.framework).toBe("laravel");
 	});
 
 	it("detects Actix-web route attributes in Rust", () => {
 		const result = detectFrameworkFromAST("rust", '#[get("/")]');
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("actix-web");
+		expect(result?.framework).toBe("actix-web");
 	});
 
 	it("returns null for language with no matching pattern", () => {
@@ -356,7 +356,7 @@ describe("detectFrameworkFromAST", () => {
 			"const router = useRouter()",
 		);
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("expo-router");
+		expect(result?.framework).toBe("expo-router");
 	});
 	it("detects Expo Router router.push", () => {
 		const result = detectFrameworkFromAST(
@@ -364,7 +364,7 @@ describe("detectFrameworkFromAST", () => {
 			"router.push('/settings')",
 		);
 		expect(result).not.toBeNull();
-		expect(result!.framework).toBe("expo-router");
+		expect(result?.framework).toBe("expo-router");
 	});
 });
 

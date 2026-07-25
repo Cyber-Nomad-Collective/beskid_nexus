@@ -1,10 +1,10 @@
-import { save } from "./utils";
+export {};
 
 // Local definition shadows the imported one
 function save(x: string): void {
 	console.log("local save:", x);
 }
 
-function run(): void {
+function _run(): void {
 	save("test");
 }

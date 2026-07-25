@@ -6,9 +6,9 @@
  * CLAUDE.md is for Claude Code which only reads that file.
  */
 
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { logger } from "../core/logger.js";
 import type { GeneratedSkillInfo } from "./skill-gen.js";
 
@@ -281,7 +281,7 @@ async function upsertGitNexusSection(
 				);
 				await fs.writeFile(
 					filePath,
-					(before + updatedSection + after).trim() + "\n",
+					`${(before + updatedSection + after).trim()}\n`,
 					"utf-8",
 				);
 				return "updated";
@@ -296,12 +296,12 @@ async function upsertGitNexusSection(
 		const before = existingContent.substring(0, startIdx);
 		const after = existingContent.substring(endIdx + GITNEXUS_END_MARKER.length);
 		const newContent = before + content + after;
-		await fs.writeFile(filePath, newContent.trim() + "\n", "utf-8");
+		await fs.writeFile(filePath, `${newContent.trim()}\n`, "utf-8");
 		return "updated";
 	}
 
 	// Append new section
-	const newContent = existingContent.trim() + "\n\n" + content + "\n";
+	const newContent = `${existingContent.trim()}\n\n${content}\n`;
 	await fs.writeFile(filePath, newContent, "utf-8");
 	return "appended";
 }

@@ -15,8 +15,8 @@ describe("Go receiver binding", () => {
 		const methodNode = tree.rootNode.descendantsOfType("method_declaration")[0];
 		const result = synthesizeGoReceiverBinding(methodNode as any)!;
 		expect(result["@type-binding.self"]).toBeDefined();
-		expect(result["@type-binding.name"]!.text).toBe("u");
-		expect(result["@type-binding.type"]!.text).toBe("User");
+		expect(result["@type-binding.name"]?.text).toBe("u");
+		expect(result["@type-binding.type"]?.text).toBe("User");
 	});
 
 	it("returns null for free function", () => {
@@ -74,8 +74,8 @@ describe("Go type binding synthesis — 7 patterns", () => {
 		const bindings = emitGoScopeCaptures(src, "main.go")
 			.filter((m) => m["@type-binding.name"] !== undefined)
 			.map((m) => ({
-				name: m["@type-binding.name"]!.text,
-				type: m["@type-binding.type"]!.text,
+				name: m["@type-binding.name"]?.text,
+				type: m["@type-binding.type"]?.text,
 			}));
 
 		expect(bindings).toContainEqual({ name: "b", type: "X" });

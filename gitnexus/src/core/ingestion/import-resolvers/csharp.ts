@@ -26,7 +26,7 @@ export function resolveCSharpImportInternal(
 	for (const config of csharpConfigs) {
 		const nsPath = config.rootNamespace.replace(/\./g, "/");
 		let relative: string;
-		if (namespacePath.startsWith(nsPath + "/")) {
+		if (namespacePath.startsWith(`${nsPath}/`)) {
 			relative = namespacePath.slice(nsPath.length + 1);
 		} else if (namespacePath === nsPath) {
 			// The import IS the root namespace — resolve to all .cs files in project root
@@ -37,20 +37,20 @@ export function resolveCSharpImportInternal(
 
 		const dirPrefix = config.projectDir
 			? relative
-				? config.projectDir + "/" + relative
+				? `${config.projectDir}/${relative}`
 				: config.projectDir
 			: relative;
 
 		// 1. Try as single file: relative.cs (e.g., "Models/DlqMessage.cs")
 		if (relative) {
-			const candidate = dirPrefix + ".cs";
+			const candidate = `${dirPrefix}.cs`;
 			if (index) {
 				const result = index.get(candidate) || index.getInsensitive(candidate);
 				if (result) return [result];
 			}
 			// Also try suffix match
 			const suffixResult =
-				index?.get(relative + ".cs") || index?.getInsensitive(relative + ".cs");
+				index?.get(`${relative}.cs`) || index?.getInsensitive(`${relative}.cs`);
 			if (suffixResult) return [suffixResult];
 		}
 
@@ -60,7 +60,7 @@ export function resolveCSharpImportInternal(
 			for (const f of dirFiles) {
 				const normalized = f.replace(/\\/g, "/");
 				// Check it's a direct child by finding the dirPrefix and ensuring no deeper slashes
-				const prefixIdx = normalized.indexOf(dirPrefix + "/");
+				const prefixIdx = normalized.indexOf(`${dirPrefix}/`);
 				if (prefixIdx < 0) continue;
 				const afterDir = normalized.substring(prefixIdx + dirPrefix.length + 1);
 				if (!afterDir.includes("/")) {
@@ -72,7 +72,7 @@ export function resolveCSharpImportInternal(
 
 		// 3. Linear scan fallback for directory matching
 		if (results.length === 0) {
-			const dirTrail = dirPrefix + "/";
+			const dirTrail = `${dirPrefix}/`;
 			for (let i = 0; i < normalizedFileList.length; i++) {
 				const normalized = normalizedFileList[i];
 				if (!normalized.endsWith(".cs")) continue;
@@ -111,7 +111,7 @@ export function resolveCSharpNamespaceDir(
 	for (const config of csharpConfigs) {
 		const nsPath = config.rootNamespace.replace(/\./g, "/");
 		let relative: string;
-		if (namespacePath.startsWith(nsPath + "/")) {
+		if (namespacePath.startsWith(`${nsPath}/`)) {
 			relative = namespacePath.slice(nsPath.length + 1);
 		} else if (namespacePath === nsPath) {
 			relative = "";
@@ -121,12 +121,12 @@ export function resolveCSharpNamespaceDir(
 
 		const dirPrefix = config.projectDir
 			? relative
-				? config.projectDir + "/" + relative
+				? `${config.projectDir}/${relative}`
 				: config.projectDir
 			: relative;
 
 		if (!dirPrefix) continue;
-		return "/" + dirPrefix + "/";
+		return `/${dirPrefix}/`;
 	}
 
 	return null;

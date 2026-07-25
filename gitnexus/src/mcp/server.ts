@@ -11,6 +11,7 @@
  * Resources: repos, repo/{name}/context, repo/{name}/clusters, ...
  */
 
+import { createRequire } from "node:module";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
 	CallToolRequestSchema,
@@ -21,7 +22,6 @@ import {
 	ListToolsRequestSchema,
 	ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { createRequire } from "module";
 import { CompatibleStdioServerTransport } from "./compatible-stdio-transport.js";
 import type { LocalBackend } from "./local/local-backend.js";
 import {

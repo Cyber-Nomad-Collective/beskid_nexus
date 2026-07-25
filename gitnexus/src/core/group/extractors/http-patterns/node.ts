@@ -227,7 +227,7 @@ function readStringProp(
 ): string | null {
 	for (let i = 0; i < objectNode.namedChildCount; i++) {
 		const pair = objectNode.namedChild(i);
-		if (!pair || pair.type !== "pair") continue;
+		if (pair?.type !== "pair") continue;
 		const keyNode = pair.childForFieldName("key");
 		const valueNode = pair.childForFieldName("value");
 		if (!keyNode || !valueNode) continue;
@@ -289,7 +289,7 @@ function findDecoratedMethod(
 	decoratorNode: Parser.SyntaxNode,
 ): Parser.SyntaxNode | null {
 	const parent = decoratorNode.parent;
-	if (!parent || parent.type !== "class_body") return null;
+	if (parent?.type !== "class_body") return null;
 	for (let i = 0; i < parent.namedChildCount; i++) {
 		const child = parent.namedChild(i);
 		if (child && child.id === decoratorNode.id) {

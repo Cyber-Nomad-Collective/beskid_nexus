@@ -45,7 +45,7 @@ async function getBackend(): Promise<LocalBackend> {
 function output(data: any): void {
 	const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
 	try {
-		writeSync(1, text + "\n");
+		writeSync(1, `${text}\n`);
 	} catch (err: any) {
 		if (err?.code === "EPIPE") {
 			// Consumer closed the pipe (e.g., `gitnexus cypher ... | head -1`)
@@ -53,7 +53,7 @@ function output(data: any): void {
 			process.exit(0);
 		}
 		// Fallback: stderr (previous behavior, works on all platforms)
-		process.stderr.write(text + "\n");
+		process.stderr.write(`${text}\n`);
 	}
 }
 
@@ -77,7 +77,7 @@ export async function queryCommand(
 		query: queryText,
 		task_context: options?.context,
 		goal: options?.goal,
-		limit: options?.limit ? parseInt(options.limit) : undefined,
+		limit: options?.limit ? parseInt(options.limit, 10) : undefined,
 		include_content: options?.content ?? false,
 		repo: options?.repo,
 	});

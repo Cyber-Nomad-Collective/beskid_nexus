@@ -5,7 +5,7 @@
  * and verifies that Route nodes have correct responseKeys/errorKeys.
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	FIXTURES,
@@ -36,7 +36,7 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const items = routes.find((r) => r.name === "/api/items");
 		expect(items).toBeDefined();
-		expect(items!.properties.responseKeys).toEqual(
+		expect(items?.properties.responseKeys).toEqual(
 			expect.arrayContaining(["data", "total"]),
 		);
 	});
@@ -45,7 +45,7 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const items = routes.find((r) => r.name === "/api/items");
 		expect(items).toBeDefined();
-		expect(items!.properties.errorKeys).toEqual(
+		expect(items?.properties.errorKeys).toEqual(
 			expect.arrayContaining(["error"]),
 		);
 	});
@@ -54,8 +54,8 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const items = routes.find((r) => r.name === "/api/items");
 		expect(items).toBeDefined();
-		const successKeys = new Set(items!.properties.responseKeys ?? []);
-		const errorKeys = new Set(items!.properties.errorKeys ?? []);
+		const successKeys = new Set(items?.properties.responseKeys ?? []);
+		const errorKeys = new Set(items?.properties.errorKeys ?? []);
 		expect(successKeys.has("error")).toBe(false);
 		expect(errorKeys.has("data")).toBe(false);
 		expect(errorKeys.has("total")).toBe(false);
@@ -65,7 +65,7 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const submit = routes.find((r) => r.name === "/api/submit");
 		expect(submit).toBeDefined();
-		expect(submit!.properties.responseKeys).toEqual(
+		expect(submit?.properties.responseKeys).toEqual(
 			expect.arrayContaining(["ok", "id", "created_at"]),
 		);
 	});
@@ -74,7 +74,7 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const submit = routes.find((r) => r.name === "/api/submit");
 		expect(submit).toBeDefined();
-		expect(submit!.properties.errorKeys).toEqual(
+		expect(submit?.properties.errorKeys).toEqual(
 			expect.arrayContaining(["error"]),
 		);
 	});
@@ -83,7 +83,7 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const submit = routes.find((r) => r.name === "/api/submit");
 		expect(submit).toBeDefined();
-		const successKeys = new Set(submit!.properties.responseKeys ?? []);
+		const successKeys = new Set(submit?.properties.responseKeys ?? []);
 		expect(successKeys.has("ok")).toBe(true);
 		expect(successKeys.has("id")).toBe(true);
 		expect(successKeys.has("error")).toBe(false);
@@ -93,9 +93,9 @@ describe("PHP response shape extraction (pipeline)", () => {
 		const edges = getRelationships(result, "HANDLES_ROUTE");
 		const itemsHandler = edges.find((e) => e.target === "/api/items");
 		expect(itemsHandler).toBeDefined();
-		expect(itemsHandler!.sourceFilePath).toContain("api/items.php");
+		expect(itemsHandler?.sourceFilePath).toContain("api/items.php");
 		const submitHandler = edges.find((e) => e.target === "/api/submit");
 		expect(submitHandler).toBeDefined();
-		expect(submitHandler!.sourceFilePath).toContain("api/submit.php");
+		expect(submitHandler?.sourceFilePath).toContain("api/submit.php");
 	});
 });

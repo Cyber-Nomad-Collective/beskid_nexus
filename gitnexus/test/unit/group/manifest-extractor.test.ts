@@ -22,13 +22,13 @@ describe("ManifestExtractor", () => {
 
 		const provider = result.contracts.find((c) => c.role === "provider");
 		expect(provider).toBeDefined();
-		expect(provider!.contractId).toBe("topic::employee.hired");
-		expect(provider!.type).toBe("topic");
-		expect(provider!.confidence).toBe(1.0);
+		expect(provider?.contractId).toBe("topic::employee.hired");
+		expect(provider?.type).toBe("topic");
+		expect(provider?.confidence).toBe(1.0);
 
 		const consumer = result.contracts.find((c) => c.role === "consumer");
 		expect(consumer).toBeDefined();
-		expect(consumer!.contractId).toBe("topic::employee.hired");
+		expect(consumer?.contractId).toBe("topic::employee.hired");
 
 		expect(result.crossLinks).toHaveLength(1);
 		expect(result.crossLinks[0].matchType).toBe("manifest");
@@ -53,8 +53,8 @@ describe("ManifestExtractor", () => {
 		const provider = result.contracts.find((c) => c.role === "provider");
 		const consumer = result.contracts.find((c) => c.role === "consumer");
 
-		expect(consumer!.contractId).toBe("http::*::/api/v2/leads/*");
-		expect(provider!.contractId).toBe("http::*::/api/v2/leads/*");
+		expect(consumer?.contractId).toBe("http::*::/api/v2/leads/*");
+		expect(provider?.contractId).toBe("http::*::/api/v2/leads/*");
 
 		expect(result.crossLinks[0].from.repo).toBe("sales/admin/bff");
 		expect(result.crossLinks[0].to.repo).toBe("sales/crm/backend");

@@ -16,8 +16,8 @@
  * on the LadybugDB native binding being available in the test environment.
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const SOURCE_PATH = path.join(

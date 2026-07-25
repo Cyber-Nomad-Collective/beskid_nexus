@@ -5,9 +5,9 @@
  * Cursor CLI binary or LLM API key. All external dependencies are mocked.
  */
 
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── detectCursorCLI caching ─────────────────────────────────────────
@@ -277,8 +277,8 @@ describe("WikiGenerator --review mode", () => {
 		expect(result.pagesGenerated).toBe(0);
 		expect(result.moduleTree).toBeDefined();
 		expect(result.moduleTree).toHaveLength(2);
-		expect(result.moduleTree![0].name).toBe("Auth");
-		expect(result.moduleTree![1].name).toBe("Core");
+		expect(result.moduleTree?.[0].name).toBe("Auth");
+		expect(result.moduleTree?.[1].name).toBe("Core");
 
 		// module_tree.json should be written for user to edit
 		const treeFile = path.join(wikiDir, "module_tree.json");

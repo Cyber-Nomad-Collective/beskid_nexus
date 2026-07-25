@@ -19,43 +19,43 @@ import {
 
 describe("IMPACT_RELATION_CONFIDENCE", () => {
 	it("CALLS has confidence 0.9 (direct reference)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["CALLS"]).toBe(0.9);
+		expect(IMPACT_RELATION_CONFIDENCE.CALLS).toBe(0.9);
 	});
 
 	it("IMPORTS has confidence 0.9 (direct reference)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["IMPORTS"]).toBe(0.9);
+		expect(IMPACT_RELATION_CONFIDENCE.IMPORTS).toBe(0.9);
 	});
 
 	it("EXTENDS has confidence 0.85 (statically verifiable inheritance)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["EXTENDS"]).toBe(0.85);
+		expect(IMPACT_RELATION_CONFIDENCE.EXTENDS).toBe(0.85);
 	});
 
 	it("IMPLEMENTS has confidence 0.85 (statically verifiable contract)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["IMPLEMENTS"]).toBe(0.85);
+		expect(IMPACT_RELATION_CONFIDENCE.IMPLEMENTS).toBe(0.85);
 	});
 
 	it("METHOD_OVERRIDES has confidence 0.85 (statically verifiable override)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["METHOD_OVERRIDES"]).toBe(0.85);
+		expect(IMPACT_RELATION_CONFIDENCE.METHOD_OVERRIDES).toBe(0.85);
 	});
 
 	it("METHOD_IMPLEMENTS has confidence 0.85 (statically verifiable implementation)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["METHOD_IMPLEMENTS"]).toBe(0.85);
+		expect(IMPACT_RELATION_CONFIDENCE.METHOD_IMPLEMENTS).toBe(0.85);
 	});
 
 	it("HAS_METHOD has confidence 0.95 (structural containment)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["HAS_METHOD"]).toBe(0.95);
+		expect(IMPACT_RELATION_CONFIDENCE.HAS_METHOD).toBe(0.95);
 	});
 
 	it("HAS_PROPERTY has confidence 0.95 (structural containment)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["HAS_PROPERTY"]).toBe(0.95);
+		expect(IMPACT_RELATION_CONFIDENCE.HAS_PROPERTY).toBe(0.95);
 	});
 
 	it("ACCESSES has confidence 0.8 (may be indirect read/write)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["ACCESSES"]).toBe(0.8);
+		expect(IMPACT_RELATION_CONFIDENCE.ACCESSES).toBe(0.8);
 	});
 
 	it("CONTAINS has confidence 0.95 (folder/file structural containment)", () => {
-		expect(IMPACT_RELATION_CONFIDENCE["CONTAINS"]).toBe(0.95);
+		expect(IMPACT_RELATION_CONFIDENCE.CONTAINS).toBe(0.95);
 	});
 
 	it("all defined confidence values are in the valid [0, 1] range", () => {

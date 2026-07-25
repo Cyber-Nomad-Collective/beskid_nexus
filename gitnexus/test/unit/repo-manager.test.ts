@@ -5,10 +5,10 @@
  * Covers hardening fixes #29 (API key file permissions) and #30 (case-insensitive paths on Windows)
  */
 
-import { execSync } from "child_process";
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import { execSync } from "node:child_process";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { _captureLogger } from "../../src/core/logger.js";
 import {
@@ -858,7 +858,7 @@ describe("canonicalizePath (#1003)", () => {
 	it("returns an absolute path for relative input even when the path is missing", () => {
 		// Relative path that does not exist. Must still be absolute
 		// (fallback path: path.resolve normalises even non-existent inputs).
-		const rel = "./does-not-exist-zzz-" + Date.now();
+		const rel = `./does-not-exist-zzz-${Date.now()}`;
 		const got = canonicalizePath(rel);
 		expect(path.isAbsolute(got)).toBe(true);
 	});
@@ -878,7 +878,7 @@ describe("resolveRegistryEntry backward-compat with non-canonical stored paths (
 		// we build the string by raw concat to keep it string-unequal to
 		// `realDir` until `canonicalizePath` runs.
 		const realDir = process.cwd();
-		const nonCanonical = realDir + path.sep + "."; // e.g. /work/gitnexus/.
+		const nonCanonical = `${realDir + path.sep}.`; // e.g. /work/gitnexus/.
 		// Sanity: these are string-unequal before canonicalisation.
 		expect(nonCanonical).not.toBe(realDir);
 

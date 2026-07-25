@@ -44,10 +44,10 @@ describe("VariableExtractor — TypeScript", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("MAX_SIZE");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isMutable).toBe(false);
-		expect(info!.visibility).toBe("private");
+		expect(info?.name).toBe("MAX_SIZE");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isMutable).toBe(false);
+		expect(info?.visibility).toBe("private");
 	});
 
 	it("extracts let declaration as mutable", () => {
@@ -58,9 +58,9 @@ describe("VariableExtractor — TypeScript", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("counter");
-		expect(info!.isConst).toBe(false);
-		expect(info!.isMutable).toBe(true);
+		expect(info?.name).toBe("counter");
+		expect(info?.isConst).toBe(false);
+		expect(info?.isMutable).toBe(true);
 	});
 
 	it("extracts typed const declaration", () => {
@@ -70,9 +70,9 @@ describe("VariableExtractor — TypeScript", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("name");
-		expect(info!.type).toBe("string");
-		expect(info!.isConst).toBe(true);
+		expect(info?.name).toBe("name");
+		expect(info?.type).toBe("string");
+		expect(info?.isConst).toBe(true);
 	});
 
 	it("detects export as public visibility", () => {
@@ -87,8 +87,8 @@ describe("VariableExtractor — TypeScript", () => {
 		expect(declNode).toBeDefined();
 		const info = extractor.extract(declNode!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("API_KEY");
-		expect(info!.visibility).toBe("public");
+		expect(info?.name).toBe("API_KEY");
+		expect(info?.visibility).toBe("public");
 	});
 
 	it("rejects non-variable nodes", () => {
@@ -106,9 +106,9 @@ describe("VariableExtractor — TypeScript", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("x");
-		expect(info!.isMutable).toBe(true);
-		expect(info!.isConst).toBe(false);
+		expect(info?.name).toBe("x");
+		expect(info?.isMutable).toBe(true);
+		expect(info?.isConst).toBe(false);
 	});
 });
 
@@ -130,8 +130,8 @@ describe("VariableExtractor — JavaScript", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("PORT");
-		expect(info!.isConst).toBe(true);
+		expect(info?.name).toBe("PORT");
+		expect(info?.isConst).toBe(true);
 	});
 });
 
@@ -154,10 +154,10 @@ describe("VariableExtractor — Python", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("MAX_SIZE");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isMutable).toBe(false);
-		expect(info!.visibility).toBe("public");
+		expect(info?.name).toBe("MAX_SIZE");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isMutable).toBe(false);
+		expect(info?.visibility).toBe("public");
 	});
 
 	it("extracts regular assignment as mutable", () => {
@@ -167,9 +167,9 @@ describe("VariableExtractor — Python", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("counter");
-		expect(info!.isConst).toBe(false);
-		expect(info!.isMutable).toBe(true);
+		expect(info?.name).toBe("counter");
+		expect(info?.isConst).toBe(false);
+		expect(info?.isMutable).toBe(true);
 	});
 
 	it("extracts annotated assignment with type", () => {
@@ -179,8 +179,8 @@ describe("VariableExtractor — Python", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("name");
-		expect(info!.type).toBe("str");
+		expect(info?.name).toBe("name");
+		expect(info?.type).toBe("str");
 	});
 
 	it("detects underscore prefix as protected", () => {
@@ -190,7 +190,7 @@ describe("VariableExtractor — Python", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.visibility).toBe("protected");
+		expect(info?.visibility).toBe("protected");
 	});
 
 	it("detects double underscore prefix as private", () => {
@@ -200,7 +200,7 @@ describe("VariableExtractor — Python", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.visibility).toBe("private");
+		expect(info?.visibility).toBe("private");
 	});
 
 	it("does not treat dunder names as private", () => {
@@ -210,7 +210,7 @@ describe("VariableExtractor — Python", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.visibility).toBe("public");
+		expect(info?.visibility).toBe("public");
 	});
 });
 
@@ -242,10 +242,10 @@ describe("VariableExtractor — Go", () => {
 
 		const info = extractor.extract(constNode!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("MaxSize");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isMutable).toBe(false);
-		expect(info!.visibility).toBe("public"); // uppercase = exported
+		expect(info?.name).toBe("MaxSize");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isMutable).toBe(false);
+		expect(info?.visibility).toBe("public"); // uppercase = exported
 	});
 
 	it("extracts var declaration", () => {
@@ -263,10 +263,10 @@ describe("VariableExtractor — Go", () => {
 
 		const info = extractor.extract(varNode!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("counter");
-		expect(info!.isConst).toBe(false);
-		expect(info!.isMutable).toBe(true);
-		expect(info!.type).toBe("int");
+		expect(info?.name).toBe("counter");
+		expect(info?.isConst).toBe(false);
+		expect(info?.isMutable).toBe(true);
+		expect(info?.type).toBe("int");
 	});
 
 	it("detects lowercase as package-private", () => {
@@ -284,7 +284,7 @@ describe("VariableExtractor — Go", () => {
 
 		const info = extractor.extract(constNode!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.visibility).toBe("package");
+		expect(info?.visibility).toBe("package");
 	});
 });
 
@@ -307,12 +307,12 @@ describe("VariableExtractor — Rust", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("MAX_SIZE");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isStatic).toBe(false);
-		expect(info!.isMutable).toBe(false);
-		expect(info!.type).toBe("usize");
-		expect(info!.visibility).toBe("private");
+		expect(info?.name).toBe("MAX_SIZE");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isStatic).toBe(false);
+		expect(info?.isMutable).toBe(false);
+		expect(info?.type).toBe("usize");
+		expect(info?.visibility).toBe("private");
 	});
 
 	it("extracts static_item", () => {
@@ -322,10 +322,10 @@ describe("VariableExtractor — Rust", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("COUNTER");
-		expect(info!.isStatic).toBe(true);
-		expect(info!.isConst).toBe(false);
-		expect(info!.isMutable).toBe(false);
+		expect(info?.name).toBe("COUNTER");
+		expect(info?.isStatic).toBe(true);
+		expect(info?.isConst).toBe(false);
+		expect(info?.isMutable).toBe(false);
 	});
 
 	it("extracts pub const as public", () => {
@@ -335,8 +335,8 @@ describe("VariableExtractor — Rust", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.visibility).toBe("public");
-		expect(info!.isConst).toBe(true);
+		expect(info?.visibility).toBe("public");
+		expect(info?.isConst).toBe(true);
 	});
 
 	it("extracts static mut as mutable", () => {
@@ -346,8 +346,8 @@ describe("VariableExtractor — Rust", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.isStatic).toBe(true);
-		expect(info!.isMutable).toBe(true);
+		expect(info?.isStatic).toBe(true);
+		expect(info?.isMutable).toBe(true);
 	});
 });
 
@@ -370,9 +370,9 @@ describe("VariableExtractor — C", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("MAX_SIZE");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isMutable).toBe(false);
+		expect(info?.name).toBe("MAX_SIZE");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isMutable).toBe(false);
 	});
 
 	it("extracts static variable", () => {
@@ -382,9 +382,9 @@ describe("VariableExtractor — C", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("counter");
-		expect(info!.isStatic).toBe(true);
-		expect(info!.visibility).toBe("private"); // static = file-private
+		expect(info?.name).toBe("counter");
+		expect(info?.isStatic).toBe(true);
+		expect(info?.visibility).toBe("private"); // static = file-private
 	});
 });
 
@@ -402,8 +402,8 @@ describe("VariableExtractor — C++", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("SIZE");
-		expect(info!.isConst).toBe(true);
+		expect(info?.name).toBe("SIZE");
+		expect(info?.isConst).toBe(true);
 	});
 });
 
@@ -425,10 +425,10 @@ describe("VariableExtractor — Ruby", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("MAX_SIZE");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isMutable).toBe(false);
-		expect(info!.visibility).toBe("public");
+		expect(info?.name).toBe("MAX_SIZE");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isMutable).toBe(false);
+		expect(info?.visibility).toBe("public");
 	});
 
 	it("extracts regular variable assignment", () => {
@@ -438,10 +438,10 @@ describe("VariableExtractor — Ruby", () => {
 
 		const info = extractor.extract(node, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("counter");
-		expect(info!.isConst).toBe(false);
-		expect(info!.isMutable).toBe(true);
-		expect(info!.visibility).toBe("private");
+		expect(info?.name).toBe("counter");
+		expect(info?.isConst).toBe(false);
+		expect(info?.isMutable).toBe(true);
+		expect(info?.visibility).toBe("private");
 	});
 });
 
@@ -475,8 +475,8 @@ describe("createVariableExtractor — factory", () => {
 		const node = tree.rootNode.child(0)!;
 		const info = extractor.extract(node, factoryCtx);
 		expect(info).not.toBeNull();
-		expect(info!.line).toBe(1);
-		expect(info!.sourceFile).toBe("test.ts");
+		expect(info?.line).toBe(1);
+		expect(info?.sourceFile).toBe("test.ts");
 	});
 
 	it("sets scope to module for top-level declarations", () => {
@@ -487,7 +487,7 @@ describe("createVariableExtractor — factory", () => {
 		const info = extractor.extract(node, factoryCtx);
 		expect(info).not.toBeNull();
 		// rootNode is 'program' → module scope
-		expect(info!.scope).toBe("module");
+		expect(info?.scope).toBe("module");
 	});
 });
 
@@ -505,17 +505,17 @@ describe("VariableExtractor — block-scoped declarations", () => {
 		parser.setLanguage(TypeScript.typescript);
 		const tree = parser.parse("function foo() { const x = 5; }");
 		// program > function_declaration > statement_block > lexical_declaration
-		const fnBody = tree.rootNode.child(0)!.childForFieldName("body")!;
+		const fnBody = tree.rootNode.child(0)?.childForFieldName("body")!;
 		const constDecl = fnBody.namedChildren.find(
 			(c) => c.type === "lexical_declaration",
 		);
 		expect(constDecl).toBeDefined();
 		const info = extractor.extract(constDecl!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("x");
-		expect(info!.scope).toBe("block");
-		expect(info!.isConst).toBe(true);
-		expect(info!.isMutable).toBe(false);
+		expect(info?.name).toBe("x");
+		expect(info?.scope).toBe("block");
+		expect(info?.isConst).toBe(true);
+		expect(info?.isMutable).toBe(false);
 	});
 
 	it("TypeScript: detects block scope for let inside arrow function", () => {
@@ -539,10 +539,10 @@ describe("VariableExtractor — block-scoped declarations", () => {
 		expect(letDecl).toBeDefined();
 		const info = extractor.extract(letDecl!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("y");
-		expect(info!.scope).toBe("block");
-		expect(info!.isMutable).toBe(true);
-		expect(info!.isConst).toBe(false);
+		expect(info?.name).toBe("y");
+		expect(info?.scope).toBe("block");
+		expect(info?.isMutable).toBe(true);
+		expect(info?.isConst).toBe(false);
 	});
 
 	it("Go: detects block scope for short var declaration inside function", () => {
@@ -564,9 +564,9 @@ describe("VariableExtractor — block-scoped declarations", () => {
 		expect(shortVarDecl).toBeDefined();
 		const info = extractor.extract(shortVarDecl!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("x");
-		expect(info!.scope).toBe("block");
-		expect(info!.isMutable).toBe(true);
+		expect(info?.name).toBe("x");
+		expect(info?.scope).toBe("block");
+		expect(info?.isMutable).toBe(true);
 	});
 
 	it("Rust: detects block scope for let inside function", () => {
@@ -586,9 +586,9 @@ describe("VariableExtractor — block-scoped declarations", () => {
 		expect(letDecl).toBeDefined();
 		const info = extractor.extract(letDecl!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("x");
-		expect(info!.scope).toBe("block");
-		expect(info!.isMutable).toBe(true);
+		expect(info?.name).toBe("x");
+		expect(info?.scope).toBe("block");
+		expect(info?.isMutable).toBe(true);
 	});
 
 	it("C: detects block scope for declaration inside function", () => {
@@ -608,9 +608,9 @@ describe("VariableExtractor — block-scoped declarations", () => {
 		expect(decl).toBeDefined();
 		const info = extractor.extract(decl!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("x");
-		expect(info!.scope).toBe("block");
-		expect(info!.isMutable).toBe(true);
+		expect(info?.name).toBe("x");
+		expect(info?.scope).toBe("block");
+		expect(info?.isMutable).toBe(true);
 	});
 
 	it("Python: detects block scope for assignment inside function", () => {
@@ -632,8 +632,8 @@ describe("VariableExtractor — block-scoped declarations", () => {
 		expect(exprStmt).toBeDefined();
 		const info = extractor.extract(exprStmt!, ctx);
 		expect(info).not.toBeNull();
-		expect(info!.name).toBe("x");
-		expect(info!.scope).toBe("block");
+		expect(info?.name).toBe("x");
+		expect(info?.scope).toBe("block");
 	});
 
 	it("Python: rejects non-assignment expression statements (e.g. function calls)", () => {

@@ -39,7 +39,7 @@ export function emitCScopeCaptures(
 	for (const m of rawMatches) {
 		const grouped: Record<string, Capture> = {};
 		for (const c of m.captures) {
-			const tag = "@" + c.name;
+			const tag = `@${c.name}`;
 			if (tag.startsWith("@_")) continue;
 			grouped[tag] = nodeToCapture(tag, c.node);
 		}

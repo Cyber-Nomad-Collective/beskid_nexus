@@ -160,7 +160,7 @@ describe("CompatibleStdioServerTransport", () => {
 		const chunkSize = 1024 * 1024; // 1 MB
 		const chunk = Buffer.alloc(chunkSize, 0x61); // 'a' repeated
 		// First byte must be '{' to trigger newline framing detection
-		const first = Buffer.from("{" + "a".repeat(chunkSize - 1));
+		const first = Buffer.from(`{${"a".repeat(chunkSize - 1)}`);
 		stdin.write(first);
 
 		for (let i = 0; i < 10; i++) {
@@ -193,7 +193,7 @@ describe("CompatibleStdioServerTransport", () => {
 			},
 		});
 		const seedPromise = onceMessage(transport);
-		stdin.write(seed + "\n");
+		stdin.write(`${seed}\n`);
 		await seedPromise;
 
 		// Now send 15K empty lines followed by a real message — this would
@@ -206,7 +206,7 @@ describe("CompatibleStdioServerTransport", () => {
 		});
 
 		const messagePromise = onceMessage(transport);
-		stdin.write("\n".repeat(15_000) + followup + "\n");
+		stdin.write(`${"\n".repeat(15_000) + followup}\n`);
 
 		await expect(messagePromise).resolves.toMatchObject({
 			method: "notifications/initialized",

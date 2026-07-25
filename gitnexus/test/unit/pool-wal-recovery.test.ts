@@ -47,7 +47,7 @@ vi.mock("../../src/mcp/stdio-capture.js", () => ({
 	getActiveStdoutWrite: vi.fn(() => vi.fn()),
 }));
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import { createLbugDatabase } from "../../src/core/lbug/lbug-config.js";
 
 const { closeLbug } = await import("../../src/core/lbug/pool-adapter.js");
@@ -102,7 +102,7 @@ describe("WAL corruption recovery in doInitLbug (#1402)", () => {
 			}),
 		);
 		expect(fs.rename).toHaveBeenCalledWith(
-			dbPath + ".wal",
+			`${dbPath}.wal`,
 			expect.stringContaining(".wal.corrupt."),
 		);
 		expect(stderrWriteMock).toHaveBeenCalledWith(

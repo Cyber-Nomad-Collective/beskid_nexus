@@ -156,7 +156,7 @@ function findMatchingKeys(
 					if (providerMethod !== method) continue;
 					if (
 						providerService === service ||
-						providerService.endsWith("." + service)
+						providerService.endsWith(`.${service}`)
 					) {
 						matches.push(key);
 					}
@@ -301,7 +301,7 @@ export function runWildcardMatch(
 			// Match: exact FQ service, or bare-name match when consumer has no package
 			const isMatch =
 				providerFqService === fqService ||
-				(!fqService.includes(".") && providerFqService.endsWith("." + fqService));
+				(!fqService.includes(".") && providerFqService.endsWith(`.${fqService}`));
 
 			if (!isMatch) continue;
 

@@ -180,9 +180,9 @@ export function parseResourceUri(uri: string): ParsedGitnexusResource {
 		}
 		const contractsFilter: GroupContractsResourceFilter = {};
 		const type = u.searchParams.get("type");
-		if (type && type.trim()) contractsFilter.type = type.trim();
+		if (type?.trim()) contractsFilter.type = type.trim();
 		const repo = u.searchParams.get("repo");
-		if (repo && repo.trim()) contractsFilter.repo = repo.trim();
+		if (repo?.trim()) contractsFilter.repo = repo.trim();
 		if (u.searchParams.has("unmatchedOnly")) {
 			const coerced = parseUnmatchedOnlyParam(u.searchParams.get("unmatchedOnly"));
 			if (coerced !== undefined) contractsFilter.unmatchedOnly = coerced;

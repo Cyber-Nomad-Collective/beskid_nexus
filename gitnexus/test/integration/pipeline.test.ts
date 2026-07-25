@@ -8,10 +8,10 @@
  * Pipeline runs once in beforeAll; each it() asserts against the cached result.
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import type { PipelineProgress } from "gitnexus-shared";
-import os from "os";
-import path from "path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { runPipelineFromRepo } from "../../src/core/ingestion/pipeline.js";
 import type { PipelineResult } from "../../src/types/pipeline.js";
@@ -150,7 +150,7 @@ describe("pipeline end-to-end", () => {
 		// Process nodes should be in the graph
 		const processNode = result.graph.getNode(proc.id);
 		expect(processNode).toBeDefined();
-		expect(processNode!.label).toBe("Process");
+		expect(processNode?.label).toBe("Process");
 
 		// STEP_IN_PROCESS relationships should exist with sequential ordering
 		const steps: number[] = [];

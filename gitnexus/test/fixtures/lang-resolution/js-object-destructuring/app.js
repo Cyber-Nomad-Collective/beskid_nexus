@@ -1,6 +1,6 @@
 const { getUser } = require("./service");
 
-function processDestructured() {
+function _processDestructured() {
 	const user = getUser();
 	const { address } = user;
 	address.save();

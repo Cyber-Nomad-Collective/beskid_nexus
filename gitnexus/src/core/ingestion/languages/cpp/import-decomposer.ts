@@ -123,8 +123,7 @@ export function splitCppUsingDecl(node: SyntaxNode): CaptureMatch | null {
 
 	const importedName = nameNode?.text ?? qualId.text.split("::").pop() ?? "";
 	const source =
-		scopeNode?.text ??
-		qualId.text.replace(new RegExp("::" + importedName + "$"), "");
+		scopeNode?.text ?? qualId.text.replace(new RegExp(`::${importedName}$`), "");
 
 	return {
 		"@import.statement": nodeToCapture("@import.statement", node),

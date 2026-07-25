@@ -2,7 +2,7 @@
  * Kotlin: data class extends + implements interfaces + ambiguous import disambiguation
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -91,8 +91,8 @@ describe("Kotlin heritage resolution", () => {
 		// validate is defined in both Validatable (interface) and User (override) → needs import scoping
 		const validateCall = calls.find((c) => c.target === "validate");
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.source).toBe("processUser");
-		expect(validateCall!.rel.reason).toBe("import-resolved");
+		expect(validateCall?.source).toBe("processUser");
+		expect(validateCall?.rel.reason).toBe("import-resolved");
 	});
 
 	it("resolves unique save() call through non-aliased import", () => {
@@ -100,7 +100,7 @@ describe("Kotlin heritage resolution", () => {
 		// save is unique globally (only in BaseModel) → resolves as unique-global
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
+		expect(saveCall?.source).toBe("processUser");
 	});
 
 	it("no OVERRIDES edges target Property nodes", () => {
@@ -108,7 +108,7 @@ describe("Kotlin heritage resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 
@@ -119,7 +119,7 @@ describe("Kotlin heritage resolution", () => {
 		for (const edge of [...extends_, ...implements_]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -175,7 +175,7 @@ describe("Kotlin ambiguous symbol resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -218,8 +218,8 @@ describe("Kotlin member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.targetFilePath).toBe("models/User.kt");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.targetFilePath).toBe("models/User.kt");
 	});
 
 	it("detects User class and save method", () => {
@@ -261,8 +261,8 @@ describe("Kotlin receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
-		expect(repoSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 });
 
@@ -292,12 +292,12 @@ describe("Kotlin alias import resolution", () => {
 		const persistCall = calls.find((c) => c.target === "persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("models/Models.kt");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("models/Models.kt");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("main");
-		expect(persistCall!.targetFilePath).toBe("models/Models.kt");
+		expect(persistCall?.source).toBe("main");
+		expect(persistCall?.targetFilePath).toBe("models/Models.kt");
 	});
 });
 
@@ -335,15 +335,15 @@ describe("Kotlin constructor-call resolution", () => {
 			(e) => e.source === "User" && e.target === "save",
 		);
 		expect(edge).toBeDefined();
-		expect(edge!.targetFilePath).toBe("models/User.kt");
+		expect(edge?.targetFilePath).toBe("models/User.kt");
 	});
 
 	it("resolves user.save() as a method call to models/User.kt", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("models/User.kt");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("models/User.kt");
 	});
 
 	it("resolves calls via non-aliased import with import-resolved reason", () => {
@@ -373,8 +373,8 @@ describe("Kotlin variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "logEntry");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("main");
-		expect(logCall!.targetFilePath).toBe("util/Logger.kt");
+		expect(logCall?.source).toBe("main");
+		expect(logCall?.targetFilePath).toBe("util/Logger.kt");
 	});
 });
 
@@ -396,7 +396,7 @@ describe("Kotlin local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/main/kotlin/app/Main.kt");
+		expect(saveCall?.targetFilePath).toBe("src/main/kotlin/app/Main.kt");
 	});
 
 	it("does NOT resolve save to Logger.kt", () => {
@@ -440,7 +440,7 @@ describe("Kotlin constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/User.kt",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() to models/Repo.kt via constructor-inferred type", () => {
@@ -449,7 +449,7 @@ describe("Kotlin constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/Repo.kt",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -485,7 +485,7 @@ describe("Kotlin this resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("models/User.kt");
+		expect(saveCall?.targetFilePath).toBe("models/User.kt");
 	});
 
 	it("resolves this.init() inside AppConfig.setup to AppConfig.init (object_declaration)", () => {
@@ -494,7 +494,7 @@ describe("Kotlin this resolution", () => {
 			(c) => c.target === "init" && c.source === "setup",
 		);
 		expect(initCall).toBeDefined();
-		expect(initCall!.targetFilePath).toBe("models/AppConfig.kt");
+		expect(initCall?.targetFilePath).toBe("models/AppConfig.kt");
 	});
 });
 
@@ -597,7 +597,7 @@ describe("Kotlin parent resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -886,7 +886,7 @@ describe("Kotlin assignment chain propagation", () => {
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -1336,7 +1336,7 @@ describe("Kotlin when/is complex pattern binding", () => {
 
 	it("does NOT resolve processMultiCall when/is User arm validate() to Repo", () => {
 		const calls = getRelationships(result, "CALLS");
-		const wrong = calls.find(
+		const _wrong = calls.find(
 			(c) =>
 				c.target === "validate" &&
 				c.source === "processMultiCall" &&
@@ -1627,11 +1627,11 @@ describe("Write access tracking (Kotlin)", () => {
 		const addressWrite = writes.find((e) => e.target === "address");
 		const scoreWrite = writes.find((e) => e.target === "score");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("updateUser");
+		expect(nameWrite?.source).toBe("updateUser");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("updateUser");
+		expect(addressWrite?.source).toBe("updateUser");
 		expect(scoreWrite).toBeDefined();
-		expect(scoreWrite!.source).toBe("updateUser");
+		expect(scoreWrite?.source).toBe("updateUser");
 	});
 
 	it("emits ACCESSES write edge for compound assignment (+=)", () => {
@@ -1639,7 +1639,7 @@ describe("Write access tracking (Kotlin)", () => {
 		const writes = accesses.filter((e) => e.rel.reason === "write");
 		const scoreWrite = writes.find((e) => e.target === "score");
 		expect(scoreWrite).toBeDefined();
-		expect(scoreWrite!.source).toBe("updateUser");
+		expect(scoreWrite?.source).toBe("updateUser");
 	});
 
 	it("write ACCESSES edges have confidence 1.0", () => {
@@ -2293,7 +2293,7 @@ describe("Kotlin Child extends Parent — inherited method resolution (SM-9)", (
 			(c) => c.target === "parentMethod" && c.targetFilePath.includes("Parent.kt"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });
 
@@ -2327,6 +2327,6 @@ describe("Kotlin User implements Validator — interface default method (SM-11)"
 			(c) => c.target === "validate" && c.targetFilePath.includes("Validator.kt"),
 		);
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.source).toBe("run");
+		expect(validateCall?.source).toBe("run");
 	});
 });

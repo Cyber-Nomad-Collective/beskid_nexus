@@ -128,7 +128,7 @@ describe("callLLM — auth header", () => {
 			string,
 			RequestInit & { headers: Record<string, string> },
 		];
-		expect(init.headers["Authorization"]).toBe("Bearer sk-test");
+		expect(init.headers.Authorization).toBe("Bearer sk-test");
 		expect((init.headers as any)["api-key"]).toBeUndefined();
 	});
 
@@ -161,7 +161,7 @@ describe("callLLM — auth header", () => {
 		];
 		expect(url).toContain("?api-version=2024-10-21");
 		expect((init.headers as any)["api-key"]).toBe("azure-key-123");
-		expect(init.headers["Authorization"]).toBeUndefined();
+		expect(init.headers.Authorization).toBeUndefined();
 	});
 
 	it("auto-detects Azure from URL when no provider field set", async () => {
@@ -191,7 +191,7 @@ describe("callLLM — auth header", () => {
 			RequestInit & { headers: Record<string, string> },
 		];
 		expect((init.headers as any)["api-key"]).toBe("azure-key-auto");
-		expect(init.headers["Authorization"]).toBeUndefined();
+		expect(init.headers.Authorization).toBeUndefined();
 	});
 });
 

@@ -2,7 +2,7 @@
  * Java: class extends + implements multiple interfaces + ambiguous package disambiguation
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -92,7 +92,7 @@ describe("Java heritage resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -152,7 +152,7 @@ describe("Java ambiguous symbol resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -217,8 +217,8 @@ describe("Java member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.targetFilePath).toBe("models/User.java");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.targetFilePath).toBe("models/User.java");
 	});
 
 	it("detects User class and save method", () => {
@@ -253,17 +253,17 @@ describe("Java constructor-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("processUser");
+		expect(ctorCall?.source).toBe("processUser");
 		// Java has explicit constructor_declaration → Constructor node
-		expect(ctorCall!.targetLabel).toBe("Constructor");
-		expect(ctorCall!.targetFilePath).toBe("models/User.java");
+		expect(ctorCall?.targetLabel).toBe("Constructor");
+		expect(ctorCall?.targetFilePath).toBe("models/User.java");
 	});
 
 	it("also resolves user.save() as a member call", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
+		expect(saveCall?.source).toBe("processUser");
 	});
 
 	it("detects User class, User constructor, save method", () => {
@@ -310,8 +310,8 @@ describe("Java receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
-		expect(repoSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("resolves constructor calls for both User and Repo", () => {
@@ -396,7 +396,7 @@ describe("Java method-reference resolution", () => {
 		);
 
 		expect(ctorRef).toBeDefined();
-		expect(ctorRef!.targetLabel).toBe("Constructor");
+		expect(ctorRef?.targetLabel).toBe("Constructor");
 	});
 });
 
@@ -423,15 +423,15 @@ describe("Java named import disambiguation", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("run");
-		expect(saveCall!.targetFilePath).toBe("com/example/models/User.java");
+		expect(saveCall?.source).toBe("run");
+		expect(saveCall?.targetFilePath).toBe("com/example/models/User.java");
 	});
 
 	it("resolves new User() to com/example/models/User.java, not other/", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User" && c.source === "run");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.targetFilePath).toBe("com/example/models/User.java");
+		expect(ctorCall?.targetFilePath).toBe("com/example/models/User.java");
 	});
 });
 
@@ -453,8 +453,8 @@ describe("Java variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "record");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("run");
-		expect(logCall!.targetFilePath).toBe("com/example/util/Logger.java");
+		expect(logCall?.source).toBe("run");
+		expect(logCall?.targetFilePath).toBe("com/example/util/Logger.java");
 	});
 
 	it("CALLS edges from within variadic method have valid sourceId (no ID mismatch)", () => {
@@ -499,7 +499,7 @@ describe("Java variadic call resolution", () => {
 			(c) => c.target === "format" && c.source === "run",
 		);
 		expect(fmtCall).toBeDefined();
-		expect(fmtCall!.targetFilePath).toBe("com/example/util/Formatter.java");
+		expect(fmtCall?.targetFilePath).toBe("com/example/util/Formatter.java");
 	});
 
 	it("0-arg call to format(int, String...) still resolves in legacy mode (arity rejection is registry-only)", () => {
@@ -545,7 +545,7 @@ describe("Java wildcard import resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("com/example/models/User.java");
+		expect(saveCall?.targetFilePath).toBe("com/example/models/User.java");
 	});
 });
 
@@ -567,7 +567,7 @@ describe("Java local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe(
+		expect(saveCall?.targetFilePath).toBe(
 			"src/main/java/com/example/app/Main.java",
 		);
 	});
@@ -613,7 +613,7 @@ describe("Java constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/User.java",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() to models/Repo.java via constructor-inferred type", () => {
@@ -622,7 +622,7 @@ describe("Java constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/Repo.java",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -662,7 +662,7 @@ describe("Java for-each loop element type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/User.java",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() in for-each to Repo#save (not User#save)", () => {
@@ -671,7 +671,7 @@ describe("Java for-each loop element type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/Repo.java",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -709,7 +709,7 @@ describe("Java this resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/models/User.java");
+		expect(saveCall?.targetFilePath).toBe("src/models/User.java");
 	});
 });
 
@@ -753,7 +753,7 @@ describe("Java parent resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -909,7 +909,7 @@ describe("Java nullable receiver resolution (typed factory return)", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/User.java",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() to Repo.save via receiver typing", () => {
@@ -918,7 +918,7 @@ describe("Java nullable receiver resolution (typed factory return)", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/Repo.java",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("user.save() does NOT resolve to Repo.save (negative disambiguation)", () => {
@@ -1017,7 +1017,7 @@ describe("Java assignment chain propagation", () => {
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -1084,7 +1084,7 @@ describe("Java Optional<User> receiver resolution via wrapper unwrapping", () =>
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -1481,15 +1481,15 @@ describe("Field type resolution (Java)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.isReadonly).toBe(false);
-		expect(city!.properties.declaredType).toBe("String");
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.isReadonly).toBe(false);
+		expect(city?.properties.declaredType).toBe("String");
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 });
 
@@ -1623,9 +1623,9 @@ describe("Write access tracking (Java)", () => {
 		const nameWrite = writes.find((e) => e.target === "name");
 		const addressWrite = writes.find((e) => e.target === "address");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("updateUser");
+		expect(nameWrite?.source).toBe("updateUser");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("updateUser");
+		expect(addressWrite?.source).toBe("updateUser");
 	});
 });
 
@@ -2224,7 +2224,7 @@ describe("Java overloaded method disambiguation (METHOD_IMPLEMENTS)", () => {
 				e.sourceFilePath.includes("SqlRepository") &&
 				e.targetFilePath.includes("Repository"),
 		);
-		const sourceNodes = findEdges.map((e) => {
+		const sourceNodes = findEdges.map((_e) => {
 			const methods = getNodesByLabelFull(result, "Method");
 			return methods.find(
 				(m) =>
@@ -2464,7 +2464,7 @@ describe("Java Child extends Parent — inherited method resolution (SM-9)", () 
 		expect(parentMethodCall).toBeDefined();
 		// Pin the caller too — not just the target — so a regression that
 		// misattributes the edge to a different source would fail loudly.
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });
 
@@ -2499,6 +2499,6 @@ describe("Java User implements Validator — interface default method (SM-11)", 
 				c.target === "validate" && c.targetFilePath.includes("Validator.java"),
 		);
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.source).toBe("run");
+		expect(validateCall?.source).toBe("run");
 	});
 });

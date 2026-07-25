@@ -1,7 +1,7 @@
+import { fork } from "node:child_process";
 import { createRequire } from "node:module";
-import { fork } from "child_process";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { logger } from "../../core/logger.js";
 import type { LocalBackend } from "../../mcp/local/local-backend.js";
 import { getStoragePath, loadMeta } from "../../storage/repo-manager.js";
@@ -228,7 +228,7 @@ export const startAnalyzeJob = async (
 						releaseRepoLock(analyzeLockKey);
 						jobManager.updateJob(job.id, {
 							status: "failed",
-							error: `Worker crashed ${MAX_WORKER_RETRIES + 1} times (code ${code})${stderrChunks ? ": " + stderrChunks.trim().split("\n").pop() : ""}`,
+							error: `Worker crashed ${MAX_WORKER_RETRIES + 1} times (code ${code})${stderrChunks ? `: ${stderrChunks.trim().split("\n").pop()}` : ""}`,
 						});
 					}
 				});

@@ -196,8 +196,8 @@ export function getLabelFromCaptures(
 	captureMap: Record<string, SyntaxNode>,
 	provider: LanguageProvider,
 ): NodeLabel | null {
-	if (captureMap["import"] || captureMap["call"]) return null;
-	if (!captureMap["name"] && !captureMap["definition.constructor"]) return null;
+	if (captureMap.import || captureMap.call) return null;
+	if (!captureMap.name && !captureMap["definition.constructor"]) return null;
 
 	if (captureMap["definition.function"]) {
 		if (provider.labelOverride) {

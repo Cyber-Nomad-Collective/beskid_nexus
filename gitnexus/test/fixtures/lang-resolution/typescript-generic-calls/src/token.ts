@@ -4,7 +4,7 @@ export interface BasePayload {
 
 export function verifyToken<T extends BasePayload>(
 	token: string,
-	secret: string,
+	_secret: string,
 ): T {
 	return JSON.parse(Buffer.from(token, "base64").toString()) as T;
 }

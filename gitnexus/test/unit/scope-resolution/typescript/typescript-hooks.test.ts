@@ -251,9 +251,9 @@ describe("synthesizeTsReceiverBinding — class methods", () => {
 		const fn = parseFirstFunction(src, "method_definition");
 		const m = synthesizeTsReceiverBinding(fn);
 		expect(m).not.toBeNull();
-		expect(m!["@type-binding.this"]).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("this");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.this"]).toBeDefined();
+		expect(m?.["@type-binding.name"].text).toBe("this");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("emits `this` → class name for an abstract class method", () => {
@@ -261,7 +261,7 @@ describe("synthesizeTsReceiverBinding — class methods", () => {
 		const fn = parseFirstFunction(src, "method_definition");
 		const m = synthesizeTsReceiverBinding(fn);
 		expect(m).not.toBeNull();
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("skips static methods", () => {
@@ -285,7 +285,7 @@ describe("synthesizeTsReceiverBinding — interface/abstract signatures", () => 
 		const fn = parseFirstFunction(src, "method_signature");
 		const m = synthesizeTsReceiverBinding(fn);
 		expect(m).not.toBeNull();
-		expect(m!["@type-binding.type"].text).toBe("IUser");
+		expect(m?.["@type-binding.type"].text).toBe("IUser");
 	});
 
 	it("emits `this` for an abstract_method_signature", () => {
@@ -293,7 +293,7 @@ describe("synthesizeTsReceiverBinding — interface/abstract signatures", () => 
 		const fn = parseFirstFunction(src, "abstract_method_signature");
 		const m = synthesizeTsReceiverBinding(fn);
 		expect(m).not.toBeNull();
-		expect(m!["@type-binding.type"].text).toBe("Base");
+		expect(m?.["@type-binding.type"].text).toBe("Base");
 	});
 });
 
@@ -303,7 +303,7 @@ describe("synthesizeTsReceiverBinding — class-field arrow functions", () => {
 		const fn = parseFirstFunction(src, "arrow_function");
 		const m = synthesizeTsReceiverBinding(fn);
 		expect(m).not.toBeNull();
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("emits `this` for a class field assigned a function_expression", () => {
@@ -311,7 +311,7 @@ describe("synthesizeTsReceiverBinding — class-field arrow functions", () => {
 		const fn = parseFirstFunction(src, "function_expression");
 		const m = synthesizeTsReceiverBinding(fn);
 		expect(m).not.toBeNull();
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("skips `static m = () => {}` (no instance `this`)", () => {

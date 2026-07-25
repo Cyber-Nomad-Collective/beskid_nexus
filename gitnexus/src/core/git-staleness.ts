@@ -4,8 +4,8 @@
  */
 
 import { execFile, execFileSync } from "node:child_process";
+import path from "node:path";
 import { promisify } from "node:util";
-import path from "path";
 import {
 	findGitRootByDotGit,
 	getCurrentCommit,

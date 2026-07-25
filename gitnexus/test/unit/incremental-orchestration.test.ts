@@ -20,10 +20,10 @@
  * (Windows LadybugDB handle release can lag; `cleanupTempDir` retries).
  */
 
-import { execSync } from "child_process";
-import { copyFile, mkdir, readFile, writeFile } from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import { execSync } from "node:child_process";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
 	getStoragePaths,
@@ -93,11 +93,11 @@ describe("runFullAnalysis — incremental orchestration", () => {
 			const { storagePath } = getStoragePaths(repo.dbPath);
 			const meta = await loadMeta(storagePath);
 			expect(meta).not.toBeNull();
-			expect(meta!.schemaVersion).toBe(INCREMENTAL_SCHEMA_VERSION);
-			expect(meta!.fileHashes).toBeDefined();
-			expect(Object.keys(meta!.fileHashes ?? {}).length).toBeGreaterThan(0);
+			expect(meta?.schemaVersion).toBe(INCREMENTAL_SCHEMA_VERSION);
+			expect(meta?.fileHashes).toBeDefined();
+			expect(Object.keys(meta?.fileHashes ?? {}).length).toBeGreaterThan(0);
 			// Dirty flag MUST be cleared after a successful run.
-			expect(meta!.incrementalInProgress).toBeUndefined();
+			expect(meta?.incrementalInProgress).toBeUndefined();
 		} finally {
 			await repo.cleanup();
 		}
@@ -147,7 +147,7 @@ describe("runFullAnalysis — incremental orchestration", () => {
 			// bit-identical to the first run. Anything else is a regression.
 			const target = path.join(repo.dbPath, "src", "logger.ts");
 			const before = await readFile(target, "utf-8");
-			await writeFile(target, before + "\n// touched by test\n", "utf-8");
+			await writeFile(target, `${before}\n// touched by test\n`, "utf-8");
 
 			const second = await runFullAnalysis(
 				repo.dbPath,
@@ -161,19 +161,19 @@ describe("runFullAnalysis — incremental orchestration", () => {
 			const secondMeta = await loadMeta(storagePath);
 			expect(secondMeta).not.toBeNull();
 			// Dirty flag must be cleared on success.
-			expect(secondMeta!.incrementalInProgress).toBeUndefined();
+			expect(secondMeta?.incrementalInProgress).toBeUndefined();
 			// fileHashes[logger.ts] must have rotated to the new content.
-			expect(secondMeta!.fileHashes?.["src/logger.ts"]).toBeDefined();
-			expect(secondMeta!.fileHashes?.["src/logger.ts"]).not.toBe(
-				firstMeta!.fileHashes?.["src/logger.ts"],
+			expect(secondMeta?.fileHashes?.["src/logger.ts"]).toBeDefined();
+			expect(secondMeta?.fileHashes?.["src/logger.ts"]).not.toBe(
+				firstMeta?.fileHashes?.["src/logger.ts"],
 			);
 			// Exact-equality stats invariant. DoD §2.7: avoid bounds-only
 			// assertions that would mask a regression dropping half the graph.
-			expect(secondMeta!.stats?.files).toBe(firstMeta!.stats?.files);
-			expect(secondMeta!.stats?.nodes).toBe(firstMeta!.stats?.nodes);
-			expect(secondMeta!.stats?.edges).toBe(firstMeta!.stats?.edges);
-			expect(secondMeta!.stats?.communities).toBe(firstMeta!.stats?.communities);
-			expect(secondMeta!.stats?.processes).toBe(firstMeta!.stats?.processes);
+			expect(secondMeta?.stats?.files).toBe(firstMeta?.stats?.files);
+			expect(secondMeta?.stats?.nodes).toBe(firstMeta?.stats?.nodes);
+			expect(secondMeta?.stats?.edges).toBe(firstMeta?.stats?.edges);
+			expect(secondMeta?.stats?.communities).toBe(firstMeta?.stats?.communities);
+			expect(secondMeta?.stats?.processes).toBe(firstMeta?.stats?.processes);
 		} finally {
 			await repo.cleanup();
 		}
@@ -207,7 +207,7 @@ describe("runFullAnalysis — incremental orchestration", () => {
 			// Step 2: comment-only edit, same as the test above.
 			const target = path.join(repo.dbPath, "src", "logger.ts");
 			const original = await readFile(target, "utf-8");
-			await writeFile(target, original + "\n// equivalence test touch\n", "utf-8");
+			await writeFile(target, `${original}\n// equivalence test touch\n`, "utf-8");
 
 			// Step 3: incremental writeback for the edited file.
 			const incremental = await runFullAnalysis(
@@ -232,11 +232,11 @@ describe("runFullAnalysis — incremental orchestration", () => {
 
 			// Step 5: exact-equality across every stat. `toEqual` would also
 			// work but `toBe` per-field makes a failure pinpoint the field.
-			expect(secondMeta!.stats?.files).toBe(forceMeta!.stats?.files);
-			expect(secondMeta!.stats?.nodes).toBe(forceMeta!.stats?.nodes);
-			expect(secondMeta!.stats?.edges).toBe(forceMeta!.stats?.edges);
-			expect(secondMeta!.stats?.communities).toBe(forceMeta!.stats?.communities);
-			expect(secondMeta!.stats?.processes).toBe(forceMeta!.stats?.processes);
+			expect(secondMeta?.stats?.files).toBe(forceMeta?.stats?.files);
+			expect(secondMeta?.stats?.nodes).toBe(forceMeta?.stats?.nodes);
+			expect(secondMeta?.stats?.edges).toBe(forceMeta?.stats?.edges);
+			expect(secondMeta?.stats?.communities).toBe(forceMeta?.stats?.communities);
+			expect(secondMeta?.stats?.processes).toBe(forceMeta?.stats?.processes);
 		} finally {
 			await repo.cleanup();
 		}
@@ -280,7 +280,7 @@ describe("runFullAnalysis — incremental orchestration", () => {
 			expect(recovered.alreadyUpToDate).toBeUndefined();
 
 			const after = await loadMeta(storagePath);
-			expect(after!.incrementalInProgress).toBeUndefined();
+			expect(after?.incrementalInProgress).toBeUndefined();
 		} finally {
 			await repo.cleanup();
 		}

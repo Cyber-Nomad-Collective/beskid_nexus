@@ -2,7 +2,7 @@
  * Rust: trait implementations + ambiguous module import disambiguation
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -77,7 +77,7 @@ describe("Rust trait implementation resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -112,7 +112,7 @@ describe("Rust ambiguous symbol resolution", () => {
 		const imports = getRelationships(result, "IMPORTS");
 		const modelsImport = imports.find((e) => e.targetFilePath.includes("models"));
 		expect(modelsImport).toBeDefined();
-		expect(modelsImport!.targetFilePath).toBe("src/models/mod.rs");
+		expect(modelsImport?.targetFilePath).toBe("src/models/mod.rs");
 	});
 
 	it("no import edge to src/other/", () => {
@@ -161,8 +161,8 @@ describe("Rust member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process_user");
-		expect(saveCall!.targetFilePath).toBe("src/user.rs");
+		expect(saveCall?.source).toBe("process_user");
+		expect(saveCall?.targetFilePath).toBe("src/user.rs");
 	});
 
 	it("detects User struct and save function (Rust impl fns are Function nodes)", () => {
@@ -194,17 +194,17 @@ describe("Rust struct literal resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("process_user");
-		expect(ctorCall!.targetLabel).toBe("Struct");
-		expect(ctorCall!.targetFilePath).toBe("user.rs");
-		expect(ctorCall!.rel.reason).toBe("import-resolved");
+		expect(ctorCall?.source).toBe("process_user");
+		expect(ctorCall?.targetLabel).toBe("Struct");
+		expect(ctorCall?.targetFilePath).toBe("user.rs");
+		expect(ctorCall?.rel.reason).toBe("import-resolved");
 	});
 
 	it("also resolves user.save() as a member call", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process_user");
+		expect(saveCall?.source).toBe("process_user");
 	});
 
 	it("detects User struct and process_user function", () => {
@@ -255,8 +255,8 @@ describe("Rust receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("process_entities");
-		expect(repoSave!.source).toBe("process_entities");
+		expect(userSave?.source).toBe("process_entities");
+		expect(repoSave?.source).toBe("process_entities");
 	});
 });
 
@@ -291,12 +291,12 @@ describe("Rust alias import resolution", () => {
 		const persistCall = calls.find((c) => c.target === "persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("src/models.rs");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("src/models.rs");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("main");
-		expect(persistCall!.targetFilePath).toBe("src/models.rs");
+		expect(persistCall?.source).toBe("main");
+		expect(persistCall?.targetFilePath).toBe("src/models.rs");
 	});
 
 	it("emits exactly 1 IMPORTS edge: src/main.rs → src/models.rs", () => {
@@ -338,17 +338,17 @@ describe("Rust re-export chain resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "Handler");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("main");
-		expect(ctorCall!.targetLabel).toBe("Struct");
-		expect(ctorCall!.targetFilePath).toBe("src/models/handler.rs");
+		expect(ctorCall?.source).toBe("main");
+		expect(ctorCall?.targetLabel).toBe("Struct");
+		expect(ctorCall?.targetFilePath).toBe("src/models/handler.rs");
 	});
 
 	it("resolves h.process() to src/models/handler.rs", () => {
 		const calls = getRelationships(result, "CALLS");
 		const processCall = calls.find((c) => c.target === "process");
 		expect(processCall).toBeDefined();
-		expect(processCall!.source).toBe("main");
-		expect(processCall!.targetFilePath).toBe("src/models/handler.rs");
+		expect(processCall?.source).toBe("main");
+		expect(processCall?.targetFilePath).toBe("src/models/handler.rs");
 	});
 });
 
@@ -370,7 +370,7 @@ describe("Rust local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/main.rs");
+		expect(saveCall?.targetFilePath).toBe("src/main.rs");
 	});
 
 	it("does NOT resolve save to utils.rs", () => {
@@ -401,18 +401,18 @@ describe("Rust grouped import resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const call = calls.find((c) => c.target === "format_name");
 		expect(call).toBeDefined();
-		expect(call!.source).toBe("main");
-		expect(call!.targetFilePath).toBe("src/helpers/mod.rs");
-		expect(call!.rel.reason).toBe("import-resolved");
+		expect(call?.source).toBe("main");
+		expect(call?.targetFilePath).toBe("src/helpers/mod.rs");
+		expect(call?.rel.reason).toBe("import-resolved");
 	});
 
 	it("resolves main → validate_email to src/helpers/mod.rs", () => {
 		const calls = getRelationships(result, "CALLS");
 		const call = calls.find((c) => c.target === "validate_email");
 		expect(call).toBeDefined();
-		expect(call!.source).toBe("main");
-		expect(call!.targetFilePath).toBe("src/helpers/mod.rs");
-		expect(call!.rel.reason).toBe("import-resolved");
+		expect(call?.source).toBe("main");
+		expect(call?.targetFilePath).toBe("src/helpers/mod.rs");
+		expect(call?.rel.reason).toBe("import-resolved");
 	});
 
 	it('does not create a spurious CALLS edge for the path prefix "helpers"', () => {
@@ -517,7 +517,7 @@ describe("Rust constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/user.rs",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("process_entities");
+		expect(userSave?.source).toBe("process_entities");
 	});
 
 	it("resolves repo.save() to src/repo.rs via constructor-inferred type", () => {
@@ -526,7 +526,7 @@ describe("Rust constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/repo.rs",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("process_entities");
+		expect(repoSave?.source).toBe("process_entities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -565,7 +565,7 @@ describe("Rust self resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/user.rs");
+		expect(saveCall?.targetFilePath).toBe("src/user.rs");
 	});
 });
 
@@ -622,7 +622,7 @@ describe("Rust struct literal type inference", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models.rs",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
+		expect(saveCall?.source).toBe("main");
 	});
 
 	it("resolves config.validate() via struct literal inference (Config { ... })", () => {
@@ -631,7 +631,7 @@ describe("Rust struct literal type inference", () => {
 			(c) => c.target === "validate" && c.targetFilePath === "models.rs",
 		);
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.source).toBe("main");
+		expect(validateCall?.source).toBe("main");
 	});
 });
 
@@ -655,7 +655,7 @@ describe("Rust Self {} struct literal resolution", () => {
 			(c) => c.target === "validate" && c.source === "blank",
 		);
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.targetFilePath).toBe("models.rs");
+		expect(validateCall?.targetFilePath).toBe("models.rs");
 	});
 });
 
@@ -687,7 +687,7 @@ describe("Rust if-let captured_pattern type resolution", () => {
 			(c) => c.target === "save" && c.source === "process_if_let",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("models.rs");
+		expect(saveCall?.targetFilePath).toBe("models.rs");
 	});
 
 	it("resolves cfg.validate() inside while-let via captured_pattern binding", () => {
@@ -696,7 +696,7 @@ describe("Rust if-let captured_pattern type resolution", () => {
 			(c) => c.target === "validate" && c.source === "process_while_let",
 		);
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.targetFilePath).toBe("models.rs");
+		expect(validateCall?.targetFilePath).toBe("models.rs");
 	});
 });
 
@@ -727,7 +727,7 @@ describe("Rust return type inference", () => {
 			(c) => c.target === "get_user" && c.source === "main",
 		);
 		expect(getUserCall).toBeDefined();
-		expect(getUserCall!.targetFilePath).toBe("src/models.rs");
+		expect(getUserCall?.targetFilePath).toBe("src/models.rs");
 	});
 
 	it("resolves user.save() to src/models.rs via return-type-inferred binding", () => {
@@ -736,7 +736,7 @@ describe("Rust return type inference", () => {
 			(c) => c.target === "save" && c.source === "main",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/models.rs");
+		expect(saveCall?.targetFilePath).toBe("src/models.rs");
 	});
 });
 
@@ -1570,16 +1570,16 @@ describe("Field type resolution (Rust)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.isReadonly).toBe(true);
-		expect(city!.properties.declaredType).toBe("String");
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.isReadonly).toBe(true);
+		expect(city?.properties.declaredType).toBe("String");
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.isReadonly).toBe(true);
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.isReadonly).toBe(true);
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 });
 
@@ -1683,7 +1683,7 @@ describe("Write access tracking (Rust)", () => {
 		const writes = accesses.filter((e) => e.rel.reason === "write");
 		const scoreWrite = writes.find((e) => e.target === "score");
 		expect(scoreWrite).toBeDefined();
-		expect(scoreWrite!.source).toBe("update_user");
+		expect(scoreWrite?.source).toBe("update_user");
 	});
 });
 
@@ -1914,7 +1914,7 @@ describe("Rust method enrichment (trait + inherent impl)", () => {
 			(m) => m.name === "speak" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(traitSpeak).toBeDefined();
-		expect(traitSpeak!.properties.isAbstract).toBe(true);
+		expect(traitSpeak?.properties.isAbstract).toBe(true);
 	});
 
 	it("marks trait default method breathe as isAbstract=false", () => {
@@ -1923,7 +1923,7 @@ describe("Rust method enrichment (trait + inherent impl)", () => {
 			(m) => m.name === "breathe" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(breathe).toBeDefined();
-		expect(breathe!.properties.isAbstract).toBe(false);
+		expect(breathe?.properties.isAbstract).toBe(false);
 	});
 
 	it("marks Dog::new() as isStatic=true (no self parameter)", () => {
@@ -1932,7 +1932,7 @@ describe("Rust method enrichment (trait + inherent impl)", () => {
 			(m) => m.name === "new" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(newFn).toBeDefined();
-		expect(newFn!.properties.isStatic).toBe(true);
+		expect(newFn?.properties.isStatic).toBe(true);
 	});
 
 	it("records parameterTypes for fetch(&self, item: &str)", () => {
@@ -1941,7 +1941,7 @@ describe("Rust method enrichment (trait + inherent impl)", () => {
 			(m) => m.name === "fetch" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(fetchFn).toBeDefined();
-		expect(fetchFn!.properties.parameterTypes).toContain("str");
+		expect(fetchFn?.properties.parameterTypes).toContain("str");
 	});
 
 	it("records #[inline] annotation on wag()", () => {
@@ -1950,7 +1950,7 @@ describe("Rust method enrichment (trait + inherent impl)", () => {
 			(m) => m.name === "wag" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(wagFn).toBeDefined();
-		expect(wagFn!.properties.annotations).toContain("#[inline]");
+		expect(wagFn?.properties.annotations).toContain("#[inline]");
 	});
 
 	it("uses Impl source label for HAS_METHOD edges from inherent impl", () => {
@@ -2046,7 +2046,7 @@ describe("Rust abstract dispatch (Repository trait)", () => {
 			(e) => e.source === "Repository" && e.target === "count",
 		);
 		expect(traitCount).toBeDefined();
-		expect(traitCount!.sourceLabel).toBe("Trait");
+		expect(traitCount?.sourceLabel).toBe("Trait");
 	});
 
 	it("marks trait find/save as isAbstract=true and impl find/save as isAbstract=false", () => {
@@ -2076,7 +2076,7 @@ describe("Rust abstract dispatch (Repository trait)", () => {
 			(m) => m.name === "count" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(countFn).toBeDefined();
-		expect(countFn!.properties.isAbstract).toBe(false);
+		expect(countFn?.properties.isAbstract).toBe(false);
 	});
 
 	it("records parameterTypes for find(&self, id: i32)", () => {
@@ -2085,7 +2085,7 @@ describe("Rust abstract dispatch (Repository trait)", () => {
 			(m) => m.name === "find" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(findFn).toBeDefined();
-		expect(findFn!.properties.parameterTypes).toContain("i32");
+		expect(findFn?.properties.parameterTypes).toContain("i32");
 	});
 
 	it("records parameterTypes for save(&self, entity: &str)", () => {
@@ -2094,7 +2094,7 @@ describe("Rust abstract dispatch (Repository trait)", () => {
 			(m) => m.name === "save" && m.properties.filePath?.includes("lib.rs"),
 		);
 		expect(saveFn).toBeDefined();
-		expect(saveFn!.properties.parameterTypes).toContain("str");
+		expect(saveFn?.properties.parameterTypes).toContain("str");
 	});
 
 	it("resolves process() calls: repo.find(), repo.save(), repo.count()", () => {

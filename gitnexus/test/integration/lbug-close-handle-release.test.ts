@@ -7,7 +7,7 @@
  * probes the file with `fs.open` to force the residual lock to surface,
  * absorbed by the open-time retry in `lbug-config.ts`.
  */
-import path from "path";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createTempDir } from "../helpers/test-db.js";
 

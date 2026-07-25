@@ -232,7 +232,7 @@ function extractSwiftAnnotations(node: SyntaxNode): string[] {
 				// e.g. "@objc(myMethod)" -> "@objc", "@available(iOS 13, *)" -> "@available"
 				const match = text.match(/^@(\w+)/);
 				if (match) {
-					annotations.push("@" + match[1]);
+					annotations.push(`@${match[1]}`);
 				} else {
 					annotations.push(text);
 				}
@@ -248,7 +248,7 @@ function extractSwiftAnnotations(node: SyntaxNode): string[] {
 					if (text) {
 						const match = text.match(/^@(\w+)/);
 						if (match) {
-							annotations.push("@" + match[1]);
+							annotations.push(`@${match[1]}`);
 						} else {
 							annotations.push(text);
 						}

@@ -125,7 +125,7 @@ describe("lookupBindingsAt", () => {
 			indexesWith({ finalized, augmented }),
 		);
 		expect(out.map((b) => b.def.nodeId)).toEqual(["A", "B", "C"]);
-		expect(out.find((b) => b.def.nodeId === "A")!.origin).toBe("import");
+		expect(out.find((b) => b.def.nodeId === "A")?.origin).toBe("import");
 	});
 
 	it("keeps finalized metadata when the same nodeId appears in both channels", () => {
@@ -150,9 +150,9 @@ describe("lookupBindingsAt", () => {
 			}),
 		);
 		expect(out).toHaveLength(1);
-		expect(out[0]!.def.filePath).toBe("finalized.ts");
-		expect(out[0]!.def.qualifiedName).toBe("finalized.A");
-		expect(out[0]!.origin).toBe("import");
+		expect(out[0]?.def.filePath).toBe("finalized.ts");
+		expect(out[0]?.def.qualifiedName).toBe("finalized.A");
+		expect(out[0]?.origin).toBe("import");
 	});
 
 	it("returns the shared empty array on a miss in both channels", () => {

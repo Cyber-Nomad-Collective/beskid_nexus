@@ -64,7 +64,7 @@ export const cppClassConfig: ClassExtractionConfig = {
 	},
 	extractTemplateArguments: (node) => {
 		const nameNode = node.childForFieldName?.("name");
-		if (!nameNode || nameNode.type !== "template_type") return undefined;
+		if (nameNode?.type !== "template_type") return undefined;
 		return extractTemplateArguments(nameNode.text);
 	},
 	shouldSkipClassCapture: ({ captureMap, definitionNode, nameNode }) =>

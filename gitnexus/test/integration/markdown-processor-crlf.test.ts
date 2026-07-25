@@ -80,9 +80,9 @@ describe("markdown-processor CRLF tolerance", () => {
 			expect(String(s.properties.name)).not.toMatch(/\r/);
 		}
 		const fileId = generateId("File", filePath);
-		expectContainsEdge(graph, fileId, sections[0]!.id);
-		expectContainsEdge(graph, sections[0]!.id, sections[1]!.id);
-		expectContainsEdge(graph, sections[1]!.id, sections[2]!.id);
+		expectContainsEdge(graph, fileId, sections[0]?.id);
+		expectContainsEdge(graph, sections[0]?.id, sections[1]?.id);
+		expectContainsEdge(graph, sections[1]?.id, sections[2]?.id);
 	});
 
 	it("extracts headings from CRLF-encoded markdown (the regression)", () => {
@@ -112,9 +112,9 @@ describe("markdown-processor CRLF tolerance", () => {
 			expect(String(s.properties.name)).not.toMatch(/\r/);
 		}
 		const fileId = generateId("File", filePath);
-		expectContainsEdge(graph, fileId, sections[0]!.id);
-		expectContainsEdge(graph, sections[0]!.id, sections[1]!.id);
-		expectContainsEdge(graph, sections[1]!.id, sections[2]!.id);
+		expectContainsEdge(graph, fileId, sections[0]?.id);
+		expectContainsEdge(graph, sections[0]?.id, sections[1]?.id);
+		expectContainsEdge(graph, sections[1]?.id, sections[2]?.id);
 	});
 
 	it("extracts headings from CR-only-encoded markdown (old Mac OS Classic)", () => {
@@ -138,8 +138,8 @@ describe("markdown-processor CRLF tolerance", () => {
 			expect(String(s.properties.name)).not.toMatch(/\r/);
 		}
 		const fileId = generateId("File", filePath);
-		expectContainsEdge(graph, fileId, sections[0]!.id);
-		expectContainsEdge(graph, sections[0]!.id, sections[1]!.id);
+		expectContainsEdge(graph, fileId, sections[0]?.id);
+		expectContainsEdge(graph, sections[0]?.id, sections[1]?.id);
 	});
 
 	it("extracts headings from mixed CRLF + LF markdown", () => {
@@ -168,9 +168,9 @@ describe("markdown-processor CRLF tolerance", () => {
 			expect(String(s.properties.name)).not.toMatch(/\r/);
 		}
 		const fileId = generateId("File", filePath);
-		expectContainsEdge(graph, fileId, sections[0]!.id);
-		expectContainsEdge(graph, sections[0]!.id, sections[1]!.id);
-		expectContainsEdge(graph, sections[1]!.id, sections[2]!.id);
+		expectContainsEdge(graph, fileId, sections[0]?.id);
+		expectContainsEdge(graph, sections[0]?.id, sections[1]?.id);
+		expectContainsEdge(graph, sections[1]?.id, sections[2]?.id);
 	});
 
 	it("reports correct startLine and endLine for CRLF content", () => {

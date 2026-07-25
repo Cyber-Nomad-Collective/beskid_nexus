@@ -156,7 +156,7 @@ describe("GITNEXUS_TOOLS", () => {
 			const tool = GITNEXUS_TOOLS.find((t) => t.name === n)!;
 			const svc = tool.inputSchema.properties.service;
 			expect(svc, n).toBeDefined();
-			expect(svc!.minLength).toBe(1);
+			expect(svc?.minLength).toBe(1);
 		}
 	});
 

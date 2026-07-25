@@ -398,7 +398,7 @@ const extractPendingAssignment: PendingAssignmentExtractor = (
 ) => {
 	if (node.type !== "assignment") return undefined;
 	const lhsNode = node.childForFieldName("left");
-	if (!lhsNode || lhsNode.type !== "identifier") return undefined;
+	if (lhsNode?.type !== "identifier") return undefined;
 	const varName = lhsNode.text;
 	if (scopeEnv.has(varName)) return undefined;
 	const rhsNode = node.childForFieldName("right");

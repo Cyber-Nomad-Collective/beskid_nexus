@@ -36,9 +36,9 @@ export function phpArityCompatibility(
 	// Negative arity signals named-argument call sites — can't narrow statically.
 	if (!Number.isFinite(argCount) || argCount < 0) return "unknown";
 
-	const hasVarArgs =
-		def.parameterTypes !== undefined &&
-		def.parameterTypes.some((t) => t === "..." || t.startsWith("..."));
+	const hasVarArgs = def.parameterTypes?.some(
+		(t) => t === "..." || t.startsWith("..."),
+	);
 
 	if (min !== undefined && argCount < min) return "incompatible";
 	if (max !== undefined && argCount > max && !hasVarArgs) return "incompatible";

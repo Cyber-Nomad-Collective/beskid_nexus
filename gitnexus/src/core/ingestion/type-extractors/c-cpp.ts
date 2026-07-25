@@ -227,9 +227,9 @@ const scanConstructorBinding: ConstructorBindingScanner = (node) => {
 	)
 		return undefined;
 	const declarator = node.childForFieldName("declarator");
-	if (!declarator || declarator.type !== "init_declarator") return undefined;
+	if (declarator?.type !== "init_declarator") return undefined;
 	const value = declarator.childForFieldName("value");
-	if (!value || value.type !== "call_expression") return undefined;
+	if (value?.type !== "call_expression") return undefined;
 	const func = value.childForFieldName("function");
 	if (!func) return undefined;
 	if (
@@ -279,7 +279,7 @@ const extractPendingAssignment: PendingAssignmentExtractor = (
 	)
 		return undefined;
 	const declarator = node.childForFieldName("declarator");
-	if (!declarator || declarator.type !== "init_declarator") return undefined;
+	if (declarator?.type !== "init_declarator") return undefined;
 	const value = declarator.childForFieldName("value");
 	if (!value) return undefined;
 	const nameNode = declarator.childForFieldName("declarator");
@@ -333,7 +333,7 @@ const FOR_LOOP_NODE_TYPES: ReadonlySet<string> = new Set(["for_range_loop"]);
  *  argument is a type_descriptor with a 'type' field containing the type_specifier. */
 const extractCppTemplateTypeArgs = (templateTypeNode: SyntaxNode): string[] => {
 	const argsNode = templateTypeNode.childForFieldName("arguments");
-	if (!argsNode || argsNode.type !== "template_argument_list") return [];
+	if (argsNode?.type !== "template_argument_list") return [];
 	const result: string[] = [];
 	for (let i = 0; i < argsNode.namedChildCount; i++) {
 		let argNode = argsNode.namedChild(i);
@@ -400,7 +400,7 @@ const findCppParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const param = paramsNode.namedChild(i);
-					if (!param || param.type !== "parameter_declaration") continue;
+					if (param?.type !== "parameter_declaration") continue;
 					const paramDeclarator = param.childForFieldName("declarator");
 					if (!paramDeclarator) continue;
 					// Unwrap reference/pointer declarators: vector<User>& users → &users
@@ -558,7 +558,7 @@ const inferLiteralType: LiteralTypeInferrer = (node) => {
  *  Extracts the template type argument as the constructor type for virtual dispatch. */
 const detectCppConstructorType: ConstructorTypeDetector = (
 	node,
-	classNames,
+	_classNames,
 ) => {
 	// Navigate to the initializer value in the declaration
 	const declarator = node.childForFieldName("declarator");
@@ -566,11 +566,11 @@ const detectCppConstructorType: ConstructorTypeDetector = (
 		declarator?.type === "init_declarator" ? declarator : undefined;
 	if (!initDecl) return undefined;
 	const value = initDecl.childForFieldName("value");
-	if (!value || value.type !== "call_expression") return undefined;
+	if (value?.type !== "call_expression") return undefined;
 
 	// Check for template_function pattern: make_shared<Dog>()
 	const func = value.childForFieldName("function");
-	if (!func || func.type !== "template_function") return undefined;
+	if (func?.type !== "template_function") return undefined;
 
 	// Extract function name (possibly qualified: std::make_shared)
 	const nameNode = func.firstNamedChild;

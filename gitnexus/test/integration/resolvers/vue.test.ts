@@ -2,7 +2,7 @@
  * Vue SFC: script extraction, symbol parsing, import resolution, template component edges
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	FIXTURES,
@@ -49,7 +49,7 @@ describe("Vue SFC support", () => {
 				n.properties.filePath.endsWith("Button.vue"),
 		);
 		expect(handleClick).toBeDefined();
-		expect(handleClick!.properties.isExported).toBe(true);
+		expect(handleClick?.properties.isExported).toBe(true);
 	});
 
 	// -------------------------------------------------------------------------
@@ -66,7 +66,7 @@ describe("Vue SFC support", () => {
 		expect(handleClick).toBeDefined();
 		// handleClick is inside <script setup> which starts after 7 lines of template
 		// The function starts several lines into the script block
-		expect(handleClick!.properties.startLine).toBeGreaterThan(5);
+		expect(handleClick?.properties.startLine).toBeGreaterThan(5);
 	});
 
 	// -------------------------------------------------------------------------

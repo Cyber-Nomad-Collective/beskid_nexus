@@ -35,7 +35,7 @@ export const dartPackageStrategy: ImportResolverStrategy = (
 		const files: string[] = [];
 		for (const candidate of candidates) {
 			for (const fp of ctx.allFileList) {
-				if (fp.endsWith("/" + candidate) || fp === candidate) {
+				if (fp.endsWith(`/${candidate}`) || fp === candidate) {
 					files.push(fp);
 					break;
 				}
@@ -59,7 +59,7 @@ export const dartRelativeStrategy: ImportResolverStrategy = (
 	ctx,
 ) => {
 	const stripped = rawImportPath.replace(/^['"]|['"]$/g, "");
-	const relPath = stripped.startsWith(".") ? stripped : "./" + stripped;
+	const relPath = stripped.startsWith(".") ? stripped : `./${stripped}`;
 	return resolveStandard(relPath, filePath, ctx, SupportedLanguages.Dart);
 };
 

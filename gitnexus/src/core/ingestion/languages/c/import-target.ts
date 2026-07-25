@@ -1,4 +1,4 @@
-import { dirname, join } from "path";
+import { dirname, join } from "node:path";
 
 /**
  * Resolve a C #include path to a file in the workspace.
@@ -42,7 +42,7 @@ export function resolveCImportTarget(
 	if (allFilePaths.has(normalizedTarget)) return normalizedTarget;
 
 	// Suffix match: find files ending with /targetRaw or equal to targetRaw
-	const suffix = "/" + normalizedTarget;
+	const suffix = `/${normalizedTarget}`;
 	let bestMatch: string | null = null;
 	let bestDepth = Infinity;
 	let bestNormalized = "";

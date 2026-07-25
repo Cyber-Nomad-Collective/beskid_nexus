@@ -1,7 +1,7 @@
 /**
  * Shared helpers for hook test files (unit + integration).
  */
-import { spawnSync } from "child_process";
+import { spawnSync } from "node:child_process";
 
 export function runHook(
 	hookPath: string,

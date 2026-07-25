@@ -2,7 +2,7 @@
  * Go: package imports + cross-package calls + ambiguous struct disambiguation
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -88,7 +88,7 @@ describe("Go package import & call resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -123,7 +123,7 @@ describe("Go ambiguous symbol resolution", () => {
 		const imports = getRelationships(result, "IMPORTS");
 		const modelsImport = imports.find((e) => e.targetFilePath.includes("models"));
 		expect(modelsImport).toBeDefined();
-		expect(modelsImport!.targetFilePath).toBe("internal/models/handler.go");
+		expect(modelsImport?.targetFilePath).toBe("internal/models/handler.go");
 	});
 
 	it("no import edge to internal/other/", () => {
@@ -169,8 +169,8 @@ describe("Go member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "Save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.targetFilePath).toBe("models/user.go");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.targetFilePath).toBe("models/user.go");
 	});
 
 	it("detects User struct and Save method", () => {
@@ -200,8 +200,8 @@ describe("Go receiver method free-call resolution", () => {
 			(c) => c.source === "Caller" && c.target === "callee",
 		);
 		expect(calleeCall).toBeDefined();
-		expect(calleeCall!.targetLabel).toBe("Function");
-		expect(calleeCall!.targetFilePath).toBe("util.go");
+		expect(calleeCall?.targetLabel).toBe("Function");
+		expect(calleeCall?.targetFilePath).toBe("util.go");
 	});
 });
 
@@ -223,16 +223,16 @@ describe("Go struct literal resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("processUser");
-		expect(ctorCall!.targetLabel).toBe("Struct");
-		expect(ctorCall!.targetFilePath).toBe("user.go");
+		expect(ctorCall?.source).toBe("processUser");
+		expect(ctorCall?.targetLabel).toBe("Struct");
+		expect(ctorCall?.targetFilePath).toBe("user.go");
 	});
 
 	it("also resolves user.Save() as a member call", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "Save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
+		expect(saveCall?.source).toBe("processUser");
 	});
 
 	it("detects User struct, Save method, and processUser function", () => {
@@ -281,12 +281,12 @@ describe("Go multi-assignment short var declaration", () => {
 		const cloneCall = calls.find((c) => c.target === "Persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process");
-		expect(saveCall!.targetFilePath).toBe("models.go");
+		expect(saveCall?.source).toBe("process");
+		expect(saveCall?.targetFilePath).toBe("models.go");
 
 		expect(cloneCall).toBeDefined();
-		expect(cloneCall!.source).toBe("process");
-		expect(cloneCall!.targetFilePath).toBe("models.go");
+		expect(cloneCall?.source).toBe("process");
+		expect(cloneCall?.targetFilePath).toBe("models.go");
 	});
 });
 
@@ -323,8 +323,8 @@ describe("Go receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
-		expect(repoSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 });
 
@@ -346,8 +346,8 @@ describe("Go variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "Entry");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("main");
-		expect(logCall!.targetFilePath).toBe("internal/logger/logger.go");
+		expect(logCall?.source).toBe("main");
+		expect(logCall?.targetFilePath).toBe("internal/logger/logger.go");
 	});
 });
 
@@ -371,7 +371,7 @@ describe("Go local definition shadows import", () => {
 			(c) => c.target === "Save" && c.source === "main",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("cmd/main.go");
+		expect(saveCall?.targetFilePath).toBe("cmd/main.go");
 	});
 });
 
@@ -405,7 +405,7 @@ describe("Go constructor-inferred type resolution", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models/user.go",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.Save() to models/repo.go via constructor-inferred type", () => {
@@ -414,7 +414,7 @@ describe("Go constructor-inferred type resolution", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models/repo.go",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 Save() CALLS edges (one per receiver type)", () => {
@@ -454,7 +454,7 @@ describe("Go pointer-constructor-inferred type resolution", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models/user.go",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("process");
+		expect(userSave?.source).toBe("process");
 	});
 
 	it("resolves repo.Save() to models/repo.go via &Repo{} pointer-constructor-inferred type", () => {
@@ -463,7 +463,7 @@ describe("Go pointer-constructor-inferred type resolution", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models/repo.go",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("process");
+		expect(repoSave?.source).toBe("process");
 	});
 
 	it("emits exactly 2 Save() CALLS edges (one per receiver type)", () => {
@@ -519,7 +519,7 @@ describe("Go new() builtin type inference", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models.go",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
+		expect(saveCall?.source).toBe("main");
 	});
 
 	it("resolves user.Greet() via new(User) inference", () => {
@@ -528,7 +528,7 @@ describe("Go new() builtin type inference", () => {
 			(c) => c.target === "Greet" && c.targetFilePath === "models.go",
 		);
 		expect(greetCall).toBeDefined();
-		expect(greetCall!.source).toBe("main");
+		expect(greetCall?.source).toBe("main");
 	});
 });
 
@@ -552,7 +552,7 @@ describe("Go make() builtin type inference", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models.go",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
+		expect(saveCall?.source).toBe("main");
 	});
 
 	it('resolves m["key"].Greet() via make(map[string]User) map inference', () => {
@@ -561,7 +561,7 @@ describe("Go make() builtin type inference", () => {
 			(c) => c.target === "Greet" && c.targetFilePath === "models.go",
 		);
 		expect(greetCall).toBeDefined();
-		expect(greetCall!.source).toBe("main");
+		expect(greetCall?.source).toBe("main");
 	});
 });
 
@@ -585,7 +585,7 @@ describe("Go type assertion type inference", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models.go",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process");
+		expect(saveCall?.source).toBe("process");
 	});
 
 	it("resolves user.Greet() via type assertion s.(User)", () => {
@@ -594,7 +594,7 @@ describe("Go type assertion type inference", () => {
 			(c) => c.target === "Greet" && c.targetFilePath === "models.go",
 		);
 		expect(greetCall).toBeDefined();
-		expect(greetCall!.source).toBe("process");
+		expect(greetCall?.source).toBe("process");
 	});
 });
 
@@ -810,7 +810,7 @@ describe("Go nullable receiver resolution (pointer types)", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models/user.go",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.Save() to Repo.Save via pointer receiver typing", () => {
@@ -819,7 +819,7 @@ describe("Go nullable receiver resolution (pointer types)", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "models/repo.go",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("user.Save() does NOT resolve to Repo.Save (negative disambiguation)", () => {
@@ -917,7 +917,7 @@ describe("Go assignment chain propagation", () => {
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 
 	// --- var form assignment chain ---
@@ -1310,9 +1310,9 @@ describe("Write access tracking (Go)", () => {
 		const nameWrite = writes.find((e) => e.target === "Name");
 		const addressWrite = writes.find((e) => e.target === "Address");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("updateUser");
+		expect(nameWrite?.source).toBe("updateUser");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("updateUser");
+		expect(addressWrite?.source).toBe("updateUser");
 	});
 });
 
@@ -1681,6 +1681,6 @@ describe("Go Child embeds Parent — inherited method resolution (SM-9)", () => 
 			(c) => c.target === "ParentMethod" && c.targetFilePath.includes("parent.go"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("Run");
+		expect(parentMethodCall?.source).toBe("Run");
 	});
 });

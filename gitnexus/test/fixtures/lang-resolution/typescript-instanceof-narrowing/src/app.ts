@@ -1,6 +1,6 @@
 import { User } from "./user";
 
-function process(x) {
+function _process(x) {
 	if (x instanceof User) {
 		x.save();
 	}

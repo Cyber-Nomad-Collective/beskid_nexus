@@ -1,7 +1,7 @@
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { setupCommand } from "../../src/cli/setup.js";
 

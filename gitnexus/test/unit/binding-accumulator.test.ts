@@ -47,8 +47,8 @@ describe("BindingAccumulator", () => {
 			]);
 			const entries = acc.getFile("src/a.ts");
 			expect(entries).toHaveLength(2);
-			expect(entries![0].varName).toBe("x");
-			expect(entries![1].varName).toBe("y");
+			expect(entries?.[0].varName).toBe("x");
+			expect(entries?.[1].varName).toBe("y");
 		});
 
 		it("skips append when entries is empty", () => {
@@ -220,7 +220,7 @@ describe("BindingAccumulator", () => {
 			// IPC narrowing — locks the contract in place.
 			const serviceEntries = acc.getFile("src/service.ts");
 			expect(serviceEntries).toHaveLength(1);
-			expect(serviceEntries![0]).toEqual({
+			expect(serviceEntries?.[0]).toEqual({
 				scope: "",
 				varName: "config",
 				typeName: "Config",

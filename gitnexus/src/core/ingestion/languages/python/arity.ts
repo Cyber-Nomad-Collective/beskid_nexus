@@ -34,11 +34,9 @@ export function pythonArityCompatibility(
 
 	// Detect varargs/kwargs from parameterTypes if present (the Python
 	// method extractor stores `'*args'`/`'**kwargs'` in this list).
-	const hasVarArgs =
-		def.parameterTypes !== undefined &&
-		def.parameterTypes.some(
-			(t) => t === "*args" || t === "**kwargs" || t.startsWith("*"),
-		);
+	const hasVarArgs = def.parameterTypes?.some(
+		(t) => t === "*args" || t === "**kwargs" || t.startsWith("*"),
+	);
 
 	if (min !== undefined && argCount < min) return "incompatible";
 	if (max !== undefined && argCount > max && !hasVarArgs) return "incompatible";

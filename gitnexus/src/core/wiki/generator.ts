@@ -10,9 +10,9 @@
  * Supports incremental updates via git diff + module-file mapping.
  */
 
-import { execFileSync, execSync } from "child_process";
-import fs from "fs/promises";
-import path from "path";
+import { execFileSync, execSync } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { shouldIgnorePath } from "../../config/ignore-service.js";
 import { callCursorLLM, resolveCursorConfig } from "./cursor-client.js";
 import {
@@ -100,7 +100,6 @@ const WIKI_DIR = "wiki";
 
 export class WikiGenerator {
 	private repoPath: string;
-	private storagePath: string;
 	private wikiDir: string;
 	private lbugPath: string;
 	private llmConfig: LLMConfig;
@@ -339,7 +338,7 @@ export class WikiGenerator {
 				await this.generateLeafPage(node);
 				reportProgress(node.name);
 				return 1;
-			} catch (err: any) {
+			} catch (_err: any) {
 				this.failedModules.push(node.name);
 				reportProgress(`Failed: ${node.name}`);
 				return 0;
@@ -357,7 +356,7 @@ export class WikiGenerator {
 				await this.generateParentPage(node);
 				pagesGenerated++;
 				reportProgress(node.name);
-			} catch (err: any) {
+			} catch (_err: any) {
 				this.failedModules.push(node.name);
 				reportProgress(`Failed: ${node.name}`);
 			}
@@ -515,7 +514,7 @@ export class WikiGenerator {
 			.map((f) => f.filePath)
 			.filter((fp) => !assignedFiles.has(fp));
 		if (unassigned.length > 0) {
-			validGrouping["Other"] = unassigned;
+			validGrouping.Other = unassigned;
 		}
 
 		return Object.keys(validGrouping).length > 0
@@ -814,10 +813,10 @@ export class WikiGenerator {
 
 		// Add new files to nearest module or "Other"
 		if (newFiles.length > 0) {
-			if (!existingMeta.moduleFiles["Other"]) {
-				existingMeta.moduleFiles["Other"] = [];
+			if (!existingMeta.moduleFiles.Other) {
+				existingMeta.moduleFiles.Other = [];
 			}
-			existingMeta.moduleFiles["Other"].push(...newFiles);
+			existingMeta.moduleFiles.Other.push(...newFiles);
 			affectedModules.add("Other");
 		}
 
@@ -860,7 +859,7 @@ export class WikiGenerator {
 					`${incProcessed}/${affectedNodes.length} — ${node.name}`,
 				);
 				return 1;
-			} catch (err: any) {
+			} catch (_err: any) {
 				this.failedModules.push(node.name);
 				incProcessed++;
 				return 0;
@@ -1090,7 +1089,7 @@ export class WikiGenerator {
 		let running = 0;
 		let idx = 0;
 
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve, _reject) => {
 			const next = () => {
 				while (running < activeConcurrency && idx < items.length) {
 					const item = items[idx++];

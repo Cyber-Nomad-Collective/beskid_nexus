@@ -68,10 +68,10 @@ function findAllFilesInPkgDir(
 	allFilePaths: ReadonlySet<string>,
 	pkgPath: string,
 ): string[] {
-	const pkgDir = "/" + pkgPath + "/";
+	const pkgDir = `/${pkgPath}/`;
 	const result: string[] = [];
 	for (const raw of allFilePaths) {
-		const normalized = "/" + raw.replace(/\\/g, "/");
+		const normalized = `/${raw.replace(/\\/g, "/")}`;
 		if (!normalized.includes(pkgDir)) continue;
 		if (!normalized.endsWith(".go") || normalized.endsWith("_test.go")) continue;
 		// Ensure file is directly in the package directory (not a subdirectory)

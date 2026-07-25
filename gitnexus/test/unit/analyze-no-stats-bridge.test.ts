@@ -141,7 +141,7 @@ describe("analyzeCommand commander → runFullAnalysis noStats bridge (#1477)", 
 
 			expect(generateSkillFilesMock).toHaveBeenCalledTimes(1);
 			expect(generateAIContextFilesMock).toHaveBeenCalledTimes(1);
-			const aiCtxOpts = generateAIContextFilesMock.mock.calls[0]![5];
+			const aiCtxOpts = generateAIContextFilesMock.mock.calls[0]?.[5];
 			expect(aiCtxOpts).toEqual({
 				skipAgentsMd: undefined,
 				skipSkills: undefined,

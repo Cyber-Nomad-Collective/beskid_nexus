@@ -130,6 +130,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
 		clearBlastRadius,
 		setSelectedNode,
 		toggleAIHighlights,
+		setSigmaSelectedNode,
 	]);
 
 	const {
@@ -219,7 +220,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
 		);
 		sigma.refresh();
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
-	}, [visibleLabels, depthFilter, appSelectedNode]);
+	}, [visibleLabels, depthFilter, appSelectedNode, sigmaRef.current]);
 
 	// Sync app selected node with sigma
 	useEffect(() => {

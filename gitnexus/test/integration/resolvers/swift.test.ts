@@ -7,7 +7,7 @@
  * if a consumer installs without optional dependencies.
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SupportedLanguages } from "../../../src/config/supported-languages.js";
 import { isLanguageAvailable } from "../../../src/core/tree-sitter/parser-loader.js";
@@ -50,7 +50,7 @@ describe.skipIf(!swiftAvailable)(
 				(c) => c.target === "save" && c.targetFilePath === "Models/User.swift",
 			);
 			expect(userSave).toBeDefined();
-			expect(userSave!.source).toBe("processEntities");
+			expect(userSave?.source).toBe("processEntities");
 		});
 
 		it("resolves repo.save() to Models/Repo.swift via constructor-inferred type", () => {
@@ -59,7 +59,7 @@ describe.skipIf(!swiftAvailable)(
 				(c) => c.target === "save" && c.targetFilePath === "Models/Repo.swift",
 			);
 			expect(repoSave).toBeDefined();
-			expect(repoSave!.source).toBe("processEntities");
+			expect(repoSave?.source).toBe("processEntities");
 		});
 
 		it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -100,7 +100,7 @@ describe.skipIf(!swiftAvailable)("Swift self resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("Sources/Models/User.swift");
+		expect(saveCall?.targetFilePath).toBe("Sources/Models/User.swift");
 	});
 });
 
@@ -164,7 +164,7 @@ describe.skipIf(!swiftAvailable)(
 				(c) => c.target === "save" && c.targetFilePath === "User.swift",
 			);
 			expect(saveCall).toBeDefined();
-			expect(saveCall!.source).toBe("main");
+			expect(saveCall?.source).toBe("main");
 		});
 
 		it("resolves user.greet() via User.init(name:) inference", () => {
@@ -173,7 +173,7 @@ describe.skipIf(!swiftAvailable)(
 				(c) => c.target === "greet" && c.targetFilePath === "User.swift",
 			);
 			expect(greetCall).toBeDefined();
-			expect(greetCall!.source).toBe("main");
+			expect(greetCall?.source).toBe("main");
 		});
 	},
 );
@@ -614,7 +614,7 @@ describe.skipIf(!swiftAvailable)("Swift field-type resolution", () => {
 			(c) => c.target === "save" && c.source === "processUser",
 		);
 		expect(saveCalls.length).toBe(1);
-		expect(saveCalls[0]!.targetFilePath).toContain("Models.swift");
+		expect(saveCalls[0]?.targetFilePath).toContain("Models.swift");
 	});
 
 	it("emits ACCESSES edges for field reads in chains", () => {
@@ -623,8 +623,8 @@ describe.skipIf(!swiftAvailable)("Swift field-type resolution", () => {
 			(e) => e.target === "address" && e.rel.reason === "read",
 		);
 		expect(addressReads.length).toBeGreaterThanOrEqual(1);
-		expect(addressReads[0]!.source).toBe("processUser");
-		expect(addressReads[0]!.targetLabel).toBe("Property");
+		expect(addressReads[0]?.source).toBe("processUser");
+		expect(addressReads[0]?.targetLabel).toBe("Property");
 	});
 
 	it("populates field metadata (visibility, declaredType) on Property nodes", () => {
@@ -633,14 +633,14 @@ describe.skipIf(!swiftAvailable)("Swift field-type resolution", () => {
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
 		// Swift default visibility is 'internal', not 'public'
-		expect(city!.properties.visibility).toBe("internal");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.declaredType).toBe("String");
+		expect(city?.properties.visibility).toBe("internal");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.declaredType).toBe("String");
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("internal");
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("internal");
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 });
 
@@ -662,7 +662,7 @@ describe.skipIf(!swiftAvailable)("Swift call-result binding", () => {
 			(c) => c.target === "save" && c.source === "processUser",
 		);
 		expect(saveCalls.length).toBe(1);
-		expect(saveCalls[0]!.targetFilePath).toContain("Models.swift");
+		expect(saveCalls[0]?.targetFilePath).toContain("Models.swift");
 	});
 
 	it("getUser() is present as a defined function", () => {
@@ -675,7 +675,7 @@ describe.skipIf(!swiftAvailable)("Swift call-result binding", () => {
 			(c) => c.target === "getUser" && c.source === "processUser",
 		);
 		expect(getUserCall).toBeDefined();
-		expect(getUserCall!.targetFilePath).toContain("Models.swift");
+		expect(getUserCall?.targetFilePath).toContain("Models.swift");
 	});
 });
 
@@ -727,7 +727,7 @@ describe.skipIf(!swiftAvailable)("Swift method enrichment", () => {
 				n.name === "speak" && n.properties.filePath === "Sources/Animal.swift",
 		);
 		expect(speak).toBeDefined();
-		expect(speak!.properties.isAbstract).toBe(true);
+		expect(speak?.properties.isAbstract).toBe(true);
 	});
 
 	it("marks Dog.speak as NOT isAbstract", () => {
@@ -738,42 +738,42 @@ describe.skipIf(!swiftAvailable)("Swift method enrichment", () => {
 			(n) => n.name === "speak" && n.properties.startLine === 5,
 		);
 		expect(dogSpeak).toBeDefined();
-		expect(dogSpeak!.properties.isAbstract).toBe(false);
+		expect(dogSpeak?.properties.isAbstract).toBe(false);
 	});
 
 	it("marks breathe as isFinal", () => {
 		const methods = getNodesByLabelFull(result, "Function");
 		const breathe = methods.find((n) => n.name === "breathe");
 		expect(breathe).toBeDefined();
-		expect(breathe!.properties.isFinal).toBe(true);
+		expect(breathe?.properties.isFinal).toBe(true);
 	});
 
 	it("marks classify as isStatic", () => {
 		const methods = getNodesByLabelFull(result, "Function");
 		const classify = methods.find((n) => n.name === "classify");
 		expect(classify).toBeDefined();
-		expect(classify!.properties.isStatic).toBe(true);
+		expect(classify?.properties.isStatic).toBe(true);
 	});
 
 	it("captures @objc annotation on breathe", () => {
 		const methods = getNodesByLabelFull(result, "Function");
 		const breathe = methods.find((n) => n.name === "breathe");
 		expect(breathe).toBeDefined();
-		expect(breathe!.properties.annotations).toContain("@objc");
+		expect(breathe?.properties.annotations).toContain("@objc");
 	});
 
 	it("populates parameterTypes for classify(_ name: String)", () => {
 		const methods = getNodesByLabelFull(result, "Function");
 		const classify = methods.find((n) => n.name === "classify");
 		expect(classify).toBeDefined();
-		expect(classify!.properties.parameterTypes).toContain("String");
+		expect(classify?.properties.parameterTypes).toContain("String");
 	});
 
 	it("records parameterCount for classify", () => {
 		const methods = getNodesByLabelFull(result, "Function");
 		const classify = methods.find((n) => n.name === "classify");
 		expect(classify).toBeDefined();
-		expect(classify!.properties.parameterCount).toBe(1);
+		expect(classify?.properties.parameterCount).toBe(1);
 	});
 
 	it("records returnType for speak", () => {
@@ -784,7 +784,7 @@ describe.skipIf(!swiftAvailable)("Swift method enrichment", () => {
 			(n) => n.name === "speak" && n.properties.startLine === 5,
 		);
 		expect(speak).toBeDefined();
-		expect(speak!.properties.returnType).toBe("String");
+		expect(speak?.properties.returnType).toBe("String");
 	});
 
 	it("resolves dog.speak() CALLS edge", () => {
@@ -866,7 +866,7 @@ describe.skipIf(!swiftAvailable)("Swift abstract dispatch", () => {
 				n.name === "find" && n.properties.filePath === "Sources/Repository.swift",
 		);
 		expect(baseFind).toBeDefined();
-		expect(baseFind!.properties.isAbstract).toBe(true);
+		expect(baseFind?.properties.isAbstract).toBe(true);
 	});
 
 	it("marks base Repository.save as isAbstract", () => {
@@ -877,7 +877,7 @@ describe.skipIf(!swiftAvailable)("Swift abstract dispatch", () => {
 				n.name === "save" && n.properties.filePath === "Sources/Repository.swift",
 		);
 		expect(baseSave).toBeDefined();
-		expect(baseSave!.properties.isAbstract).toBe(true);
+		expect(baseSave?.properties.isAbstract).toBe(true);
 	});
 
 	it("marks concrete SqlRepository.find as NOT isAbstract", () => {
@@ -888,7 +888,7 @@ describe.skipIf(!swiftAvailable)("Swift abstract dispatch", () => {
 			(n) => n.name === "find" && n.properties.startLine === 6,
 		);
 		expect(sqlFind).toBeDefined();
-		expect(sqlFind!.properties.isAbstract).toBe(false);
+		expect(sqlFind?.properties.isAbstract).toBe(false);
 	});
 
 	it("resolves repo.find(id: 42) CALLS edge", () => {
@@ -915,7 +915,7 @@ describe.skipIf(!swiftAvailable)("Swift abstract dispatch", () => {
 				n.name === "find" && n.properties.filePath === "Sources/Repository.swift",
 		);
 		expect(baseFind).toBeDefined();
-		expect(baseFind!.properties.parameterTypes).toContain("Int");
+		expect(baseFind?.properties.parameterTypes).toContain("Int");
 	});
 
 	it("populates parameterTypes for Repository.save", () => {
@@ -926,7 +926,7 @@ describe.skipIf(!swiftAvailable)("Swift abstract dispatch", () => {
 				n.name === "save" && n.properties.filePath === "Sources/Repository.swift",
 		);
 		expect(baseSave).toBeDefined();
-		expect(baseSave!.properties.parameterTypes).toContain("String");
+		expect(baseSave?.properties.parameterTypes).toContain("String");
 	});
 
 	it("records returnType for SqlRepository.find", () => {
@@ -936,7 +936,7 @@ describe.skipIf(!swiftAvailable)("Swift abstract dispatch", () => {
 			(n) => n.name === "find" && n.properties.startLine === 6,
 		);
 		expect(sqlFind).toBeDefined();
-		expect(sqlFind!.properties.returnType).toBe("String");
+		expect(sqlFind?.properties.returnType).toBe("String");
 	});
 
 	it("emits METHOD_IMPLEMENTS edges from SqlRepository methods → Repository protocol methods", () => {
@@ -1042,7 +1042,7 @@ describe.skipIf(!swiftAvailable)(
 					c.target === "parentMethod" && c.targetFilePath.includes("Parent.swift"),
 			);
 			expect(parentMethodCall).toBeDefined();
-			expect(parentMethodCall!.source).toBe("run");
+			expect(parentMethodCall?.source).toBe("run");
 		});
 	},
 );

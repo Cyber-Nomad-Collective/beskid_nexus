@@ -41,7 +41,7 @@ export function detectFrameworkFromPath(
 	const originalPath = filePath.replace(/\\/g, "/");
 	let p = originalPath.toLowerCase();
 	if (!p.startsWith("/")) {
-		p = "/" + p; // Add leading slash so patterns like '/app/' match 'app/...'
+		p = `/${p}`; // Add leading slash so patterns like '/app/' match 'app/...'
 	}
 	const originalPathWithLeadingSlash = originalPath.startsWith("/")
 		? originalPath

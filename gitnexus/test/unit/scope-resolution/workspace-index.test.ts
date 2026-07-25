@@ -74,7 +74,7 @@ class User:
 		const classScope = parsed.scopes.find((s) => s.kind === "Class");
 		const classDef = classScope?.ownedDefs.find((d) => d.type === "Class");
 		expect(classDef).toBeDefined();
-		expect(index.classScopeByDefId.get(classDef!.nodeId)).toBe(classScope);
+		expect(index.classScopeByDefId.get(classDef?.nodeId)).toBe(classScope);
 	});
 
 	it("moduleScopeByFile maps filePath to Module scope", () => {
@@ -202,7 +202,7 @@ class User:
 		const classDef = classScope?.ownedDefs.find((d) => d.type === "Class");
 		expect(classDef).toBeDefined();
 
-		const found = findOwnedMember(classDef!.nodeId, "save", model);
+		const found = findOwnedMember(classDef?.nodeId, "save", model);
 		expect(found?.type).toBe("Method");
 		expect(found?.qualifiedName).toBe("User.save");
 	});
@@ -237,7 +237,7 @@ class Admin:
 		for (const [scopeId, defId] of index.classScopeIdToDefId) {
 			const scope = index.classScopeByDefId.get(defId);
 			expect(scope).toBeDefined();
-			expect(scope!.id).toBe(scopeId);
+			expect(scope?.id).toBe(scopeId);
 		}
 	});
 

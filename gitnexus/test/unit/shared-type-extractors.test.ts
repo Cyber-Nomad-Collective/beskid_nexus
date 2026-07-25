@@ -98,7 +98,7 @@ describe("extractElementTypeFromString", () => {
 
 	it("returns undefined at exactly the 2048-char limit", () => {
 		// Length > 2048 is rejected; length === 2048 may or may not parse — test boundary
-		const exactly2048 = "A".repeat(2048);
+		const _exactly2048 = "A".repeat(2048);
 		// This won't contain valid container syntax, so it won't resolve, but it won't be
 		// rejected by the length guard alone. We only assert > 2048 is rejected.
 		expect(extractElementTypeFromString("A".repeat(2049))).toBeUndefined();
@@ -474,58 +474,58 @@ describe("getContainerDescriptor", () => {
 	it("returns descriptor with arity 2 for Map", () => {
 		const desc = getContainerDescriptor("Map");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(2);
+		expect(desc?.arity).toBe(2);
 	});
 
 	it("descriptor for Map has keys in keyMethods", () => {
 		const desc = getContainerDescriptor("Map");
-		expect(desc!.keyMethods.has("keys")).toBe(true);
+		expect(desc?.keyMethods.has("keys")).toBe(true);
 	});
 
 	it("descriptor for Map has get in valueMethods", () => {
 		const desc = getContainerDescriptor("Map");
-		expect(desc!.valueMethods.has("get")).toBe(true);
+		expect(desc?.valueMethods.has("get")).toBe(true);
 	});
 
 	it("returns descriptor with arity 2 for HashMap", () => {
 		const desc = getContainerDescriptor("HashMap");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(2);
+		expect(desc?.arity).toBe(2);
 	});
 
 	it("returns descriptor with arity 2 for Dictionary (C#)", () => {
 		const desc = getContainerDescriptor("Dictionary");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(2);
+		expect(desc?.arity).toBe(2);
 	});
 
 	// --- Known single-element container (arity 1) ---
 	it("returns descriptor with arity 1 for Vec", () => {
 		const desc = getContainerDescriptor("Vec");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(1);
+		expect(desc?.arity).toBe(1);
 	});
 
 	it("descriptor for Vec has empty keyMethods", () => {
 		const desc = getContainerDescriptor("Vec");
-		expect(desc!.keyMethods.size).toBe(0);
+		expect(desc?.keyMethods.size).toBe(0);
 	});
 
 	it("descriptor for Vec has get in valueMethods", () => {
 		const desc = getContainerDescriptor("Vec");
-		expect(desc!.valueMethods.has("get")).toBe(true);
+		expect(desc?.valueMethods.has("get")).toBe(true);
 	});
 
 	it("returns descriptor with arity 1 for Array", () => {
 		const desc = getContainerDescriptor("Array");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(1);
+		expect(desc?.arity).toBe(1);
 	});
 
 	it("returns descriptor with arity 1 for List", () => {
 		const desc = getContainerDescriptor("List");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(1);
+		expect(desc?.arity).toBe(1);
 	});
 
 	// --- Unknown type ---
@@ -545,25 +545,25 @@ describe("getContainerDescriptor", () => {
 	it("returns descriptor for lowercase list (Python)", () => {
 		const desc = getContainerDescriptor("list");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(1);
+		expect(desc?.arity).toBe(1);
 	});
 
 	it("returns descriptor for lowercase dict (Python)", () => {
 		const desc = getContainerDescriptor("dict");
 		expect(desc).toBeDefined();
-		expect(desc!.arity).toBe(2);
+		expect(desc?.arity).toBe(2);
 	});
 
 	// --- Java-specific map with keySet ---
 	it("descriptor for TreeMap has keySet in keyMethods", () => {
 		const desc = getContainerDescriptor("TreeMap");
 		expect(desc).toBeDefined();
-		expect(desc!.keyMethods.has("keySet")).toBe(true);
+		expect(desc?.keyMethods.has("keySet")).toBe(true);
 	});
 
 	it("descriptor for ConcurrentHashMap has keySet in keyMethods", () => {
 		const desc = getContainerDescriptor("ConcurrentHashMap");
 		expect(desc).toBeDefined();
-		expect(desc!.keyMethods.has("keySet")).toBe(true);
+		expect(desc?.keyMethods.has("keySet")).toBe(true);
 	});
 });

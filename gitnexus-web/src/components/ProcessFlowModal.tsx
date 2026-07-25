@@ -78,7 +78,7 @@ export const ProcessFlowModal = ({
 	useEffect(() => {
 		setZoom(defaultZoom);
 		setPan({ x: 0, y: 0 });
-	}, [isFullScreen, defaultZoom]);
+	}, [defaultZoom]);
 
 	// Handle zoom with scroll wheel
 	useEffect(() => {
@@ -93,7 +93,7 @@ export const ProcessFlowModal = ({
 			container.addEventListener("wheel", handleWheel, { passive: false });
 			return () => container.removeEventListener("wheel", handleWheel);
 		}
-	}, [process, maxZoom]); // Re-attach when process or maxZoom changes
+	}, [maxZoom]); // Re-attach when process or maxZoom changes
 
 	// Handle keyboard zoom
 	useEffect(() => {

@@ -33,9 +33,9 @@ export function csharpArityCompatibility(
 	const argCount = callsite.arity;
 	if (!Number.isFinite(argCount) || argCount < 0) return "unknown";
 
-	const hasVarArgs =
-		def.parameterTypes !== undefined &&
-		def.parameterTypes.some((t) => t === "params" || t.startsWith("params "));
+	const hasVarArgs = def.parameterTypes?.some(
+		(t) => t === "params" || t.startsWith("params "),
+	);
 
 	if (min !== undefined && argCount < min) return "incompatible";
 	if (max !== undefined && argCount > max && !hasVarArgs) return "incompatible";

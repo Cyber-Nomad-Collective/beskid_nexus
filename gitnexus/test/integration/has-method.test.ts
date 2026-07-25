@@ -105,7 +105,7 @@ class SqlRepository {
 			(r) => r.name === "FindById" && r.enclosingClassId?.startsWith("Interface:"),
 		);
 		expect(ifaceFindById).toBeDefined();
-		expect(ifaceFindById!.enclosingClassId).toBe(
+		expect(ifaceFindById?.enclosingClassId).toBe(
 			"Interface:src/Repo.cs:IRepository",
 		);
 
@@ -113,20 +113,20 @@ class SqlRepository {
 			(r) => r.name === "Save" && r.enclosingClassId?.startsWith("Interface:"),
 		);
 		expect(ifaceSave).toBeDefined();
-		expect(ifaceSave!.enclosingClassId).toBe("Interface:src/Repo.cs:IRepository");
+		expect(ifaceSave?.enclosingClassId).toBe("Interface:src/Repo.cs:IRepository");
 
 		// Class methods should be enclosed by the class
 		const classFindById = results.find(
 			(r) => r.name === "FindById" && r.enclosingClassId?.startsWith("Class:"),
 		);
 		expect(classFindById).toBeDefined();
-		expect(classFindById!.enclosingClassId).toBe(
+		expect(classFindById?.enclosingClassId).toBe(
 			"Class:src/Repo.cs:SqlRepository",
 		);
 
 		const classConnect = results.find((r) => r.name === "Connect");
 		expect(classConnect).toBeDefined();
-		expect(classConnect!.enclosingClassId).toBe(
+		expect(classConnect?.enclosingClassId).toBe(
 			"Class:src/Repo.cs:SqlRepository",
 		);
 	});
@@ -153,11 +153,11 @@ class ServiceImpl {
 		// distinguish container declarations from methods, not enclosingClassId.
 		const ifaceDecl = results.find((r) => r.name === "IService");
 		expect(ifaceDecl).toBeDefined();
-		expect(ifaceDecl!.defType).toBe("definition.interface");
+		expect(ifaceDecl?.defType).toBe("definition.interface");
 
 		const classDecl = results.find((r) => r.name === "ServiceImpl");
 		expect(classDecl).toBeDefined();
-		expect(classDecl!.defType).toBe("definition.class");
+		expect(classDecl?.defType).toBe("definition.class");
 
 		// Methods should still correctly reference their container
 		const execMethods = results.filter((r) => r.name === "Execute");
@@ -250,7 +250,7 @@ impl Foo {
 
 		const helper = results.find((r) => r.name === "helper");
 		expect(helper).toBeDefined();
-		expect(helper!.enclosingClassId).toBeNull();
+		expect(helper?.enclosingClassId).toBeNull();
 
 		const bar = results.find((r) => r.name === "bar");
 		if (bar) {
@@ -292,26 +292,26 @@ def another_standalone():
 		// Standalone functions should not be enclosed
 		const standaloneHelper = results.find((r) => r.name === "standalone_helper");
 		expect(standaloneHelper).toBeDefined();
-		expect(standaloneHelper!.enclosingClassId).toBeNull();
+		expect(standaloneHelper?.enclosingClassId).toBeNull();
 
 		const anotherStandalone = results.find(
 			(r) => r.name === "another_standalone",
 		);
 		expect(anotherStandalone).toBeDefined();
-		expect(anotherStandalone!.enclosingClassId).toBeNull();
+		expect(anotherStandalone?.enclosingClassId).toBeNull();
 
 		// Class methods should be enclosed
 		const init = results.find((r) => r.name === "__init__");
 		expect(init).toBeDefined();
-		expect(init!.enclosingClassId).toBe("Class:src/calc.py:Calculator");
+		expect(init?.enclosingClassId).toBe("Class:src/calc.py:Calculator");
 
 		const add = results.find((r) => r.name === "add");
 		expect(add).toBeDefined();
-		expect(add!.enclosingClassId).toBe("Class:src/calc.py:Calculator");
+		expect(add?.enclosingClassId).toBe("Class:src/calc.py:Calculator");
 
 		const resultMethod = results.find((r) => r.name === "result");
 		expect(resultMethod).toBeDefined();
-		expect(resultMethod!.enclosingClassId).toBe("Class:src/calc.py:Calculator");
+		expect(resultMethod?.enclosingClassId).toBe("Class:src/calc.py:Calculator");
 	});
 });
 
@@ -350,31 +350,31 @@ function topLevelUtil() {
 			// UserService methods
 			const findUser = results.find((r) => r.name === "findUser");
 			expect(findUser).toBeDefined();
-			expect(findUser!.enclosingClassId).toBe("Class:src/services.ts:UserService");
+			expect(findUser?.enclosingClassId).toBe("Class:src/services.ts:UserService");
 
 			const deleteUser = results.find((r) => r.name === "deleteUser");
 			expect(deleteUser).toBeDefined();
-			expect(deleteUser!.enclosingClassId).toBe(
+			expect(deleteUser?.enclosingClassId).toBe(
 				"Class:src/services.ts:UserService",
 			);
 
 			// OrderService methods
 			const createOrder = results.find((r) => r.name === "createOrder");
 			expect(createOrder).toBeDefined();
-			expect(createOrder!.enclosingClassId).toBe(
+			expect(createOrder?.enclosingClassId).toBe(
 				"Class:src/services.ts:OrderService",
 			);
 
 			const cancelOrder = results.find((r) => r.name === "cancelOrder");
 			expect(cancelOrder).toBeDefined();
-			expect(cancelOrder!.enclosingClassId).toBe(
+			expect(cancelOrder?.enclosingClassId).toBe(
 				"Class:src/services.ts:OrderService",
 			);
 
 			// Top-level function
 			const topLevelUtil = results.find((r) => r.name === "topLevelUtil");
 			expect(topLevelUtil).toBeDefined();
-			expect(topLevelUtil!.enclosingClassId).toBeNull();
+			expect(topLevelUtil?.enclosingClassId).toBeNull();
 		});
 	});
 
@@ -403,21 +403,21 @@ class Formatter {
 
 			const info = results.find((r) => r.name === "info");
 			expect(info).toBeDefined();
-			expect(info!.enclosingClassId).toBe("Class:src/util/Logging.java:Logger");
+			expect(info?.enclosingClassId).toBe("Class:src/util/Logging.java:Logger");
 
 			const error = results.find((r) => r.name === "error");
 			expect(error).toBeDefined();
-			expect(error!.enclosingClassId).toBe("Class:src/util/Logging.java:Logger");
+			expect(error?.enclosingClassId).toBe("Class:src/util/Logging.java:Logger");
 
 			const format = results.find((r) => r.name === "format");
 			expect(format).toBeDefined();
-			expect(format!.enclosingClassId).toBe(
+			expect(format?.enclosingClassId).toBe(
 				"Class:src/util/Logging.java:Formatter",
 			);
 
 			const escape = results.find((r) => r.name === "escape");
 			expect(escape).toBeDefined();
-			expect(escape!.enclosingClassId).toBe(
+			expect(escape?.enclosingClassId).toBe(
 				"Class:src/util/Logging.java:Formatter",
 			);
 		});
@@ -453,7 +453,7 @@ class EmailValidator {
 			(r) => r.name === "validate" && r.enclosingClassId?.startsWith("Interface:"),
 		);
 		expect(ifaceValidate).toBeDefined();
-		expect(ifaceValidate!.enclosingClassId).toBe(
+		expect(ifaceValidate?.enclosingClassId).toBe(
 			"Interface:src/validation/Validator.java:Validator",
 		);
 
@@ -462,7 +462,7 @@ class EmailValidator {
 				r.name === "getMessage" && r.enclosingClassId?.startsWith("Interface:"),
 		);
 		expect(ifaceGetMessage).toBeDefined();
-		expect(ifaceGetMessage!.enclosingClassId).toBe(
+		expect(ifaceGetMessage?.enclosingClassId).toBe(
 			"Interface:src/validation/Validator.java:Validator",
 		);
 
@@ -471,13 +471,13 @@ class EmailValidator {
 			(r) => r.name === "validate" && r.enclosingClassId?.startsWith("Class:"),
 		);
 		expect(classValidate).toBeDefined();
-		expect(classValidate!.enclosingClassId).toBe(
+		expect(classValidate?.enclosingClassId).toBe(
 			"Class:src/validation/Validator.java:EmailValidator",
 		);
 
 		const classCheckFormat = results.find((r) => r.name === "checkFormat");
 		expect(classCheckFormat).toBeDefined();
-		expect(classCheckFormat!.enclosingClassId).toBe(
+		expect(classCheckFormat?.enclosingClassId).toBe(
 			"Class:src/validation/Validator.java:EmailValidator",
 		);
 	});
@@ -501,11 +501,11 @@ class UserRepository {
 		// The pipeline distinguishes containers from methods via defType, not enclosingClassId
 		const repoDecl = results.find((r) => r.name === "Repository");
 		expect(repoDecl).toBeDefined();
-		expect(repoDecl!.defType).toBe("definition.interface");
+		expect(repoDecl?.defType).toBe("definition.interface");
 
 		const userRepoDecl = results.find((r) => r.name === "UserRepository");
 		expect(userRepoDecl).toBeDefined();
-		expect(userRepoDecl!.defType).toBe("definition.class");
+		expect(userRepoDecl?.defType).toBe("definition.class");
 
 		// Methods associate correctly
 		const saveMethods = results.filter((r) => r.name === "save");
@@ -645,7 +645,7 @@ private:
 
 		const shapeDtor = results.find((r) => r.name === "~Shape");
 		expect(shapeDtor).toBeDefined();
-		expect(shapeDtor!.enclosingClassId).toBe("Class:src/shapes.h:Shape");
+		expect(shapeDtor?.enclosingClassId).toBe("Class:src/shapes.h:Shape");
 
 		const area = results.find(
 			(r) =>
@@ -655,7 +655,7 @@ private:
 
 		const create = results.find((r) => r.name === "create");
 		expect(create).toBeDefined();
-		expect(create!.enclosingClassId).toBe("Class:src/shapes.h:Shape");
+		expect(create?.enclosingClassId).toBe("Class:src/shapes.h:Shape");
 
 		// Circle methods
 		const circleCtor = results.find(
@@ -694,13 +694,13 @@ abstract class Shape {
 			(r) => r.name === "area" && r.defType === "definition.method",
 		);
 		expect(area).toBeDefined();
-		expect(area!.enclosingClassId).toBe("Class:src/shapes.ts:Shape");
+		expect(area?.enclosingClassId).toBe("Class:src/shapes.ts:Shape");
 
 		const describe = results.find(
 			(r) => r.name === "describe" && r.defType === "definition.method",
 		);
 		expect(describe).toBeDefined();
-		expect(describe!.enclosingClassId).toBe("Class:src/shapes.ts:Shape");
+		expect(describe?.enclosingClassId).toBe("Class:src/shapes.ts:Shape");
 	});
 
 	it("interface method signatures are captured and link to interface", () => {
@@ -720,13 +720,13 @@ interface Printable {
 			(r) => r.name === "print" && r.defType === "definition.method",
 		);
 		expect(print).toBeDefined();
-		expect(print!.enclosingClassId).toBe("Interface:src/printable.ts:Printable");
+		expect(print?.enclosingClassId).toBe("Interface:src/printable.ts:Printable");
 
 		const getLabel = results.find(
 			(r) => r.name === "getLabel" && r.defType === "definition.method",
 		);
 		expect(getLabel).toBeDefined();
-		expect(getLabel!.enclosingClassId).toBe(
+		expect(getLabel?.enclosingClassId).toBe(
 			"Interface:src/printable.ts:Printable",
 		);
 	});
@@ -746,12 +746,12 @@ class Vault {
 
 		const decrypt = results.find((r) => r.name === "#decrypt");
 		expect(decrypt).toBeDefined();
-		expect(decrypt!.defType).toBe("definition.method");
-		expect(decrypt!.enclosingClassId).toBe("Class:src/vault.ts:Vault");
+		expect(decrypt?.defType).toBe("definition.method");
+		expect(decrypt?.enclosingClassId).toBe("Class:src/vault.ts:Vault");
 
 		const read = results.find((r) => r.name === "read");
 		expect(read).toBeDefined();
-		expect(read!.enclosingClassId).toBe("Class:src/vault.ts:Vault");
+		expect(read?.enclosingClassId).toBe("Class:src/vault.ts:Vault");
 	});
 });
 
@@ -775,8 +775,8 @@ class Encapsulated {
 
 		const internal = results.find((r) => r.name === "#internal");
 		expect(internal).toBeDefined();
-		expect(internal!.defType).toBe("definition.method");
-		expect(internal!.enclosingClassId).toBe(
+		expect(internal?.defType).toBe("definition.method");
+		expect(internal?.enclosingClassId).toBe(
 			"Class:src/encapsulated.js:Encapsulated",
 		);
 	});

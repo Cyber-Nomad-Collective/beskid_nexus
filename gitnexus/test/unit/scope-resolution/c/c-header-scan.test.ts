@@ -3,8 +3,8 @@
  * for build output directories.
  */
 
-import { mkdirSync, rmSync, writeFileSync } from "fs";
-import { join } from "path";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { scanHeaderFiles } from "../../../../src/core/ingestion/languages/c/header-scan.js";
 

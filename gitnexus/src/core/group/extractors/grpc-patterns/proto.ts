@@ -94,11 +94,11 @@ function buildPlugin(): GrpcLanguagePlugin | null {
 			const out: GrpcDetection[] = [];
 
 			// Extract `package` declaration (first match wins).
-			let pkg = "";
+			let _pkg = "";
 			for (const match of runCompiledPatterns(pkgPatterns, tree)) {
 				const pkgNode = match.captures.pkg;
 				if (pkgNode) {
-					pkg = pkgNode.text;
+					_pkg = pkgNode.text;
 					break;
 				}
 			}

@@ -34,12 +34,12 @@ import type { ScopeResolutionIndexes } from "../../../src/core/ingestion/model/s
 
 let savedEnv: string | undefined;
 beforeEach(() => {
-	savedEnv = process.env["INGESTION_EMIT_SCOPES"];
-	delete process.env["INGESTION_EMIT_SCOPES"];
+	savedEnv = process.env.INGESTION_EMIT_SCOPES;
+	delete process.env.INGESTION_EMIT_SCOPES;
 });
 afterEach(() => {
-	if (savedEnv === undefined) delete process.env["INGESTION_EMIT_SCOPES"];
-	else process.env["INGESTION_EMIT_SCOPES"] = savedEnv;
+	if (savedEnv === undefined) delete process.env.INGESTION_EMIT_SCOPES;
+	else process.env.INGESTION_EMIT_SCOPES = savedEnv;
 });
 
 // ─── Fixture builders ─────────────────────────────────────────────────────
@@ -304,7 +304,7 @@ describe("enclosing-def resolution", () => {
 			referenceIndex: buildRefIndex("scope:f", [ref]),
 		});
 
-		expect(graph.relationships[0]!.sourceId).toBe("def:User.save");
+		expect(graph.relationships[0]?.sourceId).toBe("def:User.save");
 	});
 
 	it("walks up to the parent Class if the immediate scope has no Function def", () => {
@@ -339,7 +339,7 @@ describe("enclosing-def resolution", () => {
 		});
 
 		// No Function ancestor — falls back to the first owned def: the class itself.
-		expect(graph.relationships[0]!.sourceId).toBe("def:User");
+		expect(graph.relationships[0]?.sourceId).toBe("def:User");
 	});
 
 	it("increments skippedNoCaller when no ancestor has any owned defs", () => {
@@ -430,7 +430,7 @@ describe("scope-graph emission", () => {
 	});
 
 	it("emits Scope nodes + CONTAINS + DEFINES when INGESTION_EMIT_SCOPES=1", () => {
-		process.env["INGESTION_EMIT_SCOPES"] = "1";
+		process.env.INGESTION_EMIT_SCOPES = "1";
 		const fn = def("def:fn", "Function");
 		const childScope = scope(
 			"scope:f",
@@ -455,10 +455,10 @@ describe("scope-graph emission", () => {
 		const containsEdge = graph.relationships.find((e) => e.type === "CONTAINS");
 		const definesEdge = graph.relationships.find((e) => e.type === "DEFINES");
 		expect(containsEdge).toBeDefined();
-		expect(containsEdge!.sourceId).toBe("scope:m");
-		expect(containsEdge!.targetId).toBe("scope:f");
+		expect(containsEdge?.sourceId).toBe("scope:m");
+		expect(containsEdge?.targetId).toBe("scope:f");
 		expect(definesEdge).toBeDefined();
-		expect(definesEdge!.targetId).toBe("def:fn");
+		expect(definesEdge?.targetId).toBe("def:fn");
 	});
 
 	it("treats 'true', 'yes' (case-insensitive) as enabled; anything else as disabled", () => {
@@ -467,7 +467,7 @@ describe("scope-graph emission", () => {
 		const indexes = makeIndexes([mod], [fn]);
 
 		for (const value of ["true", "TRUE", "yes", "1"]) {
-			process.env["INGESTION_EMIT_SCOPES"] = value;
+			process.env.INGESTION_EMIT_SCOPES = value;
 			const g = createKnowledgeGraph();
 			const stats = emitReferencesToGraph({
 				graph: g,
@@ -477,7 +477,7 @@ describe("scope-graph emission", () => {
 			expect(stats.scopeNodesEmitted).toBeGreaterThan(0);
 		}
 		for (const value of ["false", "0", "", "off", "tru"]) {
-			process.env["INGESTION_EMIT_SCOPES"] = value;
+			process.env.INGESTION_EMIT_SCOPES = value;
 			const g = createKnowledgeGraph();
 			const stats = emitReferencesToGraph({
 				graph: g,

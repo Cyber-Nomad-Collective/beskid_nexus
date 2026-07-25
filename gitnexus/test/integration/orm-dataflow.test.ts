@@ -2,7 +2,7 @@
  * Integration Tests: ORM Dataflow Detection (Prisma + Supabase)
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { runPipelineFromRepo } from "../../src/core/ingestion/pipeline.js";
 import type { PipelineResult } from "../../src/types/pipeline.js";

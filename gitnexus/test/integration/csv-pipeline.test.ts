@@ -5,8 +5,8 @@
  * Covers hardening fixes: LRU cache (#24), BufferedCSVWriter flush
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { streamAllCSVsToDisk } from "../../src/core/lbug/csv-generator.js";
 import { createTempDir, type TestDBHandle } from "../helpers/test-db.js";
@@ -106,22 +106,22 @@ describe("streamAllCSVsToDisk", () => {
 		// Verify File CSV
 		const fileCsv = result.nodeFiles.get("File");
 		expect(fileCsv).toBeDefined();
-		expect(fileCsv!.rows).toBe(2);
+		expect(fileCsv?.rows).toBe(2);
 
 		// Verify Function CSV
 		const funcCsv = result.nodeFiles.get("Function");
 		expect(funcCsv).toBeDefined();
-		expect(funcCsv!.rows).toBe(2);
+		expect(funcCsv?.rows).toBe(2);
 
 		// Verify Class CSV
 		const classCsv = result.nodeFiles.get("Class");
 		expect(classCsv).toBeDefined();
-		expect(classCsv!.rows).toBe(1);
+		expect(classCsv?.rows).toBe(1);
 
 		// Verify Folder CSV
 		const folderCsv = result.nodeFiles.get("Folder");
 		expect(folderCsv).toBeDefined();
-		expect(folderCsv!.rows).toBe(1);
+		expect(folderCsv?.rows).toBe(1);
 
 		// Verify relations CSV exists
 		const relContent = await fs.readFile(result.relCsvPath, "utf-8");
@@ -143,7 +143,7 @@ describe("streamAllCSVsToDisk", () => {
 		const fileCsv = result.nodeFiles.get("File");
 		expect(fileCsv).toBeDefined();
 
-		const content = await fs.readFile(fileCsv!.csvPath, "utf-8");
+		const content = await fs.readFile(fileCsv?.csvPath, "utf-8");
 		// Content should be properly quoted
 		expect(content).toContain('"file:src/index.ts"');
 		expect(content).toContain('"index.ts"');
@@ -170,9 +170,9 @@ describe("streamAllCSVsToDisk", () => {
 		const result = await streamAllCSVsToDisk(graph, repoDir, csvDir);
 		const commCsv = result.nodeFiles.get("Community");
 		expect(commCsv).toBeDefined();
-		expect(commCsv!.rows).toBe(1);
+		expect(commCsv?.rows).toBe(1);
 
-		const content = await fs.readFile(commCsv!.csvPath, "utf-8");
+		const content = await fs.readFile(commCsv?.csvPath, "utf-8");
 		// Keywords with commas should be escaped with \,
 		expect(content).toContain("pass\\,word");
 	});
@@ -198,7 +198,7 @@ describe("streamAllCSVsToDisk", () => {
 		const result = await streamAllCSVsToDisk(graph, repoDir, csvDir);
 		const procCsv = result.nodeFiles.get("Process");
 		expect(procCsv).toBeDefined();
-		expect(procCsv!.rows).toBe(1);
+		expect(procCsv?.rows).toBe(1);
 	});
 
 	it("deduplicates File nodes", async () => {
@@ -221,7 +221,7 @@ describe("streamAllCSVsToDisk", () => {
 		const result = await streamAllCSVsToDisk(graph, repoDir, csvDir);
 		const fileCsv = result.nodeFiles.get("File");
 		expect(fileCsv).toBeDefined();
-		expect(fileCsv!.rows).toBe(1);
+		expect(fileCsv?.rows).toBe(1);
 	});
 
 	// ─── Unhappy paths ──────────────────────────────────────────────────
@@ -241,6 +241,6 @@ describe("streamAllCSVsToDisk", () => {
 		const result = await streamAllCSVsToDisk(graph, repoDir, csvDir);
 		const fileCsv = result.nodeFiles.get("File");
 		expect(fileCsv).toBeDefined();
-		expect(fileCsv!.rows).toBe(1);
+		expect(fileCsv?.rows).toBe(1);
 	});
 });

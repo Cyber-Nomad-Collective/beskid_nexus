@@ -8,12 +8,12 @@
  * skill generation (--skills), summary output, and process.exit().
  */
 
-import { execFileSync } from "child_process";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
+import v8 from "node:v8";
 import cliProgress from "cli-progress";
-import fs from "fs/promises";
 import { glob } from "glob";
-import path from "path";
-import v8 from "v8";
 import { isHfDownloadFailure } from "../core/embeddings/hf-env.js";
 import { getMaxFileSizeBannerMessage } from "../core/ingestion/utils/max-file-size.js";
 import { closeLbug } from "../core/lbug/lbug-adapter.js";

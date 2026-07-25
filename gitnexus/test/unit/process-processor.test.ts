@@ -107,21 +107,21 @@ describe("processProcesses", () => {
 			(p) => p.entryPointId === "func:handleRequest",
 		);
 		expect(process).toBeDefined();
-		expect(process!.stepCount).toBe(3);
-		expect(process!.entryPointId).toBe("func:handleRequest");
-		expect(process!.terminalId).toBe("func:saveToDb");
-		expect(process!.processType).toBe("intra_community");
-		expect(process!.communities).toEqual(["community:0"]);
+		expect(process?.stepCount).toBe(3);
+		expect(process?.entryPointId).toBe("func:handleRequest");
+		expect(process?.terminalId).toBe("func:saveToDb");
+		expect(process?.processType).toBe("intra_community");
+		expect(process?.communities).toEqual(["community:0"]);
 
 		// Verify trace order: entry -> middle -> terminal
-		expect(process!.trace).toEqual([
+		expect(process?.trace).toEqual([
 			"func:handleRequest",
 			"func:validateInput",
 			"func:saveToDb",
 		]);
 
 		// Verify steps are 1-indexed and in correct order
-		const processSteps = result.steps.filter((s) => s.processId === process!.id);
+		const processSteps = result.steps.filter((s) => s.processId === process?.id);
 		expect(processSteps).toHaveLength(3);
 		expect(processSteps[0]).toEqual(
 			expect.objectContaining({ nodeId: "func:handleRequest", step: 1 }),
@@ -134,8 +134,8 @@ describe("processProcesses", () => {
 		);
 
 		// Verify label is generated from entry and terminal names
-		expect(process!.heuristicLabel).toContain("HandleRequest");
-		expect(process!.heuristicLabel).toContain("SaveToDb");
+		expect(process?.heuristicLabel).toContain("HandleRequest");
+		expect(process?.heuristicLabel).toContain("SaveToDb");
 
 		// Stats should reflect the detected processes
 		expect(result.stats.totalProcesses).toBe(result.processes.length);
@@ -261,10 +261,10 @@ describe("processProcesses", () => {
 			(p) => p.entryPointId === "func:apiHandler",
 		);
 		expect(crossProcess).toBeDefined();
-		expect(crossProcess!.processType).toBe("cross_community");
-		expect(crossProcess!.communities.length).toBeGreaterThan(1);
-		expect(crossProcess!.communities).toContain("community:api");
-		expect(crossProcess!.communities).toContain("community:db");
+		expect(crossProcess?.processType).toBe("cross_community");
+		expect(crossProcess?.communities.length).toBeGreaterThan(1);
+		expect(crossProcess?.communities).toContain("community:api");
+		expect(crossProcess?.communities).toContain("community:db");
 
 		// Stats should count cross-community
 		expect(result.stats.crossCommunityCount).toBeGreaterThan(0);

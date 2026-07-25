@@ -200,9 +200,9 @@ const scanConstructorBinding: ConstructorBindingScanner = (node) => {
 	if (node.type !== "variable_declarator") return undefined;
 	if (hasTypeAnnotation(node)) return undefined;
 	const nameNode = node.childForFieldName("name");
-	if (!nameNode || nameNode.type !== "identifier") return undefined;
+	if (nameNode?.type !== "identifier") return undefined;
 	const value = unwrapAwait(node.childForFieldName("value"));
-	if (!value || value.type !== "call_expression") return undefined;
+	if (value?.type !== "call_expression") return undefined;
 	const calleeName = extractCalleeName(value);
 	if (!calleeName) return undefined;
 	return { varName: nameNode.text, calleeName };
@@ -513,7 +513,7 @@ const extractPendingAssignment: PendingAssignmentExtractor = (
 ) => {
 	for (let i = 0; i < node.namedChildCount; i++) {
 		const child = node.namedChild(i);
-		if (!child || child.type !== "variable_declarator") continue;
+		if (child?.type !== "variable_declarator") continue;
 		const nameNode = child.childForFieldName("name");
 		const valueNode = child.childForFieldName("value");
 		if (!nameNode || !valueNode) continue;
@@ -592,7 +592,7 @@ const extractPendingAssignment: PendingAssignmentExtractor = (
 		}
 		// Unwrap await: `const user = await fetchUser()` or `await a.getC()`
 		const callNode = unwrapAwait(valueNode);
-		if (!callNode || callNode.type !== "call_expression") continue;
+		if (callNode?.type !== "call_expression") continue;
 		const funcNode = callNode.childForFieldName("function");
 		if (!funcNode) continue;
 		// Simple call → callResult: getUser()

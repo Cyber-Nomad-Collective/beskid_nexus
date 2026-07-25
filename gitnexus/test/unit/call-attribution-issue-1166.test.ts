@@ -97,8 +97,8 @@ function collectCallAttributions(code: string): CallSite[] {
 	for (const match of query.matches(tree.rootNode)) {
 		const captures: Record<string, SyntaxNode> = {};
 		for (const c of match.captures) captures[c.name] = c.node;
-		if (!captures["call"] || !captures["call.name"]) continue;
-		const callNode = captures["call"];
+		if (!captures.call || !captures["call.name"]) continue;
+		const callNode = captures.call;
 		const name = captures["call.name"].text;
 		results.push({
 			calledName: name,
@@ -174,7 +174,7 @@ describe("issue #1166 — Bug A: anonymous arrows do not borrow parameter names"
     `);
 		const processFileCall = findCall(sites, "processFile");
 		expect(processFileCall, "processFile call should be captured").toBeDefined();
-		expect(processFileCall!.attributedTo).toBe("processSelectedFiles");
+		expect(processFileCall?.attributedTo).toBe("processSelectedFiles");
 		// Defensive: assert we never produce the bogus parameter-as-name
 		// attribution for ANY call in this snippet.
 		for (const s of sites) {
@@ -264,7 +264,7 @@ describe("issue #1166 — Bug B: object-property arrows are named by pair.key", 
     `);
 		const doSomething = findCall(sites, "doSomething");
 		expect(doSomething, "doSomething call should be captured").toBeDefined();
-		expect(doSomething!.attributedTo).toBe("addItem");
+		expect(doSomething?.attributedTo).toBe("addItem");
 		const fetchCall = findCall(sites, "fetch");
 		expect(fetchCall?.attributedTo).toBe("fetchData");
 		// `set` and `state` are local to the callback chain. `set` lives in the
@@ -428,7 +428,7 @@ describe("issue #1166 follow-up — HOC-wrapped variable declarations", () => {
     `);
 		const call = findCall(sites, "doSomething");
 		expect(call, "doSomething call should be captured").toBeDefined();
-		expect(call!.attributedTo).toBe("Button");
+		expect(call?.attributedTo).toBe("Button");
 	});
 
 	it('attributes call inside `const X = React.forwardRef((p, r) => fn())` to "X" (member-expression callee)', () => {

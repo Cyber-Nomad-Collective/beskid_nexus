@@ -58,7 +58,7 @@ describe("Python scopes — module / class / function", () => {
 	it("case 01: minimal module produces a single Module scope", () => {
 		const f = parse("pass\n");
 		expect(f.scopes).toHaveLength(1);
-		expect(f.scopes[0]!.kind).toBe("Module");
+		expect(f.scopes[0]?.kind).toBe("Module");
 	});
 
 	it("case 01a: empty and whitespace-only files are skipped without warnings", () => {
@@ -307,8 +307,8 @@ describe("Python type bindings — parameter annotations + self/cls", () => {
 		const fn = scopesByKind(f, "Function")[0]!;
 		const tb = fn.typeBindings.get("x");
 		expect(tb).toBeDefined();
-		expect(tb!.rawName).toBe("User");
-		expect(tb!.source).toBe("parameter-annotation");
+		expect(tb?.rawName).toBe("User");
+		expect(tb?.source).toBe("parameter-annotation");
 	});
 
 	it("case 22: typed default parameter `def f(x: int = 0)` is captured", () => {
@@ -328,8 +328,8 @@ describe("Python type bindings — parameter annotations + self/cls", () => {
 		const fn = scopesByKind(f, "Function")[0]!;
 		const self = fn.typeBindings.get("self");
 		expect(self).toBeDefined();
-		expect(self!.rawName).toBe("A");
-		expect(self!.source).toBe("self");
+		expect(self?.rawName).toBe("A");
+		expect(self?.source).toBe("self");
 	});
 
 	it("case 25: `@classmethod`-decorated method gets cls → ClassName", () => {

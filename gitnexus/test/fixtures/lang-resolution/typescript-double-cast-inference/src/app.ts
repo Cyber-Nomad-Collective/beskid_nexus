@@ -1,7 +1,7 @@
 import { Repo } from "./repo";
 import { User } from "./user";
 
-function process() {
+function _process() {
 	const user = new User() as unknown as any;
 	user.save();
 

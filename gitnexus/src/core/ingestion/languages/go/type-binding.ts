@@ -183,7 +183,7 @@ function synthesizeElementAccessBindings(
 				}
 			}
 			if (typeName !== undefined && lhsIds.length > 0) {
-				varElementType.set(lhsIds[0]!.text, typeName);
+				varElementType.set(lhsIds[0]?.text, typeName);
 			}
 		}
 	}

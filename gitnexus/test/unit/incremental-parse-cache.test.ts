@@ -1,6 +1,6 @@
-import { mkdtemp, rm } from "fs/promises";
-import { tmpdir } from "os";
-import path from "path";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { ParseWorkerResult } from "../../src/core/ingestion/workers/parse-worker.js";
 import {
@@ -137,7 +137,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("round-trips an empty cache", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const cache: ParseCache = {
 				version: PARSE_CACHE_VERSION,
 				entries: new Map(),
@@ -173,7 +173,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
 			// Write a cache file with a different version directly
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			await fs.writeFile(
 				path.join(dir, "parse-cache.json"),
 				JSON.stringify({ version: "foreign-99", entries: { h: [] } }),
@@ -189,7 +189,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("returns an empty cache on corrupt JSON", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			await fs.writeFile(path.join(dir, "parse-cache.json"), "{not-json", "utf-8");
 			const loaded = await loadParseCache(dir);
 			expect(loaded.entries.size).toBe(0);
@@ -201,7 +201,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("loads a legacy single-file cache for backwards compatibility", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			await fs.writeFile(
 				path.join(dir, "parse-cache.json"),
 				JSON.stringify({
@@ -223,7 +223,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("skips corrupt or missing shards while loading the sharded cache", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const cacheDir = path.join(dir, "parse-cache");
 			const goodKey = "a".repeat(64);
 			const missingKey = "b".repeat(64);
@@ -263,7 +263,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 		// with "is not iterable". This test pins the round-trip behaviour.
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const innerMap = new Map<string, string>([
 				["k1", "v1"],
 				["k2", "v2"],
@@ -317,7 +317,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("ignores traversal-like and non-hex keys in sharded index.json", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const cacheDir = path.join(dir, "parse-cache");
 			await fs.mkdir(cacheDir, { recursive: true });
 			const safeKey = "e".repeat(64);
@@ -345,7 +345,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("writes one shard file per cache entry (three distinct keys)", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const k1 = "1".repeat(64);
 			const k2 = "2".repeat(64);
 			const k3 = "3".repeat(64);
@@ -375,7 +375,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("returns empty when sharded index version mismatches even if legacy parse-cache.json is valid", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const cacheDir = path.join(dir, "parse-cache");
 			await fs.mkdir(cacheDir, { recursive: true });
 			await fs.writeFile(
@@ -401,7 +401,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("second saveParseCache replaces the first sharded cache", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			const k1 = "4".repeat(64);
 			const k2 = "5".repeat(64);
 			await saveParseCache(dir, {
@@ -428,7 +428,7 @@ describe("loadParseCache / saveParseCache (round-trip)", () => {
 	it("removes legacy parse-cache.json after a successful sharded save", async () => {
 		const dir = await mkdtemp(path.join(tmpdir(), "gnx-pc-"));
 		try {
-			const fs = await import("fs/promises");
+			const fs = await import("node:fs/promises");
 			await fs.writeFile(
 				path.join(dir, "parse-cache.json"),
 				JSON.stringify({

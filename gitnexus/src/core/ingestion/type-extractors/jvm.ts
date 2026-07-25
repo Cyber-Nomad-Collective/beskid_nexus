@@ -154,7 +154,7 @@ const findJavaParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const param = paramsNode.namedChild(i);
-					if (!param || param.type !== "formal_parameter") continue;
+					if (param?.type !== "formal_parameter") continue;
 					const nameNode = param.childForFieldName("name");
 					if (nameNode?.text !== iterableName) continue;
 					const typeNode = param.childForFieldName("type");
@@ -245,7 +245,7 @@ const extractJavaPendingAssignment: PendingAssignmentExtractor = (
 ) => {
 	for (let i = 0; i < node.namedChildCount; i++) {
 		const child = node.namedChild(i);
-		if (!child || child.type !== "variable_declarator") continue;
+		if (child?.type !== "variable_declarator") continue;
 		const nameNode = child.childForFieldName("name");
 		const valueNode = child.childForFieldName("value");
 		if (!nameNode || !valueNode) continue;
@@ -459,9 +459,9 @@ const findKotlinConstructorCallee = (
 	if (node.type !== "property_declaration") return undefined;
 	const value =
 		node.childForFieldName("value") ?? findChild(node, "call_expression");
-	if (!value || value.type !== "call_expression") return undefined;
+	if (value?.type !== "call_expression") return undefined;
 	const callee = value.firstNamedChild;
-	if (!callee || callee.type !== "simple_identifier") return undefined;
+	if (callee?.type !== "simple_identifier") return undefined;
 	const calleeName = callee.text;
 	if (!calleeName || !classNames.has(calleeName)) return undefined;
 	return calleeName;
@@ -577,7 +577,7 @@ const findKotlinParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const param = paramsNode.namedChild(i);
-					if (!param || param.type !== "parameter") continue;
+					if (param?.type !== "parameter") continue;
 					const nameNode = findChild(param, "simple_identifier");
 					if (nameNode?.text !== iterableName) continue;
 					const typeNode = findChild(param, "user_type");
@@ -709,7 +709,7 @@ const extractKotlinPendingAssignment: PendingAssignmentExtractor = (
 		const varDecl = findChild(node, "variable_declaration");
 		if (!varDecl) return undefined;
 		const nameNode = varDecl.firstNamedChild;
-		if (!nameNode || nameNode.type !== "simple_identifier") return undefined;
+		if (nameNode?.type !== "simple_identifier") return undefined;
 		const lhs = nameNode.text;
 		if (scopeEnv.has(lhs)) return undefined;
 		// Find the RHS after the "=" token

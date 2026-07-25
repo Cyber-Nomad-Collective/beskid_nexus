@@ -42,7 +42,7 @@ function extractAnnotations(node: SyntaxNode, modifierType: string): string[] {
 					(mod.type === "marker_annotation" || mod.type === "annotation")
 				) {
 					const nameNode = mod.childForFieldName("name") ?? mod.firstNamedChild;
-					if (nameNode) annotations.push("@" + nameNode.text);
+					if (nameNode) annotations.push(`@${nameNode.text}`);
 				}
 			}
 		}
@@ -358,7 +358,7 @@ export const kotlinMethodConfig: MethodExtractionConfig = {
 					if (mod && mod.type === "annotation") {
 						// Kotlin annotation text includes the @ prefix
 						const text = mod.text.trim();
-						annotations.push(text.startsWith("@") ? text : "@" + text);
+						annotations.push(text.startsWith("@") ? text : `@${text}`);
 					}
 				}
 			}

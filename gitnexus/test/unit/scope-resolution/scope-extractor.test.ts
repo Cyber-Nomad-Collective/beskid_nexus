@@ -160,9 +160,9 @@ describe("Pass 1: scope tree", () => {
 			mockProvider(),
 		);
 		expect(result.scopes).toHaveLength(1);
-		expect(result.scopes[0]!.kind).toBe("Module");
-		expect(result.scopes[0]!.parent).toBeNull();
-		expect(result.moduleScope).toBe(result.scopes[0]!.id);
+		expect(result.scopes[0]?.kind).toBe("Module");
+		expect(result.scopes[0]?.parent).toBeNull();
+		expect(result.moduleScope).toBe(result.scopes[0]?.id);
 	});
 
 	it("synthesizes a single empty Module scope when the provider emits no captures", () => {
@@ -173,7 +173,7 @@ describe("Pass 1: scope tree", () => {
 			parent: null,
 			range: { startLine: 0, startCol: 0, endLine: 0, endCol: 0 },
 		});
-		expect(result.moduleScope).toBe(result.scopes[0]!.id);
+		expect(result.moduleScope).toBe(result.scopes[0]?.id);
 	});
 
 	it("nests Class under Module when the class range is contained in the module range", () => {
@@ -272,10 +272,10 @@ describe("Pass 2: declarations + local bindings", () => {
 		// The declaration sits at line 5 → innermost scope is Class (at 5:0..50:0).
 		const cls = result.scopes.find((s) => s.kind === "Class")!;
 		expect(cls.ownedDefs).toHaveLength(1);
-		expect(cls.ownedDefs[0]!.type).toBe("Class");
-		expect(cls.ownedDefs[0]!.qualifiedName).toBe("User");
+		expect(cls.ownedDefs[0]?.type).toBe("Class");
+		expect(cls.ownedDefs[0]?.qualifiedName).toBe("User");
 		expect(cls.bindings.get("User")).toBeDefined();
-		expect(cls.bindings.get("User")![0]!.origin).toBe("local");
+		expect(cls.bindings.get("User")?.[0]?.origin).toBe("local");
 	});
 
 	it("records the declaration in `localDefs` as well", () => {
@@ -288,7 +288,7 @@ describe("Pass 2: declarations + local bindings", () => {
 			mockProvider(),
 		);
 		expect(result.localDefs).toHaveLength(1);
-		expect(result.localDefs[0]!.type).toBe("Function");
+		expect(result.localDefs[0]?.type).toBe("Function");
 	});
 
 	it("honors `provider.bindingScopeFor` to hoist a binding to an outer scope", () => {
@@ -391,9 +391,9 @@ describe("Pass 4: type bindings", () => {
 		const fn = result.scopes.find((s) => s.kind === "Function")!;
 		const tb = fn.typeBindings.get("user");
 		expect(tb).toBeDefined();
-		expect(tb!.rawName).toBe("User");
-		expect(tb!.source).toBe("parameter-annotation");
-		expect(tb!.declaredAtScope).toBe(fn.id);
+		expect(tb?.rawName).toBe("User");
+		expect(tb?.source).toBe("parameter-annotation");
+		expect(tb?.declaredAtScope).toBe(fn.id);
 	});
 
 	it("skips type-binding matches when the provider returns null", () => {
@@ -428,10 +428,10 @@ describe("Pass 5: reference sites", () => {
 		);
 		const fn = result.scopes.find((s) => s.kind === "Function")!;
 		expect(result.referenceSites).toHaveLength(1);
-		expect(result.referenceSites[0]!.name).toBe("print");
-		expect(result.referenceSites[0]!.kind).toBe("call");
-		expect(result.referenceSites[0]!.callForm).toBe("free");
-		expect(result.referenceSites[0]!.inScope).toBe(fn.id);
+		expect(result.referenceSites[0]?.name).toBe("print");
+		expect(result.referenceSites[0]?.kind).toBe("call");
+		expect(result.referenceSites[0]?.callForm).toBe("free");
+		expect(result.referenceSites[0]?.inScope).toBe(fn.id);
 	});
 
 	it("classifies member calls via the `@reference.call.member` sub-tag", () => {
@@ -445,8 +445,8 @@ describe("Pass 5: reference sites", () => {
 			"a.ts",
 			mockProvider(),
 		);
-		expect(result.referenceSites[0]!.callForm).toBe("member");
-		expect(result.referenceSites[0]!.explicitReceiver).toEqual({ name: "user" });
+		expect(result.referenceSites[0]?.callForm).toBe("member");
+		expect(result.referenceSites[0]?.explicitReceiver).toEqual({ name: "user" });
 	});
 
 	it("falls back to `provider.classifyCallForm` when the anchor has no sub-tag", () => {
@@ -457,7 +457,7 @@ describe("Pass 5: reference sites", () => {
 				classifyCallForm: () => "member",
 			}),
 		);
-		expect(result.referenceSites[0]!.callForm).toBe("member");
+		expect(result.referenceSites[0]?.callForm).toBe("member");
 	});
 
 	it("recognizes all reference kinds (call, read, write, inherits, type, import_use)", () => {
@@ -513,10 +513,10 @@ describe("Pass 5: reference sites", () => {
 			mockProvider(),
 		);
 		expect(result.referenceSites).toHaveLength(1);
-		expect(result.referenceSites[0]!.name).toBe("save"); // NOT 'longUserName'
-		expect(result.referenceSites[0]!.kind).toBe("call");
-		expect(result.referenceSites[0]!.callForm).toBe("member");
-		expect(result.referenceSites[0]!.explicitReceiver).toEqual({
+		expect(result.referenceSites[0]?.name).toBe("save"); // NOT 'longUserName'
+		expect(result.referenceSites[0]?.kind).toBe("call");
+		expect(result.referenceSites[0]?.callForm).toBe("member");
+		expect(result.referenceSites[0]?.explicitReceiver).toEqual({
 			name: "longUserName",
 		});
 	});
@@ -532,7 +532,7 @@ describe("Pass 5: reference sites", () => {
 			"a.ts",
 			mockProvider(),
 		);
-		expect(result.referenceSites[0]!.arity).toBe(2);
+		expect(result.referenceSites[0]?.arity).toBe(2);
 	});
 });
 

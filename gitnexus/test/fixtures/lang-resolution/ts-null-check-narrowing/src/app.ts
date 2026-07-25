@@ -1,24 +1,24 @@
 import type { User } from "./models";
 
-function processStrict(x: User | null) {
+function _processStrict(x: User | null) {
 	if (x !== null) {
 		x.save();
 	}
 }
 
-function processLoose(x: User | null) {
+function _processLoose(x: User | null) {
 	if (x != null) {
 		x.save();
 	}
 }
 
-function processUndefined(x: User | undefined) {
+function _processUndefined(x: User | undefined) {
 	if (x !== undefined) {
 		x.save();
 	}
 }
 
-const processFuncExpr = (x: User | null) => {
+const _processFuncExpr = (x: User | null) => {
 	if (x !== null) {
 		x.save();
 	}

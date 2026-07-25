@@ -67,8 +67,8 @@ end
 		);
 
 		expect(info).not.toBeNull();
-		expect(info!.className).toBe("Animal");
-		expect(info!.classId).toContain("Animal");
+		expect(info?.className).toBe("Animal");
+		expect(info?.classId).toContain("Animal");
 	});
 
 	it("remaps singleton_class inside module to enclosing module", () => {
@@ -99,11 +99,11 @@ end
 		);
 
 		expect(info).not.toBeNull();
-		expect(info!.className).toBe("Helpers");
+		expect(info?.className).toBe("Helpers");
 		// Ruby modules are labeled `Trait` so mixin heritage resolves through
 		// the class-like type registry; the enclosing class id switches labels
 		// in lockstep with the structure-phase label.
-		expect(info!.classId).toContain("Trait");
+		expect(info?.classId).toContain("Trait");
 	});
 
 	it("returns null for file-level singleton_class without enclosing class", () => {
@@ -149,7 +149,7 @@ end
 		);
 
 		expect(info).not.toBeNull();
-		expect(info!.className).toBe("Dog");
+		expect(info?.className).toBe("Dog");
 	});
 });
 
@@ -183,7 +183,7 @@ describe("Kotlin enclosing owner resolution (no resolveEnclosingOwner needed)", 
 
 			expect(info).not.toBeNull();
 			// companion_object is a valid CLASS_CONTAINER_TYPES — its name resolves via generic logic
-			expect(info!.className).toBe("Factory");
+			expect(info?.className).toBe("Factory");
 		},
 	);
 
@@ -204,7 +204,7 @@ describe("Kotlin enclosing owner resolution (no resolveEnclosingOwner needed)", 
 			const info = findEnclosingClassInfo(funcDecl, "singleton.kt");
 
 			expect(info).not.toBeNull();
-			expect(info!.className).toBe("Singleton");
+			expect(info?.className).toBe("Singleton");
 		},
 	);
 });
@@ -300,7 +300,7 @@ end
 
 		expect(elapsed).toBeLessThan(1000);
 		expect(info).not.toBeNull();
-		expect(info!.className).toBe("Wolf");
+		expect(info?.className).toBe("Wolf");
 		// Hook should be called exactly once per CLASS_CONTAINER_TYPES node visited
 		// (here: just `class Wolf`). If the identity branch re-entered the hook, calls > 1.
 		expect(calls).toBe(1);
@@ -329,6 +329,6 @@ end
 		const info = findEnclosingClassInfo(methodNode, "dog.rb");
 
 		expect(info).not.toBeNull();
-		expect(info!.className).toBe("Dog");
+		expect(info?.className).toBe("Dog");
 	});
 });

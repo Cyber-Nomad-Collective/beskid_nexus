@@ -9,7 +9,7 @@
  * 5. Create vector index for semantic search
  */
 
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { loadVectorExtension } from "../lbug/lbug-adapter.js";
 import {
 	CREATE_VECTOR_INDEX_QUERY,
@@ -256,7 +256,7 @@ export const runEmbeddingPipeline = async (
 	) => Promise<void>,
 	onProgress: EmbeddingProgressCallback,
 	config: Partial<EmbeddingConfig> = {},
-	skipNodeIds?: Set<string>,
+	_skipNodeIds?: Set<string>,
 	context?: EmbeddingContext,
 	existingEmbeddings?: Map<string, string>,
 ): Promise<EmbeddingPipelineResult> => {
@@ -683,7 +683,7 @@ export const semanticSearch = async (
 		const labelEndIdx = nodeId.indexOf(":");
 		const label = labelEndIdx > 0 ? nodeId.substring(0, labelEndIdx) : "Unknown";
 		if (!byLabel.has(label)) byLabel.set(label, []);
-		byLabel.get(label)!.push({ nodeId, ...chunk });
+		byLabel.get(label)?.push({ nodeId, ...chunk });
 	}
 
 	// Batch-fetch metadata per label

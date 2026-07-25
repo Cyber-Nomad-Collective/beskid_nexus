@@ -140,7 +140,7 @@ function findMatchingModule(
 	knownModules: Map<string, string>,
 ): string | null {
 	for (const [modPath] of knownModules) {
-		if (importPath === modPath || importPath.startsWith(modPath + "/")) {
+		if (importPath === modPath || importPath.startsWith(`${modPath}/`)) {
 			return modPath;
 		}
 	}
@@ -183,11 +183,11 @@ async function findGoFiles(repoPath: string): Promise<string[]> {
 			const childRel = rel ? `${rel}/${entry.name}` : entry.name;
 			if (entry.isDirectory()) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel + "/")) continue;
+				if (ig?.ignores(`${childRel}/`)) continue;
 				await walk(path.join(dir, entry.name), childRel);
 			} else if (entry.name.endsWith(".go") && !entry.name.endsWith("_test.go")) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel)) continue;
+				if (ig?.ignores(childRel)) continue;
 				results.push(childRel);
 			}
 		}

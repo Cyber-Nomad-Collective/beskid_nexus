@@ -68,14 +68,14 @@ function extractExpressRouteReceivers(parser: Parser, code: string) {
 		const cm: Record<string, SyntaxNode> = {};
 		for (const c of match.captures) cm[c.name] = c.node;
 		if (
-			cm["express_route"] &&
+			cm.express_route &&
 			cm["express_route.method"] &&
 			cm["express_route.path"]
 		) {
 			results.push({
 				method: cm["express_route.method"].text,
 				path: cm["express_route.path"].text,
-				receiverText: extractReceiverText(cm["express_route"]),
+				receiverText: extractReceiverText(cm.express_route),
 			});
 		}
 	}

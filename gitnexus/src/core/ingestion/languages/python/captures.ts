@@ -72,7 +72,7 @@ export function emitPythonScopeCaptures(
 		// (`@scope.`, `@declaration.`, …) work.
 		const grouped: Record<string, Capture> = {};
 		for (const c of m.captures) {
-			const tag = "@" + c.name;
+			const tag = `@${c.name}`;
 			grouped[tag] = nodeToCapture(tag, c.node);
 		}
 		if (Object.keys(grouped).length === 0) continue;
@@ -101,7 +101,7 @@ export function emitPythonScopeCaptures(
 			out.push(grouped);
 			const fnNode = findNodeAtRange(
 				tree.rootNode,
-				grouped["@scope.function"]!.range,
+				grouped["@scope.function"]?.range,
 				"function_definition",
 			);
 			if (fnNode !== null) {

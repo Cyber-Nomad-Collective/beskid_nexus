@@ -19,10 +19,10 @@
  * Nothing path-dependent, time-dependent, or id-opaque leaks into the snapshot.
  */
 
-import crypto from "crypto";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runPipelineFromRepo } from "../../src/core/ingestion/pipeline.js";
 import type { PipelineResult } from "../../src/types/pipeline.js";
@@ -118,7 +118,7 @@ function sortObject(obj: Record<string, number>): Record<string, number> {
 }
 
 function formatGolden(snapshot: GraphSnapshot): string {
-	return JSON.stringify(snapshot, null, 2) + "\n";
+	return `${JSON.stringify(snapshot, null, 2)}\n`;
 }
 
 function diffCounts(

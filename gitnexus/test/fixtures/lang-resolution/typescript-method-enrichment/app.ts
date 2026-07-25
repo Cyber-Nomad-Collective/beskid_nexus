@@ -1,5 +1,5 @@
 import { Animal, Dog } from "./animal";
 
 const dog = new Dog();
-const sound = dog.speak();
-const category = Animal.classify("dog");
+const _sound = dog.speak();
+const _category = Animal.classify("dog");

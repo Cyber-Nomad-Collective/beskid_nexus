@@ -20,13 +20,13 @@ export function nextjsFileToRouteURL(filePath: string): string | null {
 		const stripped = appMatch[1].replace(/\([^)]+\)\/?/g, "");
 		// Only match if the path contains an api/ segment
 		if (!stripped.startsWith("api/") && stripped !== "api") return null;
-		return "/" + stripped;
+		return `/${stripped}`;
 	}
 
 	// Pages Router: pages/api/**/*.ts
 	const pagesMatch = normalized.match(/pages\/(api\/.+?)\.(ts|js|tsx|jsx)$/);
 	if (pagesMatch) {
-		let route = "/" + pagesMatch[1];
+		let route = `/${pagesMatch[1]}`;
 		route = route.replace(/\/index$/, "");
 		return route;
 	}

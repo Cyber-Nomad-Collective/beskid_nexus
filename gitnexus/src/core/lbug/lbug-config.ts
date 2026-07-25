@@ -1,7 +1,7 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import type lbug from "@ladybugdb/core";
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
 
 /**
  * Shared configuration for `@ladybugdb/core` `Database` construction.
@@ -334,7 +334,7 @@ export const waitForWindowsHandleRelease = async (
 	dbPath: string,
 ): Promise<boolean> => {
 	const mainReleased = await probeSinglePath(dbPath);
-	const walReleased = await probeSinglePath(dbPath + ".wal");
+	const walReleased = await probeSinglePath(`${dbPath}.wal`);
 	return mainReleased && walReleased;
 };
 

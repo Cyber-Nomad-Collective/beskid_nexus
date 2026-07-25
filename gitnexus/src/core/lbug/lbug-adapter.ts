@@ -1,14 +1,14 @@
-import lbug from "@ladybugdb/core";
-import { once } from "events";
+import { once } from "node:events";
 import {
 	createReadStream,
 	createWriteStream,
 	constants as fsConstants,
-} from "fs";
-import fs from "fs/promises";
-import path from "path";
-import { createInterface } from "readline";
-import { finished } from "stream/promises";
+} from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { createInterface } from "node:readline";
+import { finished } from "node:stream/promises";
+import lbug from "@ladybugdb/core";
 import type { CachedEmbedding } from "../embeddings/types.js";
 import type { KnowledgeGraph } from "../graph/types.js";
 import { logger } from "../logger.js";
@@ -126,12 +126,12 @@ export const splitRelCsvByLabelPair = async (
 				ws.on("error", markStreamError);
 				pairWriteStreams.set(pairKey, ws);
 				relsByPairMeta.set(pairKey, { csvPath: pairCsvPath, rows: 0 });
-				if (!ws.write(relHeader + "\n")) {
+				if (!ws.write(`${relHeader}\n`)) {
 					await once(ws, "drain", { signal: abortOnError.signal });
 				}
 			}
 
-			if (!ws.write(line + "\n")) {
+			if (!ws.write(`${line}\n`)) {
 				await once(ws, "drain", { signal: abortOnError.signal });
 			}
 			relsByPairMeta.get(pairKey)!.rows++;
@@ -688,7 +688,7 @@ export const loadGraphToLbug = async (
 
 		try {
 			await queryAndDrain(conn, copyQuery);
-		} catch (err) {
+		} catch (_err) {
 			try {
 				const retryQuery = copyQuery.replace(
 					"auto_detect=false)",
@@ -752,7 +752,7 @@ export const loadGraphToLbug = async (
 
 			try {
 				await queryAndDrain(conn, copyQuery);
-			} catch (err) {
+			} catch (_err) {
 				try {
 					const retryQuery = copyQuery.replace(
 						"auto_detect=false)",
@@ -883,7 +883,7 @@ const fallbackRelationshipInserts = async (
 			if (!validTables.has(fromLabel) || !validTables.has(toLabel)) continue;
 
 			const confidence = parseFloat(confidenceStr) || 1.0;
-			const step = parseInt(stepStr) || 0;
+			const step = parseInt(stepStr, 10) || 0;
 
 			const esc = (s: string) =>
 				s
@@ -1093,7 +1093,7 @@ export const batchInsertNodesToLbug = async (
 
 				await queryAndDrain(tempConn, query);
 				inserted++;
-			} catch (e: any) {
+			} catch (_e: any) {
 				// Don't console.error here - it corrupts MCP JSON-RPC on stderr
 				failed++;
 			}
@@ -1507,7 +1507,7 @@ export const deleteNodesForFile = async (
 			try {
 				// First count how many we'll delete
 				const tn = escapeTableName(tableName);
-				const countResult = await targetConn!.query(
+				const countResult = await targetConn?.query(
 					`MATCH (n:${tn}) WHERE n.filePath = '${escapedPath}' RETURN count(n) AS cnt`,
 				);
 				const rows = await readQueryRows(countResult);
@@ -1521,7 +1521,7 @@ export const deleteNodesForFile = async (
 					);
 					deletedNodes += count;
 				}
-			} catch (e) {
+			} catch (_e) {
 				// Some tables may not support this query, skip
 			}
 		}

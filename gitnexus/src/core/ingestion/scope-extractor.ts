@@ -391,16 +391,16 @@ function pass1BuildScopes(
 		while (
 			stack.length > 0 &&
 			!canParentScope(
-				stack[stack.length - 1]!.range,
+				stack[stack.length - 1]?.range,
 				cand.range,
-				stack[stack.length - 1]!.kind,
+				stack[stack.length - 1]?.kind,
 				cand.kind,
 			)
 		) {
 			stack.pop();
 		}
 
-		const parent = stack.length > 0 ? stack[stack.length - 1]!.id : null;
+		const parent = stack.length > 0 ? stack[stack.length - 1]?.id : null;
 		drafts.push(makeDraft(cand.id, parent, cand.kind, cand.range, filePath));
 		stack.push(cand);
 	}

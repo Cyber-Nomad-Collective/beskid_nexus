@@ -5,7 +5,7 @@
  * Also unregisters it from the global registry.
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import { logger } from "../core/logger.js";
 import {
 	assertSafeStoragePath,

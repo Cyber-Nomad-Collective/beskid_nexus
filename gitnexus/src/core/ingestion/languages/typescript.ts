@@ -148,11 +148,11 @@ const tsExtractFunctionName = (
 	// capturing the React UI-component idiom.
 	if (parent.type === "arguments") {
 		const callExpr = parent.parent;
-		if (!callExpr || callExpr.type !== "call_expression") {
+		if (callExpr?.type !== "call_expression") {
 			return { funcName: null, label: "Function" };
 		}
 		const declarator = callExpr.parent;
-		if (!declarator || declarator.type !== "variable_declarator") {
+		if (declarator?.type !== "variable_declarator") {
 			return { funcName: null, label: "Function" };
 		}
 		const nameNode = declarator.childForFieldName?.("name");

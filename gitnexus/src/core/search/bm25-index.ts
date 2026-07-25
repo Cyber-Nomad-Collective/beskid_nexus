@@ -121,7 +121,7 @@ export const searchFTSFromLbug = async (
 	const addResults = (results: any[]) => {
 		for (const r of results) {
 			if (!fileNodeScores.has(r.filePath)) fileNodeScores.set(r.filePath, []);
-			fileNodeScores.get(r.filePath)!.push({ score: r.score, nodeId: r.nodeId });
+			fileNodeScores.get(r.filePath)?.push({ score: r.score, nodeId: r.nodeId });
 		}
 	};
 

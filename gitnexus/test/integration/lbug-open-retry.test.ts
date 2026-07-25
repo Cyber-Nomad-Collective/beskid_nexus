@@ -9,9 +9,9 @@
  *
  * See: docs/plans/2026-05-08-002-fix-windows-lbug-lock-ci-flakes-plan.md
  */
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	isDbBusyError,
@@ -44,7 +44,6 @@ const makeStubLbug = (control: StubModuleControl) => {
 		}
 	}
 	class FakeConnection {
-		constructor(_db: FakeDatabase) {}
 		async close(): Promise<void> {}
 	}
 	return { Database: FakeDatabase, Connection: FakeConnection } as any;
@@ -154,8 +153,8 @@ describe("openLbugConnection — stale-sidecar sweep (test fixtures only)", () =
 	});
 
 	it("sweeps stale .wal/.lock for a recognized test fixture path and retries once", async () => {
-		await fs.writeFile(dbPath + ".wal", "stale");
-		await fs.writeFile(dbPath + ".lock", "stale");
+		await fs.writeFile(`${dbPath}.wal`, "stale");
+		await fs.writeFile(`${dbPath}.lock`, "stale");
 
 		const lockErr = new Error("Could not set lock on file");
 		const control: StubModuleControl = {
@@ -171,8 +170,8 @@ describe("openLbugConnection — stale-sidecar sweep (test fixtures only)", () =
 		expect(control.databaseCallCount).toBe(6);
 
 		// Sidecars removed by the sweep
-		await expect(fs.access(dbPath + ".wal")).rejects.toThrow();
-		await expect(fs.access(dbPath + ".lock")).rejects.toThrow();
+		await expect(fs.access(`${dbPath}.wal`)).rejects.toThrow();
+		await expect(fs.access(`${dbPath}.lock`)).rejects.toThrow();
 	});
 
 	it("does not sweep production paths even if they share the prefix", async () => {

@@ -43,7 +43,7 @@ export function interpretJavaImport(
 			// `import com.example.*;`
 			return {
 				kind: "wildcard",
-				targetRaw: sourceCap.text + ".*",
+				targetRaw: `${sourceCap.text}.*`,
 			};
 		}
 		case "static": {
@@ -71,7 +71,7 @@ export function interpretJavaImport(
 			// scan — `Utils.java` is the file that contains the static members.
 			return {
 				kind: "wildcard",
-				targetRaw: sourceCap.text + ".*",
+				targetRaw: `${sourceCap.text}.*`,
 			};
 		}
 		default:

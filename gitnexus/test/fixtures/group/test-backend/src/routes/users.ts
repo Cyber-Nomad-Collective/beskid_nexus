@@ -2,7 +2,7 @@ import { Router } from "express";
 
 const router = Router();
 
-router.get("/api/users", async (req, res) => {
+router.get("/api/users", async (_req, res) => {
 	res.json([{ id: 1, name: "Alice" }]);
 });
 

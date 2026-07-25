@@ -1,6 +1,6 @@
-import fs from "fs";
+import fs from "node:fs";
+import path from "node:path";
 import { getLanguageFromFilename, SupportedLanguages } from "gitnexus-shared";
-import path from "path";
 import Parser from "tree-sitter";
 import { beforeAll, describe, expect, it } from "vitest";
 import { getProvider } from "../../src/core/ingestion/languages/index.js";
@@ -33,7 +33,7 @@ function extractDefinitions(matches: any[]) {
 			) {
 				const defType = match.captures.find((c: any) =>
 					c.name.startsWith("definition."),
-				)!.name;
+				)?.name;
 				defs.push({ type: defType, name: capture.node.text });
 			}
 		}

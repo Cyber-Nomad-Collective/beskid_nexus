@@ -3,7 +3,7 @@ class Animal {
 		throw new Error("Not implemented");
 	}
 
-	static classify(name) {
+	static classify(_name) {
 		return "mammal";
 	}
 

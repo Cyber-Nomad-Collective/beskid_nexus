@@ -81,6 +81,8 @@ export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
 			visibleEdgeTypes,
 			depthFilter,
 			highlightedNodeIds,
+			toggleLabelVisibility,
+			toggleEdgeVisibility,
 		],
 	);
 

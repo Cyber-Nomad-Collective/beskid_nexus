@@ -101,9 +101,9 @@ describe("extractParsedFile", () => {
 			});
 			const result = extractParsedFile(provider, "source text", "src/file.ts");
 			expect(result).toBeDefined();
-			expect(result!.filePath).toBe("src/file.ts");
-			expect(result!.scopes).toHaveLength(1);
-			expect(result!.scopes[0]!.kind).toBe("Module");
+			expect(result?.filePath).toBe("src/file.ts");
+			expect(result?.scopes).toHaveLength(1);
+			expect(result?.scopes[0]?.kind).toBe("Module");
 		});
 
 		it("forwards the correct arguments to emitScopeCaptures", () => {

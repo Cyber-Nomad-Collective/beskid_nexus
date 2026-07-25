@@ -102,7 +102,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			typeConfig.extractInitializer!(nodes[0], env, classNames);
+			typeConfig.extractInitializer?.(nodes[0], env, classNames);
 			expect(env.get("user")).toBe("User");
 		});
 
@@ -116,7 +116,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			typeConfig.extractInitializer!(nodes[0], env, classNames);
+			typeConfig.extractInitializer?.(nodes[0], env, classNames);
 			expect(env.get("d")).toBe("Dog");
 		});
 
@@ -130,7 +130,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			typeConfig.extractInitializer!(nodes[0], env, classNames);
+			typeConfig.extractInitializer?.(nodes[0], env, classNames);
 			expect(env.has("x")).toBe(false);
 		});
 
@@ -144,7 +144,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			typeConfig.extractInitializer!(nodes[0], env, classNames);
+			typeConfig.extractInitializer?.(nodes[0], env, classNames);
 			// Should not set — Tier 0 handles this
 			expect(env.has("user")).toBe(false);
 		});
@@ -159,7 +159,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.scanConstructorBinding!(nodes[0]);
+			const result = typeConfig.scanConstructorBinding?.(nodes[0]);
 			expect(result).toEqual({ varName: "user", calleeName: "User" });
 		});
 
@@ -171,7 +171,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.scanConstructorBinding!(nodes[0]);
+			const result = typeConfig.scanConstructorBinding?.(nodes[0]);
 			expect(result?.varName).toBe("u");
 			expect(result?.calleeName).toBe("getUser");
 		});
@@ -184,7 +184,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.scanConstructorBinding!(nodes[0]);
+			const result = typeConfig.scanConstructorBinding?.(nodes[0]);
 			expect(result).toBeUndefined();
 		});
 	});
@@ -199,7 +199,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.detectConstructorType!(nodes[0], classNames);
+			const result = typeConfig.detectConstructorType?.(nodes[0], classNames);
 			expect(result).toBe("Dog");
 		});
 	});
@@ -215,7 +215,7 @@ describe("Dart type extractor", () => {
 			}
 			walk(tree.rootNode);
 			if (nodes.length > 0) {
-				expect(typeConfig.inferLiteralType!(nodes[0])).toBe("int");
+				expect(typeConfig.inferLiteralType?.(nodes[0])).toBe("int");
 			}
 		});
 
@@ -229,7 +229,7 @@ describe("Dart type extractor", () => {
 			}
 			walk(tree.rootNode);
 			if (nodes.length > 0) {
-				expect(typeConfig.inferLiteralType!(nodes[0])).toBe("String");
+				expect(typeConfig.inferLiteralType?.(nodes[0])).toBe("String");
 			}
 		});
 
@@ -246,7 +246,7 @@ describe("Dart type extractor", () => {
 			}
 			walk(tree.rootNode);
 			if (nodes.length > 0) {
-				expect(typeConfig.inferLiteralType!(nodes[0])).toBe("bool");
+				expect(typeConfig.inferLiteralType?.(nodes[0])).toBe("bool");
 			}
 		});
 	});
@@ -260,7 +260,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], new Map());
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], new Map());
 			expect(result).toEqual({ kind: "copy", lhs: "copy", rhs: "original" });
 		});
 
@@ -272,7 +272,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], new Map());
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], new Map());
 			expect(result).toEqual({
 				kind: "fieldAccess",
 				lhs: "n",
@@ -289,7 +289,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], new Map());
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], new Map());
 			expect(result).toEqual({ kind: "callResult", lhs: "u", callee: "getUser" });
 		});
 
@@ -301,7 +301,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], new Map());
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], new Map());
 			expect(result).toEqual({
 				kind: "methodCallResult",
 				lhs: "r",
@@ -319,7 +319,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], scope);
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], scope);
 			expect(result).toBeUndefined();
 		});
 
@@ -331,7 +331,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], new Map());
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], new Map());
 			expect(result).toEqual({
 				kind: "callResult",
 				lhs: "user",
@@ -347,7 +347,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.extractPendingAssignment!(nodes[0], new Map());
+			const result = typeConfig.extractPendingAssignment?.(nodes[0], new Map());
 			expect(result).toEqual({
 				kind: "methodCallResult",
 				lhs: "user",
@@ -376,7 +376,7 @@ describe("Dart type extractor", () => {
 					lookupRawReturnType: () => undefined,
 				},
 			};
-			typeConfig.extractForLoopBinding!(nodes[0], ctx);
+			typeConfig.extractForLoopBinding?.(nodes[0], ctx);
 			expect(scopeEnv.get("u")).toBe("User");
 		});
 
@@ -400,7 +400,7 @@ describe("Dart type extractor", () => {
 						name === "getUsers" ? "List<User>" : undefined,
 				},
 			};
-			typeConfig.extractForLoopBinding!(nodes[0], ctx);
+			typeConfig.extractForLoopBinding?.(nodes[0], ctx);
 			expect(scopeEnv.get("u")).toBe("User");
 		});
 
@@ -422,7 +422,7 @@ describe("Dart type extractor", () => {
 					lookupRawReturnType: () => undefined,
 				},
 			};
-			typeConfig.extractForLoopBinding!(nodes[0], ctx);
+			typeConfig.extractForLoopBinding?.(nodes[0], ctx);
 			expect(scopeEnv.size).toBe(0);
 		});
 	});
@@ -437,7 +437,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.detectConstructorType!(nodes[0], classNames);
+			const result = typeConfig.detectConstructorType?.(nodes[0], classNames);
 			expect(result).toBe("Dog");
 		});
 
@@ -450,7 +450,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			const result = typeConfig.detectConstructorType!(nodes[0], classNames);
+			const result = typeConfig.detectConstructorType?.(nodes[0], classNames);
 			expect(result).toBeUndefined();
 		});
 	});
@@ -466,7 +466,7 @@ describe("Dart type extractor", () => {
 			}
 			walk(tree.rootNode);
 			if (nodes.length > 0)
-				expect(typeConfig.inferLiteralType!(nodes[0])).toBe("double");
+				expect(typeConfig.inferLiteralType?.(nodes[0])).toBe("double");
 		});
 
 		it("infers false literal", async () => {
@@ -482,7 +482,7 @@ describe("Dart type extractor", () => {
 			}
 			walk(tree.rootNode);
 			if (nodes.length > 0)
-				expect(typeConfig.inferLiteralType!(nodes[0])).toBe("bool");
+				expect(typeConfig.inferLiteralType?.(nodes[0])).toBe("bool");
 		});
 
 		it("infers null literal", async () => {
@@ -495,13 +495,13 @@ describe("Dart type extractor", () => {
 			}
 			walk(tree.rootNode);
 			if (nodes.length > 0)
-				expect(typeConfig.inferLiteralType!(nodes[0])).toBe("null");
+				expect(typeConfig.inferLiteralType?.(nodes[0])).toBe("null");
 		});
 
 		it("returns undefined for unknown node type", async () => {
 			if (!(await loadDartOrSkip())) return;
 			expect(
-				typeConfig.inferLiteralType!({ type: "identifier" } as any),
+				typeConfig.inferLiteralType?.({ type: "identifier" } as any),
 			).toBeUndefined();
 		});
 	});
@@ -530,7 +530,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			expect(nodes.length).toBeGreaterThan(0);
-			typeConfig.extractInitializer!(nodes[0], env, classNames);
+			typeConfig.extractInitializer?.(nodes[0], env, classNames);
 			expect(env.get("repo")).toBe("Repository");
 		});
 
@@ -544,7 +544,7 @@ describe("Dart type extractor", () => {
 				"initialized_variable_definition",
 			);
 			if (nodes.length > 0) {
-				typeConfig.extractInitializer!(nodes[0], env, classNames);
+				typeConfig.extractInitializer?.(nodes[0], env, classNames);
 				expect(env.get("config")).toBe("Config");
 			}
 		});

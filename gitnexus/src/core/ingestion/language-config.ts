@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { logger } from "../logger.js";
 import type { ImportConfigs } from "./import-resolvers/types.js";
 import { isDev } from "./utils/env.js";
@@ -228,7 +228,7 @@ export async function loadSwiftPackageConfig(
 			const entries = await fs.readdir(fullPath, { withFileTypes: true });
 			for (const entry of entries) {
 				if (entry.isDirectory()) {
-					targets.set(entry.name, sourceDir + "/" + entry.name);
+					targets.set(entry.name, `${sourceDir}/${entry.name}`);
 				}
 			}
 		} catch {

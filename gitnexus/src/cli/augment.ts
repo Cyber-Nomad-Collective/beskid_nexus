@@ -27,7 +27,7 @@ export async function augmentCommand(pattern: string): Promise<void> {
 			// which makes stdout permanently broken in subprocess contexts.
 			// stderr is never captured, so it works reliably everywhere.
 			// The hook reads from the subprocess's stderr.
-			process.stderr.write(result + "\n");
+			process.stderr.write(`${result}\n`);
 		}
 	} catch {
 		// Graceful failure — never break the calling hook

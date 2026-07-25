@@ -7,7 +7,7 @@
 
 import fs from "node:fs";
 import os from "node:os";
-import path from "path";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
 	getRelationships,
@@ -57,7 +57,7 @@ export function processText(text: string): number {
 			(c) => c.source === "processText" && c.target === "estimateTokens",
 		);
 		expect(edge).toBeDefined();
-		expect(edge!.targetFilePath).toBe("src/utils.ts");
+		expect(edge?.targetFilePath).toBe("src/utils.ts");
 	});
 
 	it("emits IMPORTS edge from index.ts → utils.ts", () => {

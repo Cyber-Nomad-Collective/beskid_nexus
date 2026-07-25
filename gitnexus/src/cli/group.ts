@@ -22,7 +22,7 @@ export function registerGroupCommands(program: Command): void {
 			const dir = await createGroupDir(getDefaultGitnexusDir(), name, opts.force);
 			console.log(`Created group "${name}" at ${dir}`);
 			console.log(
-				"Edit group.yaml to add repos, then run: gitnexus group sync " + name,
+				`Edit group.yaml to add repos, then run: gitnexus group sync ${name}`,
 			);
 		});
 
@@ -166,7 +166,7 @@ export function registerGroupCommands(program: Command): void {
 					console.log(`  ${repoPath.padEnd(25)} ${idx}${ctr}`);
 				}
 				if ((st.missingRepos || []).length > 0) {
-					console.log(`\n  Last sync missing repos: ${st.missingRepos!.join(", ")}`);
+					console.log(`\n  Last sync missing repos: ${st.missingRepos?.join(", ")}`);
 				}
 			} finally {
 				await backend.dispose().catch(() => {});

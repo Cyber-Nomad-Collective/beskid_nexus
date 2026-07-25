@@ -928,7 +928,7 @@ export const processCalls = async (
 				tree = parseSourceSafe(parser, parseContent, undefined, {
 					bufferSize: getTreeSitterBufferSize(parseContent),
 				});
-			} catch (parseError) {
+			} catch (_parseError) {
 				continue;
 			}
 			astCache.set(file.path, tree);
@@ -1045,14 +1045,14 @@ export const processCalls = async (
 		matches.forEach((match) => {
 			const captureMap: Record<string, any> = {};
 			match.captures.forEach((c) => (captureMap[c.name] = c.node));
-			if (!captureMap["call"]) return;
+			if (!captureMap.call) return;
 			const callNameNode = captureMap["call.name"];
 			if (!callNameNode) return;
-			const routed = callRouter(callNameNode.text, captureMap["call"]);
-			if (!routed || routed.kind !== "properties") return;
+			const routed = callRouter(callNameNode.text, captureMap.call);
+			if (routed?.kind !== "properties") return;
 
 			const propEnclosingInfo = findEnclosingClassInfo(
-				captureMap["call"],
+				captureMap.call,
 				file.path,
 				provider.resolveEnclosingOwner,
 			);
@@ -1063,7 +1063,7 @@ export const processCalls = async (
 			// are propagated even when the routing payload itself lacks declaredType.
 			let routedFieldMap: Map<string, FieldInfo> | undefined;
 			if (provider.fieldExtractor && typeEnv) {
-				const classNode = findEnclosingClassNode(captureMap["call"]);
+				const classNode = findEnclosingClassNode(captureMap.call);
 				if (classNode) {
 					routedFieldMap = getFieldInfo(
 						classNode,
@@ -1178,7 +1178,7 @@ export const processCalls = async (
 			match.captures.forEach((c) => (captureMap[c.name] = c.node));
 			// ── Write access: emit ACCESSES {reason: 'write'} for assignments to member fields ──
 			if (
-				captureMap["assignment"] &&
+				captureMap.assignment &&
 				captureMap["assignment.receiver"] &&
 				captureMap["assignment.property"]
 			) {
@@ -1188,12 +1188,12 @@ export const processCalls = async (
 				let receiverTypeName: string | undefined;
 				const receiverText = receiverNode.text;
 				if (receiverText && typeEnv) {
-					receiverTypeName = typeEnv.lookup(receiverText, captureMap["assignment"]);
+					receiverTypeName = typeEnv.lookup(receiverText, captureMap.assignment);
 				}
 				// Fall back to verified constructor bindings (mirrors CALLS resolution tier 2)
 				if (!receiverTypeName && receiverText && receiverIndex.size > 0) {
 					const enclosing = findEnclosingFunction(
-						captureMap["assignment"],
+						captureMap.assignment,
 						file.path,
 						ctx,
 						provider,
@@ -1213,7 +1213,7 @@ export const processCalls = async (
 				}
 				if (receiverTypeName) {
 					const enclosing = findEnclosingFunction(
-						captureMap["assignment"],
+						captureMap.assignment,
 						file.path,
 						ctx,
 						provider,
@@ -1227,17 +1227,17 @@ export const processCalls = async (
 						propertyName,
 						filePath: file.path,
 						srcId,
-						line: captureMap["assignment"].startPosition.row + 1,
+						line: captureMap.assignment.startPosition.row + 1,
 					});
 				}
 				// Assignment-only capture (no @call sibling): skip the rest of this
 				// forEach iteration — this acts as a `continue` in the match loop.
-				if (!captureMap["call"]) return;
+				if (!captureMap.call) return;
 			}
 
-			if (!captureMap["call"]) return;
+			if (!captureMap.call) return;
 
-			const callNode = captureMap["call"];
+			const callNode = captureMap.call;
 			const callExtractor = provider.callExtractor;
 
 			// ── Language-specific call site (e.g. Java :: method references) ──
@@ -1336,7 +1336,7 @@ export const processCalls = async (
 			if (provider.heritageExtractor?.extractFromCall) {
 				const heritageItems = provider.heritageExtractor.extractFromCall(
 					calledName,
-					captureMap["call"],
+					captureMap.call,
 					{ filePath: file.path, language },
 				);
 				if (heritageItems !== null) {
@@ -1354,7 +1354,7 @@ export const processCalls = async (
 
 			// Dispatch: route language-specific calls (properties, imports)
 			// Heritage routing is handled by heritageExtractor.extractFromCall above.
-			const routed = callRouter?.(calledName, captureMap["call"]);
+			const routed = callRouter?.(calledName, captureMap.call);
 			if (routed) {
 				switch (routed.kind) {
 					case "skip":
@@ -1467,8 +1467,7 @@ export const processCalls = async (
 			if (!receiverTypeName && receiverName && callForm === "member") {
 				const typeResolved = ctx.resolve(receiverName, file.path);
 				if (
-					typeResolved &&
-					typeResolved.candidates.some(
+					typeResolved?.candidates.some(
 						(d) =>
 							d.type === "Class" ||
 							d.type === "Interface" ||
@@ -1900,7 +1899,7 @@ const tryOverloadDisambiguation = (
 		hints.callNode,
 		hints.inferLiteralType,
 		hints.typeEnv
-			? (varName, cn) => hints.typeEnv!.lookup(varName, cn)
+			? (varName, cn) => hints.typeEnv?.lookup(varName, cn)
 			: undefined,
 	);
 	if (!argTypes) return null;
@@ -2286,8 +2285,7 @@ const resolveCallTarget = (
 			call.receiverName && aliasMap ? aliasMap.get(call.receiverName) : undefined;
 		if (
 			aliasTargetFile &&
-			typeResolves &&
-			typeResolves.candidates.some((c) => c.filePath === aliasTargetFile)
+			typeResolves?.candidates.some((c) => c.filePath === aliasTargetFile)
 		) {
 			const aliasResult = resolveModuleAliasedCall(
 				call,
@@ -2919,7 +2917,7 @@ export const resolveStaticCall = (
 			className,
 			argCount,
 		);
-		if (!def || def.type !== "Constructor") continue;
+		if (def?.type !== "Constructor") continue;
 		if (!firstDef) {
 			firstDef = def;
 		} else if (def.nodeId !== firstDef.nodeId) {
@@ -3229,8 +3227,7 @@ export const processCallsFromExtracted = async (
 					effectiveCall.filePath,
 				);
 				if (
-					typeResolved &&
-					typeResolved.candidates.some(
+					typeResolved?.candidates.some(
 						(d) =>
 							d.type === "Class" ||
 							d.type === "Interface" ||
@@ -3798,7 +3795,7 @@ export const extractFetchCallsFromFiles = async (
 						lineNumber: captureMap["route.fetch"].startPosition.row,
 					});
 				}
-			} else if (captureMap["http_client"] && captureMap["http_client.url"]) {
+			} else if (captureMap.http_client && captureMap["http_client.url"]) {
 				const method = captureMap["http_client.method"]?.text;
 				const url = captureMap["http_client.url"].text;
 				const HTTP_CLIENT_ONLY = new Set(["head", "options", "request", "ajax"]);
@@ -3806,7 +3803,7 @@ export const extractFetchCallsFromFiles = async (
 					result.push({
 						filePath: file.path,
 						fetchURL: url,
-						lineNumber: captureMap["http_client"].startPosition.row,
+						lineNumber: captureMap.http_client.startPosition.row,
 					});
 				}
 			}

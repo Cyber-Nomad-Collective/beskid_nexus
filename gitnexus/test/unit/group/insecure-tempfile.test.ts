@@ -178,8 +178,8 @@ describe("insecure tempfile — behavioural (#1318 U6)", () => {
 
 		const loaded = await readContractRegistry(tmpDir);
 		expect(loaded).not.toBeNull();
-		expect(loaded!.version).toBe(1);
-		expect(loaded!.generatedAt).toBe("2026-05-06T00:00:00Z");
+		expect(loaded?.version).toBe(1);
+		expect(loaded?.generatedAt).toBe("2026-05-06T00:00:00Z");
 	});
 
 	it("concurrent writes do not collide (randomBytes prevents same-ms race)", async () => {
@@ -193,7 +193,7 @@ describe("insecure tempfile — behavioural (#1318 U6)", () => {
 		const loaded = await readContractRegistry(tmpDir);
 		expect(loaded).not.toBeNull();
 		// One of the two writes wins the rename — we just verify no crash.
-		expect(["A", "B"]).toContain(loaded!.generatedAt);
+		expect(["A", "B"]).toContain(loaded?.generatedAt);
 	});
 });
 

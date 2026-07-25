@@ -235,7 +235,7 @@ export function preprocessCobolSource(content: string): string {
 		// This covers numeric sequence numbers (000100), alphabetic patch markers
 		// (mzADD, estero), '#'-prefixed markers, and all other col 1-6 content.
 		if (/\S/.test(seq)) {
-			lines[i] = "      " + line.substring(6);
+			lines[i] = `      ${line.substring(6)}`;
 		}
 	}
 	return lines.join("\n");
@@ -1310,7 +1310,7 @@ export function extractCobolSymbolsWithRegex(
 	function processLogicalLine(line: string, lineNum: number): void {
 		// --- EXEC block accumulation (spans any division) ---
 		if (execAccum !== null) {
-			execAccum.lines += " " + line;
+			execAccum.lines += ` ${line}`;
 			if (RE_END_EXEC.test(line)) {
 				if (execAccum.type === "sql") {
 					result.execSqlBlocks.push(
@@ -1534,7 +1534,7 @@ export function extractCobolSymbolsWithRegex(
 				flushCallAccum(); // Flush CALL without this line's content
 				// Fall through to process this line normally
 			} else {
-				callAccum += " " + line;
+				callAccum += ` ${line}`;
 				if (/\.\s*$/.test(callAccum) || /\bEND-CALL\b/i.test(callAccum)) {
 					flushCallAccum();
 				}
@@ -1647,7 +1647,7 @@ export function extractCobolSymbolsWithRegex(
 			selectStartLine = lineNum;
 		} else if (selectAccum !== null) {
 			// Accumulate continuation of current SELECT
-			selectAccum += " " + line.trim();
+			selectAccum += ` ${line.trim()}`;
 		}
 
 		// Check if current SELECT is terminated (ends with period)
@@ -1912,7 +1912,7 @@ export function extractCobolSymbolsWithRegex(
 		if (anonRedefMatch) {
 			// Check it's truly anonymous: the second capture is not a valid data name
 			// followed by more clauses — it's the REDEFINES target directly after level
-			const level = parseInt(anonRedefMatch[1], 10);
+			const _level = parseInt(anonRedefMatch[1], 10);
 			// Only skip if this is genuinely "NN REDEFINES target" with no name between
 			// We detect this by checking the full data item regex does NOT match
 			// (because RE_DATA_ITEM expects a name before any clauses)
@@ -2121,7 +2121,7 @@ export function extractCobolSymbolsWithRegex(
 		// SORT / MERGE file references (multi-line: accumulate until period)
 		if (sortAccum !== null) {
 			// Continue accumulating SORT/MERGE statement
-			sortAccum += " " + line;
+			sortAccum += ` ${line}`;
 			if (!/\.\s*$/.test(sortAccum)) return; // still accumulating — skip other extractors
 			// Period found — flush, then re-check line for a new SORT/MERGE after the period
 			flushSort();
@@ -2152,7 +2152,7 @@ export function extractCobolSymbolsWithRegex(
 				flushInspect();
 				// Fall through to process this line normally
 			} else {
-				inspectAccum += " " + line;
+				inspectAccum += ` ${line}`;
 				if (/\.\s*$/.test(inspectAccum)) {
 					flushInspect();
 				} else {

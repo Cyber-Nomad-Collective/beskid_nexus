@@ -1,6 +1,6 @@
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import nodePath from "node:path";
 import ignore, { type Ignore } from "ignore";
-import nodePath from "path";
 import type { Path } from "path-scurry";
 import { logger } from "../core/logger.js";
 
@@ -316,7 +316,7 @@ export const shouldIgnorePath = (filePath: string): boolean => {
 	// Ignore hidden files (starting with .)
 	if (fileName.startsWith(".") && fileName !== ".") {
 		// But allow some important config files
-		const allowedDotFiles = [".env", ".gitignore"]; // Already in IGNORED_FILES, so this is redundant
+		const _allowedDotFiles = [".env", ".gitignore"]; // Already in IGNORED_FILES, so this is redundant
 		// Actually, let's NOT ignore all dot files - many are important configs
 		// Just rely on the explicit lists above
 	}
@@ -409,12 +409,12 @@ const hasExplicitUnignore = (ig: Ignore, rel: string): boolean => {
 	if (ig.test(rel).unignored) return true;
 	// Direct match on the path treated as a directory — `!dir/` matches
 	// here when rel is the directory itself.
-	if (ig.test(rel + "/").unignored) return true;
+	if (ig.test(`${rel}/`).unignored) return true;
 	// Walk ancestor segments. `!parent/` should propagate to every
 	// descendant the same way `.gitignore` negation propagates.
 	const parts = rel.split("/");
 	for (let i = parts.length - 1; i > 0; i--) {
-		const ancestor = parts.slice(0, i).join("/") + "/";
+		const ancestor = `${parts.slice(0, i).join("/")}/`;
 		if (ig.test(ancestor).unignored) return true;
 	}
 	return false;
@@ -458,7 +458,7 @@ export const createIgnoreFilter = async (
 			// the re-ignored child.
 			if (ig && hasExplicitUnignore(ig, rel) && !ig.ignores(rel)) return false;
 			// Check .gitignore / .gitnexusignore patterns
-			if (ig && ig.ignores(rel)) return true;
+			if (ig?.ignores(rel)) return true;
 			// Fall back to hardcoded rules
 			return shouldIgnorePath(rel);
 		},
@@ -474,7 +474,7 @@ export const createIgnoreFilter = async (
 			// DEFAULT_IGNORE_LIST. The `!ig.ignores(rel + '/')` guard keeps
 			// last-match-wins: `!__tests__/` + `__tests__/generated/` still
 			// blocks descent into `__tests__/generated/`.
-			if (ig && rel && hasExplicitUnignore(ig, rel) && !ig.ignores(rel + "/"))
+			if (ig && rel && hasExplicitUnignore(ig, rel) && !ig.ignores(`${rel}/`))
 				return false;
 			// Hardcoded list: block descent into well-known noise directories.
 			if (DEFAULT_IGNORE_LIST.has(p.name)) return true;
@@ -486,7 +486,7 @@ export const createIgnoreFilter = async (
 			// Bare-name patterns (e.g. `local`) still match `local/` per gitignore spec:
 			// the `ignore` package normalizes `dir` and `dir/` to match directories.
 			// See: https://github.com/kaelzhang/node-ignore#2-filenames-and-dirnames
-			if (ig && rel && ig.ignores(rel + "/")) return true;
+			if (ig && rel && ig.ignores(`${rel}/`)) return true;
 			return false;
 		},
 	};

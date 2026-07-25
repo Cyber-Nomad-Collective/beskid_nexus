@@ -25,7 +25,7 @@
  */
 
 import { writeSync } from "node:fs";
-import http from "http";
+import http from "node:http";
 import { logger } from "../core/logger.js";
 import { LocalBackend } from "../mcp/local/local-backend.js";
 import { cliInfo, cliWarn } from "./cli-message.js";
@@ -345,8 +345,8 @@ function getNextStepHint(toolName: string): string {
 export async function evalServerCommand(
 	options?: EvalServerOptions,
 ): Promise<void> {
-	const port = parseInt(options?.port || "4848");
-	const idleTimeoutSec = parseInt(options?.idleTimeout || "0");
+	const port = parseInt(options?.port || "4848", 10);
+	const idleTimeoutSec = parseInt(options?.idleTimeout || "0", 10);
 
 	const backend = new LocalBackend();
 	const ok = await backend.init();

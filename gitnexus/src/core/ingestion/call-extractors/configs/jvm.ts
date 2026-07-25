@@ -33,7 +33,7 @@ function parseJavaMethodReference(
 
 	// expr::method  →  member call with receiver
 	const rhs = callNode.child(callNode.childCount - 1);
-	if (!rhs || rhs.type !== "identifier") return null;
+	if (rhs?.type !== "identifier") return null;
 	const methodName = rhs.text;
 
 	if (recv.type === "identifier") {

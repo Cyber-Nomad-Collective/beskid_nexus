@@ -1,12 +1,12 @@
 function greet(name: string, greeting: string = "Hello"): string {
-	return greeting + ", " + name;
+	return `${greeting}, ${name}`;
 }
 
-function search(query: string, limit?: number): string[] {
+function search(_query: string, _limit?: number): string[] {
 	return [];
 }
 
-function process() {
+function _process() {
 	greet("Alice");
 	greet("Bob", "Hi");
 	search("test");

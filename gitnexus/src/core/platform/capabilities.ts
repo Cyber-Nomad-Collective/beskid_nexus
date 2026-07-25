@@ -1,5 +1,5 @@
-import { createRequire } from "module";
-import os from "os";
+import { createRequire } from "node:module";
+import os from "node:os";
 
 const require = createRequire(import.meta.url);
 

@@ -98,7 +98,7 @@ function isCopybook(filePath: string): boolean {
 export const processCobol = (
 	graph: KnowledgeGraph,
 	files: CobolFile[],
-	allPathSet: ReadonlySet<string>,
+	_allPathSet: ReadonlySet<string>,
 ): CobolProcessResult => {
 	const result: CobolProcessResult = {
 		programs: 0,
@@ -234,7 +234,7 @@ export const processCobol = (
 			const resolvedReason =
 				rel.reason === "cobol-cancel-unresolved" ? "cobol-cancel" : "cobol-call";
 			graph.addRelationship({
-				id: rel.id + ":resolved",
+				id: `${rel.id}:resolved`,
 				type: "CALLS",
 				sourceId: rel.sourceId,
 				targetId: resolvedId,
@@ -247,7 +247,7 @@ export const processCobol = (
 		) {
 			// Replace unresolved CICS LINK/XCTL/LOAD with resolved edge
 			graph.addRelationship({
-				id: rel.id + ":resolved",
+				id: `${rel.id}:resolved`,
 				type: "CALLS",
 				sourceId: rel.sourceId,
 				targetId: resolvedId,
@@ -376,7 +376,7 @@ function mapToGraph(
 	// entries are nested programs that get their own Module nodes.
 	const programModuleIds = new Map<string, string>();
 	if (moduleId) {
-		programModuleIds.set(extracted.programName!.toUpperCase(), moduleId);
+		programModuleIds.set(extracted.programName?.toUpperCase(), moduleId);
 	}
 	for (const prog of extracted.programs) {
 		if (prog.name.toUpperCase() === extracted.programName?.toUpperCase())
@@ -432,7 +432,7 @@ function mapToGraph(
 		const owningPgm = findOwningProgramName(sec.line, extracted.programs);
 		const secId = generateId(
 			"Namespace",
-			`${filePath}:${owningPgm ? owningPgm + ":" : ""}${sec.name}`,
+			`${filePath}:${owningPgm ? `${owningPgm}:` : ""}${sec.name}`,
 		);
 		graph.addNode({
 			id: secId,
@@ -469,7 +469,7 @@ function mapToGraph(
 		const owningPgmPara = findOwningProgramName(para.line, extracted.programs);
 		const paraId = generateId(
 			"Function",
-			`${filePath}:${owningPgmPara ? owningPgmPara + ":" : ""}${para.name}`,
+			`${filePath}:${owningPgmPara ? `${owningPgmPara}:` : ""}${para.name}`,
 		);
 		graph.addNode({
 			id: paraId,

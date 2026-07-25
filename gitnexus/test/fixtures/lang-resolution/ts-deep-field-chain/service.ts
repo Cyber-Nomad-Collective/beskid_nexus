@@ -1,6 +1,6 @@
 import type { User } from "./models";
 
-function processUser(user: User) {
+function _processUser(user: User) {
 	// 2-level chain: user.address → Address, then .save() → Address#save
 	user.address.save();
 

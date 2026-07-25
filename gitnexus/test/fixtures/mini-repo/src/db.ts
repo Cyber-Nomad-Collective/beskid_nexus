@@ -14,6 +14,6 @@ export async function saveToDb(input: ValidationResult): Promise<DbRecord> {
 	};
 }
 
-export async function findById(id: string): Promise<DbRecord | null> {
+export async function findById(_id: string): Promise<DbRecord | null> {
 	return null;
 }

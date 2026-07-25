@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import express, {
 	type Express,
 	type NextFunction,
@@ -455,7 +455,7 @@ export const mountNexusRoutes = (
 	app.get("/api/catalog/:id", async (req, res) => {
 		try {
 			const entry = await getCatalogEntry(req.params.id);
-			if (!entry || !entry.enabled) {
+			if (!entry?.enabled) {
 				res.status(404).json({ error: "Not found" });
 				return;
 			}
@@ -716,7 +716,7 @@ export const mountGithubWebhook = (
 			}
 
 			const entry = await findCatalogByGitUrl(repoUrl);
-			if (!entry || !entry.enabled) {
+			if (!entry?.enabled) {
 				res.status(200).json({ ok: true, ignored: true });
 				return;
 			}

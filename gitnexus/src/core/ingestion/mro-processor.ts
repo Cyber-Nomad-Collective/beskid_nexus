@@ -441,7 +441,7 @@ function emitMethodImplementsEdges(
 ): number {
 	let edgeCount = 0;
 
-	for (const [classId, parentIds] of parentMap) {
+	for (const [classId, _parentIds] of parentMap) {
 		const classNode = graph.getNode(classId);
 		if (!classNode) continue;
 

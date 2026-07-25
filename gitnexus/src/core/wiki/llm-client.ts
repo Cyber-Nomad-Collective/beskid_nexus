@@ -320,7 +320,7 @@ export async function callLLM(
 
 	// Streaming path
 	if (useStream && response.body) {
-		return await readSSEStream(response.body, options!.onChunk!);
+		return await readSSEStream(response.body, options?.onChunk!);
 	}
 
 	// Non-streaming path
@@ -360,7 +360,7 @@ async function readSSEStream(
 
 		for (const line of lines) {
 			const trimmed = line.trim();
-			if (!trimmed || !trimmed.startsWith("data: ")) continue;
+			if (!trimmed?.startsWith("data: ")) continue;
 			const data = trimmed.slice(6);
 			if (data === "[DONE]") continue;
 

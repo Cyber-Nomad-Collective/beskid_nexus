@@ -68,7 +68,7 @@ const extractCapturedPatternBindings = (
 		// captured_pattern: identifier @ inner_pattern
 		// The first named child is the identifier, followed by the inner pattern.
 		const nameNode = pattern.firstNamedChild;
-		if (!nameNode || nameNode.type !== "identifier") return;
+		if (nameNode?.type !== "identifier") return;
 		// Find the struct_pattern child — that gives us the type
 		for (let i = 0; i < pattern.namedChildCount; i++) {
 			const child = pattern.namedChild(i);
@@ -159,7 +159,7 @@ const extractInitializer: InitializerExtractor = (
 
 	if (value.type !== "call_expression") return;
 	const func = value.childForFieldName("function");
-	if (!func || func.type !== "scoped_identifier") return;
+	if (func?.type !== "scoped_identifier") return;
 	const nameField = func.childForFieldName("name");
 	// Only match ::new() and ::default() — the two idiomatic Rust constructors.
 	// Deliberately excludes ::from(), ::with_capacity(), etc. to avoid false positives
@@ -216,7 +216,7 @@ const scanConstructorBinding: ConstructorBindingScanner = (node) => {
 	if (patternNode.type !== "identifier") return undefined;
 	// Unwrap `.await`: `let user = get_user().await` → await_expression wraps call_expression
 	const value = unwrapAwait(node.childForFieldName("value"));
-	if (!value || value.type !== "call_expression") return undefined;
+	if (value?.type !== "call_expression") return undefined;
 	const func = value.childForFieldName("function");
 	if (!func) return undefined;
 	if (func.type === "scoped_identifier") {
@@ -466,7 +466,7 @@ const findRustParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const param = paramsNode.namedChild(i);
-					if (!param || param.type !== "parameter") continue;
+					if (param?.type !== "parameter") continue;
 					const nameNode = param.childForFieldName("pattern");
 					if (!nameNode) continue;
 					// Unwrap reference patterns: &users, &mut users

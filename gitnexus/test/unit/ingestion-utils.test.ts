@@ -570,8 +570,8 @@ describe("extractFunctionName (via methodExtractor)", () => {
 			const tree = parser.parse(code);
 			const program = tree.rootNode;
 			const varDecl = program.child(0);
-			const declarator = varDecl!.namedChild(0);
-			const arrowFunc = declarator!.namedChild(1);
+			const declarator = varDecl?.namedChild(0);
+			const arrowFunc = declarator?.namedChild(1);
 
 			const result = extractFunctionName(arrowFunc, tsProvider);
 
@@ -585,8 +585,8 @@ describe("extractFunctionName (via methodExtractor)", () => {
 			const tree = parser.parse(code);
 			const program = tree.rootNode;
 			const varDecl = program.child(0);
-			const declarator = varDecl!.namedChild(0);
-			const funcExpr = declarator!.namedChild(1);
+			const declarator = varDecl?.namedChild(0);
+			const funcExpr = declarator?.namedChild(1);
 
 			const result = extractFunctionName(funcExpr, tsProvider);
 
@@ -649,8 +649,8 @@ describe("extractFunctionName (via methodExtractor)", () => {
 			const code = `def outer():\n    def inner():\n        pass`;
 			const tree = parser.parse(code);
 			const outerFunc = tree.rootNode.child(0);
-			const block = outerFunc!.child(4);
-			const innerFunc = block!.namedChild(0);
+			const block = outerFunc?.child(4);
+			const innerFunc = block?.namedChild(0);
 
 			const result = extractFunctionName(innerFunc);
 

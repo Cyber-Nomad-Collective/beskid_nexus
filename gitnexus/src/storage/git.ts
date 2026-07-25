@@ -1,6 +1,6 @@
-import { execSync } from "child_process";
-import { statSync } from "fs";
-import path from "path";
+import { execSync } from "node:child_process";
+import { statSync } from "node:fs";
+import path from "node:path";
 
 // Git utilities for repository detection, commit tracking, and diff analysis
 

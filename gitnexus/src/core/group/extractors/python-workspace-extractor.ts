@@ -175,11 +175,11 @@ async function findPythonFiles(repoPath: string): Promise<string[]> {
 			const childRel = rel ? `${rel}/${entry.name}` : entry.name;
 			if (entry.isDirectory()) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel + "/")) continue;
+				if (ig?.ignores(`${childRel}/`)) continue;
 				await walk(path.join(dir, entry.name), childRel);
 			} else if (entry.name.endsWith(".py")) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel)) continue;
+				if (ig?.ignores(childRel)) continue;
 				results.push(childRel);
 			}
 		}

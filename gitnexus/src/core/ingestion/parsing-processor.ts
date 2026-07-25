@@ -193,7 +193,7 @@ const processParsingWithWorkers = async (
 	graph: KnowledgeGraph,
 	files: { path: string; content: string }[],
 	symbolTable: SymbolTableWriter,
-	astCache: ASTCache,
+	_astCache: ASTCache,
 	workerPool: WorkerPool,
 	onFileProgress?: FileProgressCallback,
 	/**
@@ -443,7 +443,7 @@ const processParsingSequential = async (
 			tree = parseSourceSafe(parser, parseContent, undefined, {
 				bufferSize: getTreeSitterBufferSize(parseContent),
 			});
-		} catch (parseError) {
+		} catch (_parseError) {
 			logger.warn(`Skipping unparseable file: ${file.path}`);
 			continue;
 		}
@@ -501,7 +501,7 @@ const processParsingSequential = async (
 			const defaultNodeLabel = getLabelFromCaptures(captureMap, provider);
 			if (!defaultNodeLabel) return;
 
-			const nameNode = captureMap["name"];
+			const nameNode = captureMap.name;
 			const extractedClassSymbol =
 				definitionNode && provider.classExtractor?.isTypeDeclaration(definitionNode)
 					? provider.classExtractor.extract(definitionNode, {
@@ -676,9 +676,7 @@ const processParsingSequential = async (
 				(captureMap["template-arguments"]
 					? extractTemplateArguments(captureMap["template-arguments"].text)
 					: undefined) ??
-				(nameNode && nameNode.text
-					? extractTemplateArguments(nameNode.text)
-					: undefined);
+				(nameNode?.text ? extractTemplateArguments(nameNode.text) : undefined);
 			const classTemplateTag =
 				(nodeLabel === "Class" ||
 					nodeLabel === "Struct" ||

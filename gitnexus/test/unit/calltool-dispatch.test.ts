@@ -981,15 +981,15 @@ describe("LocalBackend.getContext", () => {
 	it("returns context for single repo without specifying id", () => {
 		const ctx = backend.getContext();
 		expect(ctx).not.toBeNull();
-		expect(ctx!.projectName).toBe("test-project");
-		expect(ctx!.stats.fileCount).toBe(10);
-		expect(ctx!.stats.functionCount).toBe(50);
+		expect(ctx?.projectName).toBe("test-project");
+		expect(ctx?.stats.fileCount).toBe(10);
+		expect(ctx?.stats.functionCount).toBe(50);
 	});
 
 	it("returns context by repo id", () => {
 		const ctx = backend.getContext("test-project");
 		expect(ctx).not.toBeNull();
-		expect(ctx!.projectName).toBe("test-project");
+		expect(ctx?.projectName).toBe("test-project");
 	});
 
 	it("returns single repo context even with unknown id (single-repo fallback)", () => {
@@ -999,7 +999,7 @@ describe("LocalBackend.getContext", () => {
 		// The id doesn't match, but since repos.size === 1, it returns that single context
 		// This is the actual behavior — test documents it
 		expect(ctx).not.toBeNull();
-		expect(ctx!.projectName).toBe("test-project");
+		expect(ctx?.projectName).toBe("test-project");
 	});
 });
 

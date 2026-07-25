@@ -26,7 +26,7 @@
  *     here there is no pipeline, so no conflation.)
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import { logger } from "../core/logger.js";
 import {
 	assertSafeStoragePath,

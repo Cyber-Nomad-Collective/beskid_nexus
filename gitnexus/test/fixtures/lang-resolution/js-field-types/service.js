@@ -1,9 +1,9 @@
 const { User, Config } = require("./models");
 
-function processUser(user) {
+function _processUser(user) {
 	user.address.save();
 }
 
-function validateConfig() {
+function _validateConfig() {
 	Config.DEFAULT.validate();
 }

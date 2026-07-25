@@ -15,12 +15,12 @@ function getRepo(path) {
 	return new Repo(path);
 }
 
-function processUser() {
+function _processUser() {
 	const user = getUser("alice");
 	user.save();
 }
 
-function processRepo() {
+function _processRepo() {
 	const repo = getRepo("/data");
 	repo.save();
 }
@@ -28,13 +28,13 @@ function processRepo() {
 /**
  * @param {User} user the user to handle
  */
-function handleUser(user) {
+function _handleUser(user) {
 	user.save();
 }
 
 /**
  * @param {Repo} repo the repo to handle
  */
-function handleRepo(repo) {
+function _handleRepo(repo) {
 	repo.save();
 }

@@ -1231,7 +1231,7 @@ export const buildTypeEnv = (
 					const varMap = patternOverrides.get(scope)!;
 					if (!varMap.has(patternBinding.varName))
 						varMap.set(patternBinding.varName, []);
-					varMap.get(patternBinding.varName)!.push({
+					varMap.get(patternBinding.varName)?.push({
 						rangeStart: patternBinding.narrowingRange.startIndex,
 						rangeEnd: patternBinding.narrowingRange.endIndex,
 						typeName: patternBinding.typeName,
@@ -1246,7 +1246,7 @@ export const buildTypeEnv = (
 						const varMap = patternOverrides.get(scope)!;
 						if (!varMap.has(patternBinding.varName))
 							varMap.set(patternBinding.varName, []);
-						varMap.get(patternBinding.varName)!.push({
+						varMap.get(patternBinding.varName)?.push({
 							rangeStart: branchNode.startIndex,
 							rangeEnd: branchNode.endIndex,
 							typeName: patternBinding.typeName,

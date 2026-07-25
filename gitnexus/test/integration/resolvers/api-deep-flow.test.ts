@@ -10,7 +10,7 @@
  * the query/tool layer. Together they cover extraction → storage → query.
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	FIXTURES,
@@ -45,7 +45,7 @@ describe("deep flow detection pipeline", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const grants = routes.find((r) => r.name === "/api/grants");
 		expect(grants).toBeDefined();
-		expect(grants!.properties.responseKeys).toEqual(
+		expect(grants?.properties.responseKeys).toEqual(
 			expect.arrayContaining(["data", "pagination"]),
 		);
 	});
@@ -54,7 +54,7 @@ describe("deep flow detection pipeline", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const grants = routes.find((r) => r.name === "/api/grants");
 		expect(grants).toBeDefined();
-		expect(grants!.properties.errorKeys).toEqual(
+		expect(grants?.properties.errorKeys).toEqual(
 			expect.arrayContaining(["error", "message"]),
 		);
 	});
@@ -64,8 +64,8 @@ describe("deep flow detection pipeline", () => {
 		const grants = routes.find((r) => r.name === "/api/grants");
 		expect(grants).toBeDefined();
 
-		const successKeys = new Set(grants!.properties.responseKeys ?? []);
-		const errorKeys = new Set(grants!.properties.errorKeys ?? []);
+		const successKeys = new Set(grants?.properties.responseKeys ?? []);
+		const errorKeys = new Set(grants?.properties.errorKeys ?? []);
 
 		// 'error' and 'message' should only be in errorKeys
 		expect(successKeys.has("error")).toBe(false);
@@ -81,16 +81,16 @@ describe("deep flow detection pipeline", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const secure = routes.find((r) => r.name === "/api/secure");
 		expect(secure).toBeDefined();
-		expect(secure!.properties.middleware).toBeDefined();
-		expect(secure!.properties.middleware).toContain("withAuth");
-		expect(secure!.properties.middleware).toContain("withRateLimit");
+		expect(secure?.properties.middleware).toBeDefined();
+		expect(secure?.properties.middleware).toContain("withAuth");
+		expect(secure?.properties.middleware).toContain("withRateLimit");
 	});
 
 	it("stores middleware in outermost-first order", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const secure = routes.find((r) => r.name === "/api/secure");
 		expect(secure).toBeDefined();
-		const mw = secure!.properties.middleware ?? [];
+		const mw = secure?.properties.middleware ?? [];
 		const authIdx = mw.indexOf("withAuth");
 		const rlIdx = mw.indexOf("withRateLimit");
 		// withAuth wraps withRateLimit, so withAuth should come first
@@ -118,12 +118,12 @@ describe("deep flow detection pipeline", () => {
 			(e) => e.sourceFilePath.includes("GrantsList") && e.target === "/api/grants",
 		);
 		expect(grantsListEdge).toBeDefined();
-		expect(grantsListEdge!.rel.reason).toContain("keys:");
+		expect(grantsListEdge?.rel.reason).toContain("keys:");
 
 		// Parse the keys from the reason field
-		const keysMatch = grantsListEdge!.rel.reason?.match(/keys:([^|]+)/);
+		const keysMatch = grantsListEdge?.rel.reason?.match(/keys:([^|]+)/);
 		expect(keysMatch).not.toBeNull();
-		const keys = keysMatch![1].split(",");
+		const keys = keysMatch?.[1].split(",");
 		expect(keys).toContain("data");
 		expect(keys).toContain("pagination");
 	});
@@ -142,8 +142,8 @@ describe("deep flow detection pipeline", () => {
 		expect(useMultiSecure).toBeDefined();
 
 		// Both edges should have fetches:2 in reason
-		expect(useMultiGrants!.rel.reason).toContain("fetches:2");
-		expect(useMultiSecure!.rel.reason).toContain("fetches:2");
+		expect(useMultiGrants?.rel.reason).toContain("fetches:2");
+		expect(useMultiSecure?.rel.reason).toContain("fetches:2");
 	});
 
 	// ─── HANDLES_ROUTE edges ──────────────────────────────────────
@@ -154,7 +154,7 @@ describe("deep flow detection pipeline", () => {
 
 		const grantsHandler = edges.find((e) => e.target === "/api/grants");
 		expect(grantsHandler).toBeDefined();
-		expect(grantsHandler!.sourceFilePath).toContain("app/api/grants/route.ts");
+		expect(grantsHandler?.sourceFilePath).toContain("app/api/grants/route.ts");
 	});
 
 	// ─── Mismatch-detectable data ─────────────────────────────────
@@ -169,13 +169,13 @@ describe("deep flow detection pipeline", () => {
 		expect(useGrantsEdge).toBeDefined();
 
 		// useGrants.ts does data.items — 'items' should be in consumer keys
-		const keysMatch = useGrantsEdge!.rel.reason?.match(/keys:([^|]+)/);
+		const keysMatch = useGrantsEdge?.rel.reason?.match(/keys:([^|]+)/);
 		expect(keysMatch).not.toBeNull();
-		const consumerKeys = keysMatch![1].split(",");
+		const consumerKeys = keysMatch?.[1].split(",");
 		expect(consumerKeys).toContain("items");
 
 		// But /api/grants responseKeys are [data, pagination] — 'items' is NOT there
-		const responseKeys = new Set(grants!.properties.responseKeys ?? []);
+		const responseKeys = new Set(grants?.properties.responseKeys ?? []);
 		expect(responseKeys.has("items")).toBe(false);
 		// This is the mismatch the api_impact tool would detect
 	});

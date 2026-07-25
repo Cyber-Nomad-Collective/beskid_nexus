@@ -18,9 +18,9 @@
  * (Option B revision).
  */
 
-import { createHash } from "crypto";
-import fs from "fs/promises";
-import path from "path";
+import { createHash } from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 /**
  * Compute SHA-256 of a single file. Returns null when the file can't be

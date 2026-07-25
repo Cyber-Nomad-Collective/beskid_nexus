@@ -2,7 +2,7 @@
  * JavaScript: self/this resolution, parent resolution, super resolution
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -76,7 +76,7 @@ describe("JavaScript this resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/models/User.js");
+		expect(saveCall?.targetFilePath).toBe("src/models/User.js");
 	});
 });
 
@@ -109,7 +109,7 @@ describe("JavaScript parent resolution", () => {
 		const extends_ = getRelationships(result, "EXTENDS");
 		const target = result.graph.getNode(extends_[0].rel.targetId);
 		expect(target).toBeDefined();
-		expect(target!.properties.name).toBe("BaseModel");
+		expect(target?.properties.name).toBe("BaseModel");
 	});
 });
 
@@ -317,23 +317,23 @@ describe("Field type resolution (JavaScript)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.isReadonly).toBe(false);
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.isReadonly).toBe(false);
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.isStatic).toBe(false);
-		expect(addr!.properties.isReadonly).toBe(false);
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.isStatic).toBe(false);
+		expect(addr?.properties.isReadonly).toBe(false);
 	});
 
 	it("marks Config.DEFAULT as static", () => {
 		const properties = getNodesByLabelFull(result, "Property");
 		const def = properties.find((p) => p.name === "DEFAULT");
 		expect(def).toBeDefined();
-		expect(def!.properties.isStatic).toBe(true);
-		expect(def!.properties.visibility).toBe("public");
+		expect(def?.properties.isStatic).toBe(true);
+		expect(def?.properties.visibility).toBe("public");
 	});
 });
 
@@ -608,6 +608,6 @@ describe("JavaScript Child extends Parent — inherited method resolution (SM-9)
 			(c) => c.target === "parentMethod" && c.targetFilePath.includes("Parent.js"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });

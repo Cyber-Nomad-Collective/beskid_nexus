@@ -101,7 +101,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
 	const formattedContent = React.useMemo(
 		() => formatMarkdownForDisplay(content),
-		[content],
+		[content, formatMarkdownForDisplay],
 	);
 
 	const markdownComponents = React.useMemo(

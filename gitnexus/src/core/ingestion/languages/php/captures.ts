@@ -114,7 +114,7 @@ export function emitPhpScopeCaptures(
 		// `@`; we put it back so the central extractor's prefix lookups work.
 		const grouped: Record<string, Capture> = {};
 		for (const c of m.captures) {
-			const tag = "@" + c.name;
+			const tag = `@${c.name}`;
 			grouped[tag] = nodeToCapture(tag, c.node);
 		}
 		if (Object.keys(grouped).length === 0) continue;
@@ -173,7 +173,7 @@ export function emitPhpScopeCaptures(
 		// so `User::$count` resolves to property `count` (stored without `$` in graph).
 		if (grouped["@reference.write.static"] !== undefined) {
 			const nameCap = grouped["@reference.name"];
-			if (nameCap !== undefined && nameCap.text.startsWith("$")) {
+			if (nameCap?.text.startsWith("$")) {
 				grouped["@reference.name"] = {
 					...nameCap,
 					text: nameCap.text.slice(1),
@@ -369,7 +369,7 @@ function normalizePhpReceiver(raw: string): string {
 	const segments = text.split(".");
 	for (let i = 1; i < segments.length; i++) {
 		const s = segments[i];
-		if (s !== undefined && s.startsWith("$")) segments[i] = s.slice(1);
+		if (s?.startsWith("$")) segments[i] = s.slice(1);
 	}
 	return segments.join(".");
 }
@@ -537,7 +537,7 @@ function synthesizePhpDocBindings(fnNode: SyntaxNode): CaptureMatch[] {
 
 	while ((m = PHPDOC_PARAM_RE.exec(commentBlock)) !== null) {
 		const rawType = m[1];
-		const paramName = "$" + m[2];
+		const paramName = `$${m[2]}`;
 		const typeName = normalizePhpDocType(rawType);
 		if (typeName === null) continue;
 		seenParams.add(paramName);
@@ -562,7 +562,7 @@ function synthesizePhpDocBindings(fnNode: SyntaxNode): CaptureMatch[] {
 	// Also check alternate PHPDoc order: @param $name Type
 	PHPDOC_PARAM_ALT_RE.lastIndex = 0;
 	while ((m = PHPDOC_PARAM_ALT_RE.exec(commentBlock)) !== null) {
-		const paramName = "$" + m[1];
+		const paramName = `$${m[1]}`;
 		if (seenParams.has(paramName)) continue; // standard format takes priority
 		const rawType = m[2];
 		const typeName = normalizePhpDocType(rawType);
@@ -669,13 +669,13 @@ function buildParamTypeMap(commentBlock: string): Map<string, string> {
 	let m: RegExpExecArray | null;
 	while ((m = PHPDOC_PARAM_RE.exec(commentBlock)) !== null) {
 		const rawType = m[1];
-		const paramName = "$" + m[2];
+		const paramName = `$${m[2]}`;
 		const typeName = normalizePhpDocType(rawType);
 		if (typeName !== null) map.set(paramName, typeName);
 	}
 	PHPDOC_PARAM_ALT_RE.lastIndex = 0;
 	while ((m = PHPDOC_PARAM_ALT_RE.exec(commentBlock)) !== null) {
-		const paramName = "$" + m[1];
+		const paramName = `$${m[1]}`;
 		if (map.has(paramName)) continue;
 		const rawType = m[2];
 		const typeName = normalizePhpDocType(rawType);
@@ -764,7 +764,7 @@ function synthesizeSingleForeach(
 		if (propNameNode !== null) {
 			// Property stored with $ prefix in paramTypeMap (rare for $this->prop patterns)
 			// Try both with and without $ prefix
-			const propKey = "$" + propNameNode.text;
+			const propKey = `$${propNameNode.text}`;
 			elementType = paramTypeMap.get(propKey) ?? null;
 			if (elementType === null) {
 				// Try to find the property type from the enclosing class
@@ -841,7 +841,7 @@ function findClassPropertyElementType(
 			const elem = child.namedChild(j);
 			if (elem === null || elem.type !== "property_element") continue;
 			const varNameNode = elem.firstNamedChild;
-			if (varNameNode === null || varNameNode.text !== "$" + propName) continue;
+			if (varNameNode === null || varNameNode.text !== `$${propName}`) continue;
 			// Found the property — get its element type from @var PHPDoc or native type
 			return extractPropertyElementType(child);
 		}

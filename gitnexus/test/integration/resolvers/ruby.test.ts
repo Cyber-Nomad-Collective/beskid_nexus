@@ -4,7 +4,7 @@
  *       constructor-inferred type resolution
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -102,7 +102,7 @@ describe("Ruby require_relative, heritage & property resolution", () => {
 			(e) => e.source === "User" && e.target === "Serializable",
 		);
 		expect(edge).toBeDefined();
-		expect(edge!.rel.reason).toBe("include");
+		expect(edge?.rel.reason).toBe("include");
 	});
 
 	it('emits IMPLEMENTS edge for extend Loggable with reason "extend"', () => {
@@ -111,7 +111,7 @@ describe("Ruby require_relative, heritage & property resolution", () => {
 			(e) => e.source === "User" && e.target === "Loggable",
 		);
 		expect(edge).toBeDefined();
-		expect(edge!.rel.reason).toBe("extend");
+		expect(edge?.rel.reason).toBe("extend");
 	});
 
 	it('emits IMPLEMENTS edge for prepend Cacheable with reason "prepend"', () => {
@@ -120,7 +120,7 @@ describe("Ruby require_relative, heritage & property resolution", () => {
 			(e) => e.source === "User" && e.target === "Cacheable",
 		);
 		expect(edge).toBeDefined();
-		expect(edge!.rel.reason).toBe("prepend");
+		expect(edge?.rel.reason).toBe("prepend");
 	});
 
 	// --- Extends: class inheritance ---
@@ -222,7 +222,7 @@ describe("Ruby require_relative, heritage & property resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -245,9 +245,9 @@ describe("Ruby call resolution with arity filtering", () => {
 		const calls = getRelationships(result, "CALLS");
 		const auditCall = calls.find((c) => c.target === "write_audit");
 		expect(auditCall).toBeDefined();
-		expect(auditCall!.source).toBe("run_task");
-		expect(auditCall!.targetFilePath).toContain("one_arg.rb");
-		expect(auditCall!.rel.reason).toBe("import-resolved");
+		expect(auditCall?.source).toBe("run_task");
+		expect(auditCall?.targetFilePath).toContain("one_arg.rb");
+		expect(auditCall?.rel.reason).toBe("import-resolved");
 	});
 });
 
@@ -269,8 +269,8 @@ describe("Ruby member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "persist_record");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process_user");
-		expect(saveCall!.targetFilePath).toContain("user.rb");
+		expect(saveCall?.source).toBe("process_user");
+		expect(saveCall?.targetFilePath).toContain("user.rb");
 	});
 
 	it("detects User class and persist_record method", () => {
@@ -371,7 +371,7 @@ describe("Ruby local definition shadows import", () => {
 			(c) => c.target === "do_work" && c.source === "run_app",
 		);
 		expect(doWorkCall).toBeDefined();
-		expect(doWorkCall!.targetFilePath).toContain("app.rb");
+		expect(doWorkCall?.targetFilePath).toContain("app.rb");
 	});
 });
 
@@ -407,7 +407,7 @@ describe("Ruby constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/user.rb",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("process_entities");
+		expect(userSave?.source).toBe("process_entities");
 	});
 
 	it("resolves repo.save to models/repo.rb via constructor-inferred type", () => {
@@ -416,7 +416,7 @@ describe("Ruby constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/repo.rb",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("process_entities");
+		expect(repoSave?.source).toBe("process_entities");
 	});
 
 	it("emits exactly 2 save CALLS edges (one per receiver type)", () => {
@@ -431,7 +431,7 @@ describe("Ruby constructor-inferred type resolution", () => {
 			(c) => c.source === "greet" && c.target === "process_entities",
 		);
 		expect(selfCall).toBeDefined();
-		expect(selfCall!.targetFilePath).toContain("app.rb");
+		expect(selfCall?.targetFilePath).toContain("app.rb");
 	});
 
 	it("resolves self.cleanup to services/app.rb, not models/user.rb or models/repo.rb", () => {
@@ -440,7 +440,7 @@ describe("Ruby constructor-inferred type resolution", () => {
 			(c) => c.source === "greet" && c.target === "cleanup",
 		);
 		expect(selfCleanup).toBeDefined();
-		expect(selfCleanup!.targetFilePath).toContain("app.rb");
+		expect(selfCleanup?.targetFilePath).toContain("app.rb");
 	});
 });
 
@@ -472,7 +472,7 @@ describe("Ruby self resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("lib/models/user.rb");
+		expect(saveCall?.targetFilePath).toBe("lib/models/user.rb");
 	});
 });
 
@@ -509,7 +509,7 @@ describe("Ruby parent resolution", () => {
 			(e) => e.source === "User" && e.target === "Serializable",
 		);
 		expect(includeEdge).toBeDefined();
-		expect(includeEdge!.rel.reason).toBe("include");
+		expect(includeEdge?.rel.reason).toBe("include");
 	});
 });
 
@@ -621,7 +621,7 @@ describe("Ruby YARD annotation type resolution", () => {
 			(c) => c.target === "save" && c.source === "create",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toContain("models.rb");
+		expect(saveCall?.targetFilePath).toContain("models.rb");
 	});
 
 	it("resolves user.greet to User#greet via YARD @param annotation", () => {
@@ -630,7 +630,7 @@ describe("Ruby YARD annotation type resolution", () => {
 			(c) => c.target === "greet" && c.source === "create",
 		);
 		expect(greetCall).toBeDefined();
-		expect(greetCall!.targetFilePath).toContain("models.rb");
+		expect(greetCall?.targetFilePath).toContain("models.rb");
 	});
 });
 
@@ -1067,11 +1067,11 @@ describe("Write access tracking (Ruby)", () => {
 		const addressWrite = writes.find((e) => e.target === "address");
 		const scoreWrite = writes.find((e) => e.target === "score");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("update_user");
+		expect(nameWrite?.source).toBe("update_user");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("update_user");
+		expect(addressWrite?.source).toBe("update_user");
 		expect(scoreWrite).toBeDefined();
-		expect(scoreWrite!.source).toBe("update_user");
+		expect(scoreWrite?.source).toBe("update_user");
 	});
 
 	it("emits ACCESSES write edge for compound assignment (operator_assignment)", () => {
@@ -1079,7 +1079,7 @@ describe("Write access tracking (Ruby)", () => {
 		const writes = accesses.filter((e) => e.rel.reason === "write");
 		const scoreWrite = writes.find((e) => e.target === "score");
 		expect(scoreWrite).toBeDefined();
-		expect(scoreWrite!.source).toBe("update_user");
+		expect(scoreWrite?.source).toBe("update_user");
 	});
 
 	it("write ACCESSES edges have confidence 1.0", () => {
@@ -1348,8 +1348,8 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 		expect(internalState).toBeDefined();
 		// Visibility enrichment requires the MethodExtractor path (worker mode).
 		// Sequential fallback (small repos) does not populate visibility.
-		if (internalState!.properties.visibility !== undefined) {
-			expect(internalState!.properties.visibility).toBe("private");
+		if (internalState?.properties.visibility !== undefined) {
+			expect(internalState?.properties.visibility).toBe("private");
 		}
 	});
 
@@ -1360,8 +1360,8 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 				m.name === "energy_level" && m.properties.filePath?.includes("animal"),
 		);
 		expect(energyLevel).toBeDefined();
-		if (energyLevel!.properties.visibility !== undefined) {
-			expect(energyLevel!.properties.visibility).toBe("protected");
+		if (energyLevel?.properties.visibility !== undefined) {
+			expect(energyLevel?.properties.visibility).toBe("protected");
 		}
 	});
 
@@ -1371,8 +1371,8 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 			(m) => m.name === "classify" && m.properties.filePath?.includes("animal"),
 		);
 		expect(classify).toBeDefined();
-		if (classify!.properties.isStatic !== undefined) {
-			expect(classify!.properties.isStatic).toBe(true);
+		if (classify?.properties.isStatic !== undefined) {
+			expect(classify?.properties.isStatic).toBe(true);
 		}
 	});
 
@@ -1383,11 +1383,11 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 				m.name === "from_habitat" && m.properties.filePath?.includes("animal"),
 		);
 		expect(fromHabitat).toBeDefined();
-		if (fromHabitat!.properties.isStatic !== undefined) {
-			expect(fromHabitat!.properties.isStatic).toBe(true);
+		if (fromHabitat?.properties.isStatic !== undefined) {
+			expect(fromHabitat?.properties.isStatic).toBe(true);
 		}
-		if (fromHabitat!.properties.visibility !== undefined) {
-			expect(fromHabitat!.properties.visibility).toBe("public");
+		if (fromHabitat?.properties.visibility !== undefined) {
+			expect(fromHabitat?.properties.visibility).toBe("public");
 		}
 	});
 
@@ -1398,7 +1398,7 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 				m.name === "from_habitat" && m.properties.filePath?.includes("animal"),
 		);
 		expect(fromHabitat).toBeDefined();
-		expect(fromHabitat!.properties.parameterCount).toBe(1);
+		expect(fromHabitat?.properties.parameterCount).toBe(1);
 	});
 
 	it("marks speak as public (when enriched)", () => {
@@ -1408,8 +1408,8 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 		);
 		expect(speak).toBeDefined();
 		// When the MethodExtractor enrichment runs, visibility defaults to public
-		if (speak!.properties.visibility !== undefined) {
-			expect(speak!.properties.visibility).toBe("public");
+		if (speak?.properties.visibility !== undefined) {
+			expect(speak?.properties.visibility).toBe("public");
 		}
 	});
 
@@ -1419,7 +1419,7 @@ describe("Ruby method enrichment (visibility, isStatic, parameters)", () => {
 			(m) => m.name === "classify" && m.properties.filePath?.includes("animal"),
 		);
 		expect(classify).toBeDefined();
-		expect(classify!.properties.parameterCount).toBe(1);
+		expect(classify?.properties.parameterCount).toBe(1);
 	});
 
 	it("resolves dog.speak member call from main to Dog#speak", () => {
@@ -1475,8 +1475,8 @@ describe("Ruby singleton_class handling via sequential path (skipWorkers)", () =
 				m.name === "from_habitat" && m.properties.filePath?.includes("animal"),
 		);
 		expect(fromHabitat).toBeDefined();
-		expect(fromHabitat!.properties.isStatic).toBe(true);
-		expect(fromHabitat!.properties.parameterCount).toBe(1);
+		expect(fromHabitat?.properties.isStatic).toBe(true);
+		expect(fromHabitat?.properties.parameterCount).toBe(1);
 	});
 });
 
@@ -1520,14 +1520,14 @@ describe("Ruby overload dispatch (format vs format_with_prefix)", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const format = methods.find((m) => m.name === "format");
 		expect(format).toBeDefined();
-		expect(format!.properties.parameterCount).toBe(1);
+		expect(format?.properties.parameterCount).toBe(1);
 	});
 
 	it("extracts arity for format_with_prefix(value, prefix) — 2 parameters", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const fwp = methods.find((m) => m.name === "format_with_prefix");
 		expect(fwp).toBeDefined();
-		expect(fwp!.properties.parameterCount).toBe(2);
+		expect(fwp?.properties.parameterCount).toBe(2);
 	});
 
 	it("resolves f.format call from run to Formatter#format", () => {
@@ -1586,6 +1586,6 @@ describe("Ruby Child extends Parent — inherited method resolution (SM-9)", () 
 				c.target === "parent_method" && c.targetFilePath.includes("parent.rb"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });

@@ -22,12 +22,12 @@ export function expoFileToRouteURL(filePath: string): string | null {
 	// Handle Expo API routes: users+api.ts → /users
 	if (fileName.endsWith("+api")) {
 		const apiSegments = segments.replace(/\+api$/, "");
-		const route = "/" + stripRouteGroups(apiSegments);
+		const route = `/${stripRouteGroups(apiSegments)}`;
 		return stripIndex(route);
 	}
 
 	// Regular screen route
-	const route = "/" + stripRouteGroups(segments);
+	const route = `/${stripRouteGroups(segments)}`;
 	return stripIndex(route);
 }
 

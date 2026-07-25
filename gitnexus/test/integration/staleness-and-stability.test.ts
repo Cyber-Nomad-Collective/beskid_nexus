@@ -15,8 +15,8 @@
  * Issues: #285, #290, #292, #297
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { afterAll, describe, expect, it, vi } from "vitest";
 import {
 	closeLbug,

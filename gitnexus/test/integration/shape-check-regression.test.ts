@@ -97,19 +97,19 @@ withTestLbugDB(
 				);
 				expect(ordersRoute).toBeDefined();
 
-				const consumer = ordersRoute!.consumers.find(
+				const consumer = ordersRoute?.consumers.find(
 					(c: any) => c.filePath === "components/OrderStatus.tsx",
 				);
 				expect(consumer).toBeDefined();
 
 				// 'error' is in the route's errorKeys — consumer accessing it is valid
 				// It must appear in errorPathKeys, NOT in mismatched
-				expect(consumer!.errorPathKeys).toBeDefined();
-				expect(consumer!.errorPathKeys).toContain("error");
+				expect(consumer?.errorPathKeys).toBeDefined();
+				expect(consumer?.errorPathKeys).toContain("error");
 
 				// 'error' must NOT appear in mismatched
-				if (consumer!.mismatched) {
-					expect(consumer!.mismatched).not.toContain("error");
+				if (consumer?.mismatched) {
+					expect(consumer?.mismatched).not.toContain("error");
 				}
 			});
 
@@ -125,7 +125,7 @@ withTestLbugDB(
 
 				// All consumer keys are known (either in responseKeys or errorKeys)
 				// So the route must NOT be flagged as MISMATCH
-				expect(ordersRoute!.status).toBeUndefined();
+				expect(ordersRoute?.status).toBeUndefined();
 			});
 
 			it("no global mismatches count when only error-path keys differ", async () => {
@@ -150,18 +150,18 @@ withTestLbugDB(
 				const linksRoute = result.routes.find((r: any) => r.route === "/api/links");
 				expect(linksRoute).toBeDefined();
 
-				const consumer = linksRoute!.consumers.find(
+				const consumer = linksRoute?.consumers.find(
 					(c: any) => c.filePath === "components/LinkList.tsx",
 				);
 				expect(consumer).toBeDefined();
 
 				// All accessed keys (type, href, target, label) are in the route's responseKeys
 				// None should be treated as mismatched
-				if (consumer!.mismatched) {
-					expect(consumer!.mismatched).not.toContain("type");
-					expect(consumer!.mismatched).not.toContain("href");
-					expect(consumer!.mismatched).not.toContain("target");
-					expect(consumer!.mismatched).not.toContain("label");
+				if (consumer?.mismatched) {
+					expect(consumer?.mismatched).not.toContain("type");
+					expect(consumer?.mismatched).not.toContain("href");
+					expect(consumer?.mismatched).not.toContain("target");
+					expect(consumer?.mismatched).not.toContain("label");
 				}
 			});
 
@@ -174,7 +174,7 @@ withTestLbugDB(
 				expect(linksRoute).toBeDefined();
 
 				// No mismatches — all consumer keys match route responseKeys
-				expect(linksRoute!.status).toBeUndefined();
+				expect(linksRoute?.status).toBeUndefined();
 			});
 
 			it("no errorPathKeys when all accessed keys are in responseKeys", async () => {
@@ -183,13 +183,13 @@ withTestLbugDB(
 				});
 
 				const linksRoute = result.routes.find((r: any) => r.route === "/api/links");
-				const consumer = linksRoute!.consumers.find(
+				const consumer = linksRoute?.consumers.find(
 					(c: any) => c.filePath === "components/LinkList.tsx",
 				);
 				expect(consumer).toBeDefined();
 
 				// All keys are in responseKeys (not errorKeys), so no errorPathKeys
-				expect(consumer!.errorPathKeys).toBeUndefined();
+				expect(consumer?.errorPathKeys).toBeUndefined();
 			});
 		});
 	},

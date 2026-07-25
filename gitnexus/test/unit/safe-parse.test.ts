@@ -10,7 +10,7 @@ const makeParser = (): Parser => {
 };
 
 const buildSource = (chars: number, lineLen = 80): string => {
-	const line = "x = 1" + " ".repeat(Math.max(0, lineLen - 6)) + "\n";
+	const line = `x = 1${" ".repeat(Math.max(0, lineLen - 6))}\n`;
 	const lines = Math.ceil(chars / line.length);
 	return line.repeat(lines).slice(0, chars);
 };
@@ -46,14 +46,14 @@ describe("parseSourceSafe", () => {
 	});
 
 	it("parses a single line longer than the chunk size (no newlines)", () => {
-		const src = '"' + "a".repeat(20_000) + '"\n';
+		const src = `"${"a".repeat(20_000)}"\n`;
 		const tree = parseSourceSafe(makeParser(), src);
 		expect(tree.rootNode.hasError).toBe(false);
 		expect(tree.rootNode.endIndex).toBe(src.length);
 	});
 
 	it("parses sources with CRLF line endings near a chunk boundary", () => {
-		const line = "x = 1" + " ".repeat(75) + "\r\n";
+		const line = `x = 1${" ".repeat(75)}\r\n`;
 		const src = line.repeat(Math.ceil(20_000 / line.length));
 		const tree = parseSourceSafe(makeParser(), src);
 		expect(tree.rootNode.hasError).toBe(false);
@@ -61,12 +61,12 @@ describe("parseSourceSafe", () => {
 	});
 
 	it("parses a large all-non-ASCII source identically to the direct path", () => {
-		const small = "# " + "漢".repeat(50) + "\n";
+		const small = `# ${"漢".repeat(50)}\n`;
 		const direct = makeParser().parse(small);
 		const safe = parseSourceSafe(makeParser(), small);
 		expect(safe.rootNode.toString()).toBe(direct.rootNode.toString());
 
-		const large = ("# " + "漢".repeat(8_000) + "\n").repeat(3);
+		const large = `# ${"漢".repeat(8_000)}\n`.repeat(3);
 		const tree = parseSourceSafe(makeParser(), large);
 		expect(tree.rootNode.hasError).toBe(false);
 		expect(tree.rootNode.endIndex).toBe(large.length);

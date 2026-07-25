@@ -146,7 +146,7 @@ export function useBackend(): UseBackendResult {
 		setServiceUrl(backendUrl);
 		void probe();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [probe, backendUrl]);
 
 	return {
 		isConnected,

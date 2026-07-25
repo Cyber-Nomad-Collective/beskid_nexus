@@ -198,7 +198,7 @@ export function emitScopeGraph(input: {
 const TRUTHY: ReadonlySet<string> = new Set(["true", "1", "yes"]);
 
 function isScopeEmissionEnabled(): boolean {
-	const raw = process.env["INGESTION_EMIT_SCOPES"];
+	const raw = process.env.INGESTION_EMIT_SCOPES;
 	if (raw === undefined) return false;
 	return TRUTHY.has(raw.trim().toLowerCase());
 }
@@ -231,7 +231,7 @@ function resolveCallerNodeId(
 
 		// Stash the first owned def we see as a conservative fallback.
 		if (firstOwnedFallback === undefined && scope.ownedDefs.length > 0) {
-			firstOwnedFallback = scope.ownedDefs[0]!.nodeId;
+			firstOwnedFallback = scope.ownedDefs[0]?.nodeId;
 		}
 
 		current = scope.parent;

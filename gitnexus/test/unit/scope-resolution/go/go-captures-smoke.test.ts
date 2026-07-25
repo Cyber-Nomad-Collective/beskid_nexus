@@ -17,7 +17,7 @@ import (
 		const matches = emitGoScopeCaptures(src, "main.go");
 		const imports = matches
 			.filter((m) => m["@import.source"] !== undefined)
-			.map((m) => m["@import.source"]!.text);
+			.map((m) => m["@import.source"]?.text);
 
 		expect(imports).toEqual(["fmt", "os"]);
 	});

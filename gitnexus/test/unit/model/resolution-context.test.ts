@@ -27,9 +27,9 @@ describe("ResolutionContext.resolve() — tier precedence", () => {
 
 		const result = ctx.resolve("U", "src/a.ts");
 		expect(result).not.toBeNull();
-		expect(result!.tier).toBe("import-scoped");
+		expect(result?.tier).toBe("import-scoped");
 		// The named-binding chain resolves U → User, not U → U_decoy.
-		expect(result!.candidates.map((c) => c.nodeId)).toEqual(["class:User"]);
+		expect(result?.candidates.map((c) => c.nodeId)).toEqual(["class:User"]);
 	});
 
 	it("Tier 1 (same-file) beats Tier 2a even when an aliased import exists", () => {
@@ -44,8 +44,8 @@ describe("ResolutionContext.resolve() — tier precedence", () => {
 		ctx.namedImportMap.set("src/a.ts", aliasBindings);
 
 		const result = ctx.resolve("U", "src/a.ts");
-		expect(result!.tier).toBe("same-file");
-		expect(result!.candidates[0].nodeId).toBe("fn:local:U");
+		expect(result?.tier).toBe("same-file");
+		expect(result?.candidates[0].nodeId).toBe("fn:local:U");
 	});
 });
 
@@ -74,9 +74,9 @@ describe("ResolutionContext.resolve() — Tier 3 dedup for Function+ownerId", ()
 		// two index hits into a single candidate.
 		const result = ctx.resolve("greet", "src/caller.py");
 		expect(result).not.toBeNull();
-		expect(result!.tier).toBe("global");
-		expect(result!.candidates).toHaveLength(1);
-		expect(result!.candidates[0].nodeId).toBe("fn:User.greet");
+		expect(result?.tier).toBe("global");
+		expect(result?.candidates).toHaveLength(1);
+		expect(result?.candidates[0].nodeId).toBe("fn:User.greet");
 	});
 
 	it("Tier 3 fast path fires when no Function+ownerId was ever registered", () => {
@@ -97,8 +97,8 @@ describe("ResolutionContext.resolve() — Tier 3 dedup for Function+ownerId", ()
 		// function and the class method; neither overlaps so no dedup.
 		const result = ctx.resolve("greet", "src/caller.ts");
 		expect(result).not.toBeNull();
-		expect(result!.tier).toBe("global");
-		expect(result!.candidates.map((c) => c.nodeId).sort()).toEqual([
+		expect(result?.tier).toBe("global");
+		expect(result?.candidates.map((c) => c.nodeId).sort()).toEqual([
 			"fn:utils.greet",
 			"method:User.greet",
 		]);
@@ -167,7 +167,7 @@ describe("ResolutionContext.resolve() — walkBindingChain guards", () => {
 
 		const result = ctx.resolve("X", "src/a.ts");
 		expect(result).not.toBeNull();
-		expect(result!.tier).toBe("import-scoped");
-		expect(result!.candidates[0].nodeId).toBe("class:X");
+		expect(result?.tier).toBe("import-scoped");
+		expect(result?.candidates[0].nodeId).toBe("class:X");
 	});
 });

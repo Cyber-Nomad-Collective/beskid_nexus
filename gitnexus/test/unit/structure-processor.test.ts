@@ -76,9 +76,9 @@ describe("processStructure", () => {
 		const graph = createKnowledgeGraph();
 		processStructure(graph, ["src/core/utils.ts"]);
 		const utils = graph.nodes.find((n) => n.properties.name === "utils.ts");
-		expect(utils!.properties.filePath).toBe("src/core/utils.ts");
+		expect(utils?.properties.filePath).toBe("src/core/utils.ts");
 		const core = graph.nodes.find((n) => n.properties.name === "core");
-		expect(core!.properties.filePath).toBe("src/core");
+		expect(core?.properties.filePath).toBe("src/core");
 	});
 
 	it("handles deeply nested paths", () => {

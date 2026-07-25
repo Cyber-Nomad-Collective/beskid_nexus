@@ -401,8 +401,7 @@ export function populateCsharpNamespaceSiblings(
 				const local = bucket.scopes
 					.find((s) => s.filePath === filePath)
 					?.scope.bindings.get(name);
-				if (local !== undefined && local.some((b) => b.origin === "local"))
-					continue;
+				if (local?.some((b) => b.origin === "local")) continue;
 
 				let bucketArr: BindingRef[] | null = null;
 				for (const def of defs) {

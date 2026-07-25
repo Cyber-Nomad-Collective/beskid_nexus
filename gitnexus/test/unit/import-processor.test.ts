@@ -13,8 +13,8 @@ describe("ResolutionContext.importMap", () => {
 	it("can be used to store import relationships", () => {
 		const map = createResolutionContext().importMap;
 		map.set("src/index.ts", new Set(["src/utils.ts", "src/types.ts"]));
-		expect(map.get("src/index.ts")!.size).toBe(2);
-		expect(map.get("src/index.ts")!.has("src/utils.ts")).toBe(true);
+		expect(map.get("src/index.ts")?.size).toBe(2);
+		expect(map.get("src/index.ts")?.has("src/utils.ts")).toBe(true);
 	});
 });
 

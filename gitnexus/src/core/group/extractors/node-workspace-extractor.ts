@@ -175,13 +175,13 @@ async function findSourceFiles(repoPath: string): Promise<string[]> {
 			const childRel = rel ? `${rel}/${entry.name}` : entry.name;
 			if (entry.isDirectory()) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel + "/")) continue;
+				if (ig?.ignores(`${childRel}/`)) continue;
 				await walk(path.join(dir, entry.name), childRel);
 			} else {
 				const ext = path.extname(entry.name);
 				if (EXTENSIONS.has(ext)) {
 					if (shouldIgnorePath(childRel)) continue;
-					if (ig && ig.ignores(childRel)) continue;
+					if (ig?.ignores(childRel)) continue;
 					results.push(childRel);
 				}
 			}

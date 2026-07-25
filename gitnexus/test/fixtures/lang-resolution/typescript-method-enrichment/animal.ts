@@ -1,7 +1,7 @@
 export abstract class Animal {
 	abstract speak(): string;
 
-	static classify(name: string): string {
+	static classify(_name: string): string {
 		return "mammal";
 	}
 

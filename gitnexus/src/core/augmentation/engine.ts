@@ -14,7 +14,7 @@
  * - Graceful failure: any error → return empty string
  */
 
-import path from "path";
+import path from "node:path";
 import { listRegisteredRepos } from "../../storage/repo-manager.js";
 
 /**
@@ -206,7 +206,7 @@ export async function augment(pattern: string, cwd?: string): Promise<string> {
 				const name = r.name || r[1];
 				if (tid && name) {
 					if (!callersMap.has(tid)) callersMap.set(tid, []);
-					callersMap.get(tid)!.push(name);
+					callersMap.get(tid)?.push(name);
 				}
 			}
 		} catch {
@@ -230,7 +230,7 @@ export async function augment(pattern: string, cwd?: string): Promise<string> {
 				const name = r.name || r[1];
 				if (sid && name) {
 					if (!calleesMap.has(sid)) calleesMap.set(sid, []);
-					calleesMap.get(sid)!.push(name);
+					calleesMap.get(sid)?.push(name);
 				}
 			}
 		} catch {
@@ -255,7 +255,7 @@ export async function augment(pattern: string, cwd?: string): Promise<string> {
 				const stepCount = r.stepCount || r[3];
 				if (nid && label) {
 					if (!processesMap.has(nid)) processesMap.set(nid, []);
-					processesMap.get(nid)!.push(`${label} (step ${step}/${stepCount})`);
+					processesMap.get(nid)?.push(`${label} (step ${step}/${stepCount})`);
 				}
 			}
 		} catch {

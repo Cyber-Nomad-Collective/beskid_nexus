@@ -83,7 +83,7 @@ function populateGoOwnersInPackage(parsedFiles: readonly ParsedFile[]): void {
 				let ownerId = structByQualifiedName.get(receiverType);
 				if (ownerId === undefined) {
 					for (const [qname, nodeId] of structByQualifiedName) {
-						if (qname.endsWith("." + receiverType)) {
+						if (qname.endsWith(`.${receiverType}`)) {
 							ownerId = nodeId;
 							break;
 						}

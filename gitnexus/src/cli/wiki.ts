@@ -5,10 +5,10 @@
  * Usage: gitnexus wiki [path] [options]
  */
 
-import { execFileSync, execSync } from "child_process";
+import { execFileSync, execSync } from "node:child_process";
+import path from "node:path";
+import readline from "node:readline";
 import cliProgress from "cli-progress";
-import path from "path";
-import readline from "readline";
 import { logger } from "../core/logger.js";
 import { detectCursorCLI } from "../core/wiki/cursor-client.js";
 import { WikiGenerator, type WikiOptions } from "../core/wiki/generator.js";
@@ -275,7 +275,7 @@ export const wikiCommand = async (
 					process.env.GITNEXUS_API_KEY || process.env.OPENAI_API_KEY || "";
 				let azureKey: string;
 				if (envKey) {
-					const masked = envKey.slice(0, 6) + "..." + envKey.slice(-4);
+					const masked = `${envKey.slice(0, 6)}...${envKey.slice(-4)}`;
 					const useEnv = await prompt(`  Use existing env key (${masked})? (Y/n): `);
 					if (
 						!useEnv ||
@@ -343,7 +343,7 @@ export const wikiCommand = async (
 				const envKey =
 					process.env.GITNEXUS_API_KEY || process.env.OPENAI_API_KEY || "";
 				if (envKey) {
-					const masked = envKey.slice(0, 6) + "..." + envKey.slice(-4);
+					const masked = `${envKey.slice(0, 6)}...${envKey.slice(-4)}`;
 					const useEnv = await prompt(`  Use existing env key (${masked})? (Y/n): `);
 					if (
 						!useEnv ||
@@ -376,11 +376,11 @@ export const wikiCommand = async (
 	// ── Apply per-run overrides not saved to config ────────────────────
 	if (options?.timeout) {
 		const secs = parseInt(options.timeout, 10);
-		if (!isNaN(secs) && secs > 0) llmConfig.requestTimeoutMs = secs * 1000;
+		if (!Number.isNaN(secs) && secs > 0) llmConfig.requestTimeoutMs = secs * 1000;
 	}
 	if (options?.retries) {
 		const n = parseInt(options.retries, 10);
-		if (!isNaN(n) && n > 0) llmConfig.maxAttempts = n;
+		if (!Number.isNaN(n) && n > 0) llmConfig.maxAttempts = n;
 	}
 
 	// ── Setup progress bar with elapsed timer ──────────────────────────
@@ -731,7 +731,7 @@ async function maybePublishGist(
 
 	// Check that the HTML file exists
 	try {
-		const fs = await import("fs/promises");
+		const fs = await import("node:fs/promises");
 		await fs.access(htmlPath);
 	} catch {
 		return;

@@ -267,7 +267,7 @@ export class TypeScriptFieldExtractor extends BaseFieldExtractor {
 			if (field) {
 				// Mark optional properties
 				if (this.isOptional(propNode) && field.type) {
-					field.type = field.type + " | undefined";
+					field.type = `${field.type} | undefined`;
 				}
 				fields.push(field);
 			}

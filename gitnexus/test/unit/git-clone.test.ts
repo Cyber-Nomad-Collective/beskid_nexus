@@ -65,7 +65,7 @@ describe("git-clone", () => {
 		it("handles many trailing slashes without polynomial-time blowup", () => {
 			// Pathological input the previous /\\/+$/ regex was flagged for
 			// (CodeQL js/polynomial-redos). The string-loop replacement is O(n).
-			const url = "https://example.com/repo" + "/".repeat(10000);
+			const url = `https://example.com/repo${"/".repeat(10000)}`;
 			const start = performance.now();
 			expect(extractRepoName(url)).toBe("repo");
 			const elapsedMs = performance.now() - start;
@@ -436,7 +436,7 @@ describe("git-clone", () => {
 			// '/x/repos-evil/...'. The path.relative idiom does, and the test
 			// documents that property at the cloneOrPull boundary.
 			await expect(
-				cloneOrPull("https://github.com/a/b.git", cloneRoot + "-evil"),
+				cloneOrPull("https://github.com/a/b.git", `${cloneRoot}-evil`),
 			).rejects.toThrow("Clone target must be a subdirectory");
 		});
 

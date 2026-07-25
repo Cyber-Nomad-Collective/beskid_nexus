@@ -101,10 +101,10 @@ export function namesAtScope(
 	const fSize = finalized?.size ?? 0;
 	const aSize = augmented?.size ?? 0;
 	if (fSize === 0 && aSize === 0) return EMPTY_NAMES;
-	if (aSize === 0) return finalized!.keys();
-	if (fSize === 0) return augmented!.keys();
-	const out = new Set<string>(finalized!.keys());
-	for (const name of augmented!.keys()) out.add(name);
+	if (aSize === 0) return finalized?.keys();
+	if (fSize === 0) return augmented?.keys();
+	const out = new Set<string>(finalized?.keys());
+	for (const name of augmented?.keys()) out.add(name);
 	return out;
 }
 

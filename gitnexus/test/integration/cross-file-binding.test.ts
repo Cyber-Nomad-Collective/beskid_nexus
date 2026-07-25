@@ -7,7 +7,7 @@
  * User#save.
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	getNodesByLabel,
@@ -334,14 +334,14 @@ describe("Cross-File Binding Propagation: TypeScript circular imports", () => {
 			(c) => c.source === "processA" && c.target === "getB",
 		);
 		expect(getBCall).toBeDefined();
-		expect(getBCall!.targetFilePath).toBe("src/b.ts");
+		expect(getBCall?.targetFilePath).toBe("src/b.ts");
 
 		const doBCall = calls.find(
 			(c) => c.source === "processA" && c.target === "doB",
 		);
 		expect(doBCall).toBeDefined();
-		expect(doBCall!.targetLabel).toBe("Method");
-		expect(doBCall!.targetFilePath).toBe("src/b.ts");
+		expect(doBCall?.targetLabel).toBe("Method");
+		expect(doBCall?.targetFilePath).toBe("src/b.ts");
 	});
 });
 

@@ -18,10 +18,10 @@
  * by spawning them as child processes with controlled stdin JSON.
  */
 
-import { spawnSync } from "child_process";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { parseHookOutput, runHook } from "../utils/hook-test-helpers.js";
 
@@ -369,7 +369,7 @@ describe("extractPattern coverage", () => {
 // ─── PostToolUse: git mutation regex coverage ───────────────────────
 
 describe("Git mutation regex", () => {
-	const GIT_REGEX = /\\bgit\\s\+\(commit\|merge\|rebase\|cherry-pick\|pull\)/;
+	const _GIT_REGEX = /\\bgit\\s\+\(commit\|merge\|rebase\|cherry-pick\|pull\)/;
 
 	for (const [label, hookPath] of [
 		["CJS", CJS_HOOK],
@@ -475,7 +475,7 @@ describe("PreToolUse concurrency guard (integration)", () => {
 		["Plugin", PLUGIN_HOOK],
 	] as const) {
 		it(`${label}: hook exits silently when all MAX_INFLIGHT slots hold live pids`, async () => {
-			const { spawn } = await import("child_process");
+			const { spawn } = await import("node:child_process");
 			const lockDir = path.join(gitNexusDir, ".hook-locks");
 			fs.mkdirSync(lockDir, { recursive: true });
 
@@ -578,7 +578,7 @@ describe("PreToolUse concurrency guard (integration)", () => {
 			// MAX_INFLIGHT (3) slot files end up populated by live pids. The
 			// O_CREAT|O_EXCL slot scheme makes this a hard cap, not the soft cap
 			// that the count-then-claim approach gives.
-			const { spawn } = await import("child_process");
+			const { spawn } = await import("node:child_process");
 			const lockDir = path.join(gitNexusDir, ".hook-locks");
 			// Clean any leftover slot files.
 			try {
@@ -644,7 +644,7 @@ describe("PreToolUse concurrency guard (integration)", () => {
 						(c) =>
 							new Promise<string>((resolve) => {
 								let buf = "";
-								c.stdout!.on("data", (d) => {
+								c.stdout?.on("data", (d) => {
 									buf += d.toString();
 									if (buf.includes("\n")) resolve(buf.split("\n")[0]);
 								});
@@ -759,8 +759,8 @@ describe("PreToolUse augmentation filtering (integration)", () => {
 
 				const output = parseHookOutput(result.stdout);
 				expect(output).not.toBeNull();
-				expect(output!.hookEventName).toBe("PreToolUse");
-				expect(output!.additionalContext).toContain(
+				expect(output?.hookEventName).toBe("PreToolUse");
+				expect(output?.additionalContext).toContain(
 					"[GitNexus] 1 related symbol found",
 				);
 			} finally {
@@ -771,7 +771,7 @@ describe("PreToolUse augmentation filtering (integration)", () => {
 		it(`${label}: suppresses LadybugDB lock warnings from augment stderr`, () => {
 			const markerPath = path.join(
 				os.tmpdir(),
-				"gn-hook-lockwarn-" + process.pid + "-" + label,
+				`gn-hook-lockwarn-${process.pid}-${label}`,
 			);
 			fs.rmSync(markerPath, { force: true });
 			const binDir = createHookToolDir({
@@ -1191,9 +1191,9 @@ describe("PostToolUse staleness detection (integration)", () => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.hookEventName).toBe("PostToolUse");
-			expect(output!.additionalContext).toContain("stale");
-			expect(output!.additionalContext).toContain("aaaaaaa");
+			expect(output?.hookEventName).toBe("PostToolUse");
+			expect(output?.additionalContext).toContain("stale");
+			expect(output?.additionalContext).toContain("aaaaaaa");
 		});
 
 		it(`${label}: silent when HEAD matches meta lastCommit`, () => {
@@ -1262,7 +1262,7 @@ describe("PostToolUse staleness detection (integration)", () => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).toContain("--embeddings");
+			expect(output?.additionalContext).toContain("--embeddings");
 		});
 
 		it(`${label}: omits --embeddings when meta had no embeddings`, () => {
@@ -1281,7 +1281,7 @@ describe("PostToolUse staleness detection (integration)", () => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).not.toContain("--embeddings");
+			expect(output?.additionalContext).not.toContain("--embeddings");
 		});
 
 		it(`${label}: detects git rebase as a mutation`, () => {
@@ -1300,7 +1300,7 @@ describe("PostToolUse staleness detection (integration)", () => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).toContain("stale");
+			expect(output?.additionalContext).toContain("stale");
 		});
 
 		it(`${label}: detects git cherry-pick as a mutation`, () => {
@@ -1443,7 +1443,7 @@ describe("Global registry lookup", () => {
 
 				const output = parseHookOutput(result.stdout);
 				expect(output).not.toBeNull();
-				expect(output!.additionalContext).toContain("stale");
+				expect(output?.additionalContext).toContain("stale");
 			} finally {
 				fs.rmSync(homeDir, { recursive: true, force: true });
 			}
@@ -1519,7 +1519,7 @@ describe("Linked git worktree resolution", () => {
 
 				const output = parseHookOutput(result.stdout);
 				expect(output).not.toBeNull();
-				expect(output!.additionalContext).toContain("stale");
+				expect(output?.additionalContext).toContain("stale");
 			} finally {
 				fs.rmSync(root, { recursive: true, force: true });
 			}
@@ -1636,7 +1636,7 @@ describe("PostToolUse with missing/corrupt meta.json", () => {
 
 				const output = parseHookOutput(result.stdout);
 				expect(output).not.toBeNull();
-				expect(output!.additionalContext).toContain("never");
+				expect(output?.additionalContext).toContain("never");
 			} finally {
 				// Restore meta.json for subsequent tests
 				fs.writeFileSync(
@@ -1660,7 +1660,7 @@ describe("PostToolUse with missing/corrupt meta.json", () => {
 
 			const output = parseHookOutput(result.stdout);
 			expect(output).not.toBeNull();
-			expect(output!.additionalContext).toContain("never");
+			expect(output?.additionalContext).toContain("never");
 
 			// Restore
 			fs.writeFileSync(metaPath, JSON.stringify({ lastCommit: "old", stats: {} }));

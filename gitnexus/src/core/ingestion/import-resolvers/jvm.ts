@@ -47,8 +47,8 @@ export function resolveJvmWildcard(
 			index.getFilesInDir(packagePath, ext),
 		);
 		// Filter to only direct children (no subdirectories)
-		const packageSuffix = "/" + packagePath + "/";
-		const packagePrefix = packagePath + "/";
+		const packageSuffix = `/${packagePath}/`;
+		const packagePrefix = `${packagePath}/`;
 		return candidates.filter((f) => {
 			const normalized = f.replace(/\\/g, "/");
 			// Match both nested (src/models/User.kt) and root-level (models/User.kt) packages
@@ -66,8 +66,8 @@ export function resolveJvmWildcard(
 	}
 
 	// Fallback: linear scan
-	const packageSuffix = "/" + packagePath + "/";
-	const packagePrefix = packagePath + "/";
+	const packageSuffix = `/${packagePath}/`;
+	const packagePrefix = `${packagePath}/`;
 	const matches: string[] = [];
 	for (let i = 0; i < normalizedFileList.length; i++) {
 		const normalized = normalizedFileList[i];
@@ -115,7 +115,7 @@ export function resolveJvmMemberImport(
 				const result = index.get(classSuffix) || index.getInsensitive(classSuffix);
 				if (result) return result;
 			} else {
-				const fullSuffix = "/" + classSuffix;
+				const fullSuffix = `/${classSuffix}`;
 				for (let i = 0; i < normalizedFileList.length; i++) {
 					if (
 						normalizedFileList[i].endsWith(fullSuffix) ||

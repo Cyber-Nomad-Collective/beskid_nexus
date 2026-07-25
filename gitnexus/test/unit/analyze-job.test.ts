@@ -93,7 +93,7 @@ describe("JobManager", () => {
 	it("sets completedAt on terminal status", () => {
 		const job = manager.createJob({ repoUrl: "https://github.com/user/repo" });
 		manager.updateJob(job.id, { status: "complete" });
-		expect(manager.getJob(job.id)!.completedAt).toBeDefined();
+		expect(manager.getJob(job.id)?.completedAt).toBeDefined();
 	});
 
 	it("unsubscribe stops events", () => {
@@ -117,8 +117,8 @@ describe("JobManager", () => {
 		manager.updateJob(job.id, { status: "analyzing" });
 		const cancelled = manager.cancelJob(job.id, "Cancelled by user");
 		expect(cancelled).toBe(true);
-		expect(manager.getJob(job.id)!.status).toBe("failed");
-		expect(manager.getJob(job.id)!.error).toBe("Cancelled by user");
+		expect(manager.getJob(job.id)?.status).toBe("failed");
+		expect(manager.getJob(job.id)?.error).toBe("Cancelled by user");
 	});
 
 	it("cancelJob returns false for terminal jobs", () => {

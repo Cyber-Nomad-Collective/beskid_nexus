@@ -186,7 +186,7 @@ export function compileMatcher(matcher: string): CompiledMatcher | null {
 	if (paramWild !== matcher) return { type: "prefix", prefix: paramWild };
 	if (matcher.includes("(")) {
 		try {
-			return { type: "regex", re: new RegExp("^" + matcher + "$") };
+			return { type: "regex", re: new RegExp(`^${matcher}$`) };
 		} catch {
 			return null;
 		}
@@ -201,7 +201,7 @@ export function compiledMatcherMatchesRoute(
 ): boolean {
 	switch (cm.type) {
 		case "prefix":
-			return routeURL === cm.prefix || routeURL.startsWith(cm.prefix + "/");
+			return routeURL === cm.prefix || routeURL.startsWith(`${cm.prefix}/`);
 		case "regex":
 			return cm.re.test(routeURL);
 		case "exact":

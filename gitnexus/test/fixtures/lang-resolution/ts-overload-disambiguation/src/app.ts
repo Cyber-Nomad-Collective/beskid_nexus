@@ -4,7 +4,7 @@ function lookup(key: number | string): string {
 	return String(key);
 }
 
-function process() {
+function _process() {
 	lookup(42);
 	lookup("alice");
 }

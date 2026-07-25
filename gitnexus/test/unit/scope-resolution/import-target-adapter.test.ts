@@ -82,8 +82,8 @@ describe("buildImportTargetWorkspace", () => {
 			[SupportedLanguages.Python, pyResolver],
 			[SupportedLanguages.TypeScript, tsResolver],
 		]);
-		expect(ws.perLanguage.get(SupportedLanguages.Python)!.ctx).toBe(emptyCtx);
-		expect(ws.perLanguage.get(SupportedLanguages.TypeScript)!.ctx).toBe(emptyCtx);
+		expect(ws.perLanguage.get(SupportedLanguages.Python)?.ctx).toBe(emptyCtx);
+		expect(ws.perLanguage.get(SupportedLanguages.TypeScript)?.ctx).toBe(emptyCtx);
 	});
 });
 

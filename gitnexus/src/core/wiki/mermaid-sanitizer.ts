@@ -12,7 +12,7 @@ const EDGE_RE =
 
 export function sanitizeMermaidMarkdown(markdown: string): string {
 	return markdown.replace(MERMAID_FENCE_RE, (_match, diagram: string) => {
-		return "```mermaid\n" + sanitizeMermaidDiagram(diagram) + "```";
+		return `\`\`\`mermaid\n${sanitizeMermaidDiagram(diagram)}\`\`\``;
 	});
 }
 

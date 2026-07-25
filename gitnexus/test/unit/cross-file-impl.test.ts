@@ -191,9 +191,9 @@ describe("runCrossFileBindingPropagation", () => {
 		for (const [k, v] of parseExportsSnapshot) {
 			const after = parseExports.get(k);
 			expect(after).toBeDefined();
-			expect(after!.size).toBe(v.size);
+			expect(after?.size).toBe(v.size);
 			for (const [innerK, innerV] of v) {
-				expect(after!.get(innerK)).toBe(innerV);
+				expect(after?.get(innerK)).toBe(innerV);
 			}
 		}
 	});

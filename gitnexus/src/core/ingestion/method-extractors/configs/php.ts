@@ -259,16 +259,16 @@ function extractPhpAnnotations(node: SyntaxNode): string[] {
 	const annotations: string[] = [];
 	for (let i = 0; i < node.namedChildCount; i++) {
 		const child = node.namedChild(i);
-		if (!child || child.type !== "attribute_list") continue;
+		if (child?.type !== "attribute_list") continue;
 		for (let j = 0; j < child.namedChildCount; j++) {
 			const group = child.namedChild(j);
-			if (!group || group.type !== "attribute_group") continue;
+			if (group?.type !== "attribute_group") continue;
 			for (let k = 0; k < group.namedChildCount; k++) {
 				const attr = group.namedChild(k);
-				if (!attr || attr.type !== "attribute") continue;
+				if (attr?.type !== "attribute") continue;
 				const nameNode = attr.firstNamedChild;
 				if (nameNode && nameNode.type === "name") {
-					annotations.push("#" + nameNode.text);
+					annotations.push(`#${nameNode.text}`);
 				}
 			}
 		}

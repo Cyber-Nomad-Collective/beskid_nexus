@@ -92,7 +92,7 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/utils.ts", "getUser");
 			expect(def).toBeDefined();
-			expect(def!.returnType).toBe("User");
+			expect(def?.returnType).toBe("User");
 		});
 
 		it("returnType is available via lookupExactFull", () => {
@@ -101,14 +101,14 @@ describe("SymbolTable", () => {
 			});
 			const result = table.lookupExactFull("src/utils.ts", "getUser");
 			expect(result).toBeDefined();
-			expect(result!.returnType).toBe("Promise<User>");
+			expect(result?.returnType).toBe("Promise<User>");
 		});
 
 		it("omits returnType when not provided", () => {
 			table.add("src/utils.ts", "helper", "func:helper", "Function");
 			const def = table.lookupExactFull("src/utils.ts", "helper");
 			expect(def).toBeDefined();
-			expect(def!.returnType).toBeUndefined();
+			expect(def?.returnType).toBeUndefined();
 		});
 
 		it("stores returnType alongside parameterCount and ownerId", () => {
@@ -119,9 +119,9 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/models.ts", "save");
 			expect(def).toBeDefined();
-			expect(def!.parameterCount).toBe(1);
-			expect(def!.returnType).toBe("boolean");
-			expect(def!.ownerId).toBe("class:User");
+			expect(def?.parameterCount).toBe(1);
+			expect(def?.returnType).toBe("boolean");
+			expect(def?.ownerId).toBe("class:User");
 		});
 	});
 
@@ -133,7 +133,7 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/models.ts", "address");
 			expect(def).toBeDefined();
-			expect(def!.declaredType).toBe("Address");
+			expect(def?.declaredType).toBe("Address");
 		});
 
 		it("omits declaredType when not provided", () => {
@@ -142,7 +142,7 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/models.ts", "name");
 			expect(def).toBeDefined();
-			expect(def!.declaredType).toBeUndefined();
+			expect(def?.declaredType).toBeUndefined();
 		});
 	});
 
@@ -275,8 +275,8 @@ describe("SymbolTable", () => {
 			});
 			const def = model.fields.lookupFieldByOwner("class:User", "address");
 			expect(def).toBeDefined();
-			expect(def!.declaredType).toBe("Address");
-			expect(def!.nodeId).toBe("prop:address");
+			expect(def?.declaredType).toBe("Address");
+			expect(def?.nodeId).toBe("prop:address");
 		});
 
 		it("returns undefined for unknown owner", () => {
@@ -327,10 +327,10 @@ describe("SymbolTable", () => {
 				ownerId: "class:Repo",
 			});
 			expect(
-				model.fields.lookupFieldByOwner("class:User", "name")!.declaredType,
+				model.fields.lookupFieldByOwner("class:User", "name")?.declaredType,
 			).toBe("string");
 			expect(
-				model.fields.lookupFieldByOwner("class:Repo", "name")!.declaredType,
+				model.fields.lookupFieldByOwner("class:Repo", "name")?.declaredType,
 			).toBe("RepoName");
 		});
 	});
@@ -343,8 +343,8 @@ describe("SymbolTable", () => {
 			});
 			const def = model.methods.lookupMethodByOwner("class:User", "getAddress");
 			expect(def).toBeDefined();
-			expect(def!.returnType).toBe("Address");
-			expect(def!.nodeId).toBe("method:getAddress");
+			expect(def?.returnType).toBe("Address");
+			expect(def?.nodeId).toBe("method:getAddress");
 		});
 
 		it("finds multiple methods on the same owner", () => {
@@ -357,10 +357,10 @@ describe("SymbolTable", () => {
 				ownerId: "class:User",
 			});
 			expect(
-				model.methods.lookupMethodByOwner("class:User", "getAddress")!.returnType,
+				model.methods.lookupMethodByOwner("class:User", "getAddress")?.returnType,
 			).toBe("Address");
 			expect(
-				model.methods.lookupMethodByOwner("class:User", "getName")!.returnType,
+				model.methods.lookupMethodByOwner("class:User", "getName")?.returnType,
 			).toBe("String");
 		});
 
@@ -373,11 +373,11 @@ describe("SymbolTable", () => {
 				returnType: "void",
 				ownerId: "class:Address",
 			});
-			expect(model.methods.lookupMethodByOwner("class:User", "save")!.nodeId).toBe(
+			expect(model.methods.lookupMethodByOwner("class:User", "save")?.nodeId).toBe(
 				"method:user:save",
 			);
 			expect(
-				model.methods.lookupMethodByOwner("class:Address", "save")!.nodeId,
+				model.methods.lookupMethodByOwner("class:Address", "save")?.nodeId,
 			).toBe("method:address:save");
 		});
 
@@ -433,8 +433,8 @@ describe("SymbolTable", () => {
 			});
 			const def = model.methods.lookupMethodByOwner("class:UserRepo", "find");
 			expect(def).toBeDefined();
-			expect(def!.nodeId).toBe("method:find:1");
-			expect(def!.returnType).toBe("User");
+			expect(def?.nodeId).toBe("method:find:1");
+			expect(def?.returnType).toBe("User");
 		});
 
 		it("returns undefined for overloads both missing returnType (ambiguous)", () => {
@@ -612,10 +612,10 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/utils.ts", "compute");
 			expect(def).toBeDefined();
-			expect(def!.parameterCount).toBe(3);
-			expect(def!.returnType).toBeUndefined();
-			expect(def!.declaredType).toBeUndefined();
-			expect(def!.ownerId).toBeUndefined();
+			expect(def?.parameterCount).toBe(3);
+			expect(def?.returnType).toBeUndefined();
+			expect(def?.declaredType).toBeUndefined();
+			expect(def?.ownerId).toBeUndefined();
 		});
 
 		it("stores only ownerId on a Method — reachable via methodsByName (post-A4)", () => {
@@ -624,10 +624,10 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/models.ts", "save");
 			expect(def).toBeDefined();
-			expect(def!.ownerId).toBe("class:Repo");
-			expect(def!.parameterCount).toBeUndefined();
-			expect(def!.returnType).toBeUndefined();
-			expect(def!.declaredType).toBeUndefined();
+			expect(def?.ownerId).toBe("class:Repo");
+			expect(def?.parameterCount).toBeUndefined();
+			expect(def?.returnType).toBeUndefined();
+			expect(def?.declaredType).toBeUndefined();
 			// Post-A4 Unit 4: owner-scoped Method lives in methodsByName,
 			// not callableByName.
 			expect(table.lookupCallableByName("save")).toHaveLength(0);
@@ -647,8 +647,8 @@ describe("SymbolTable", () => {
 			);
 			const def = table.lookupExactFull("src/config.ts", "DEFAULT_TIMEOUT");
 			expect(def).toBeDefined();
-			expect(def!.declaredType).toBe("number");
-			expect(def!.ownerId).toBeUndefined();
+			expect(def?.declaredType).toBe("number");
+			expect(def?.ownerId).toBeUndefined();
 		});
 
 		it("stores all four optional metadata fields simultaneously on a Method", () => {
@@ -660,20 +660,20 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/models.ts", "find");
 			expect(def).toBeDefined();
-			expect(def!.parameterCount).toBe(2);
-			expect(def!.returnType).toBe("User | undefined");
-			expect(def!.declaredType).toBe("QueryResult");
-			expect(def!.ownerId).toBe("class:UserRepository");
+			expect(def?.parameterCount).toBe(2);
+			expect(def?.returnType).toBe("User | undefined");
+			expect(def?.declaredType).toBe("QueryResult");
+			expect(def?.ownerId).toBe("class:UserRepository");
 		});
 
 		it("omits all optional fields when metadata is not provided at all", () => {
 			table.add("src/utils.ts", "noop", "func:noop", "Function");
 			const def = table.lookupExactFull("src/utils.ts", "noop");
 			expect(def).toBeDefined();
-			expect(def!.parameterCount).toBeUndefined();
-			expect(def!.returnType).toBeUndefined();
-			expect(def!.declaredType).toBeUndefined();
-			expect(def!.ownerId).toBeUndefined();
+			expect(def?.parameterCount).toBeUndefined();
+			expect(def?.returnType).toBeUndefined();
+			expect(def?.declaredType).toBeUndefined();
+			expect(def?.ownerId).toBeUndefined();
 		});
 
 		it("stores parameterCount: 0 (falsy value) correctly", () => {
@@ -683,7 +683,7 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/utils.ts", "noArgs");
 			expect(def).toBeDefined();
-			expect(def!.parameterCount).toBe(0);
+			expect(def?.parameterCount).toBe(0);
 		});
 	});
 
@@ -754,11 +754,11 @@ describe("SymbolTable", () => {
 			});
 			const def = table.lookupExactFull("src/models.ts", "address");
 			expect(def).toBeDefined();
-			expect(def!.nodeId).toBe("prop:address");
-			expect(def!.filePath).toBe("src/models.ts");
-			expect(def!.type).toBe("Property");
-			expect(def!.declaredType).toBe("Address");
-			expect(def!.ownerId).toBe("class:User");
+			expect(def?.nodeId).toBe("prop:address");
+			expect(def?.filePath).toBe("src/models.ts");
+			expect(def?.type).toBe("Property");
+			expect(def?.declaredType).toBe("Address");
+			expect(def?.ownerId).toBe("class:User");
 		});
 
 		it("returns first definition when same file and name are added twice (overloads preserved)", () => {
@@ -771,8 +771,8 @@ describe("SymbolTable", () => {
 			// lookupExactFull returns first match
 			const def = table.lookupExactFull("src/a.ts", "foo");
 			expect(def).toBeDefined();
-			expect(def!.nodeId).toBe("func:foo:v1");
-			expect(def!.returnType).toBe("void");
+			expect(def?.nodeId).toBe("func:foo:v1");
+			expect(def?.returnType).toBe("void");
 			// lookupExactAll returns all overloads
 			const all = table.lookupExactAll("src/a.ts", "foo");
 			expect(all).toHaveLength(2);
@@ -797,13 +797,13 @@ describe("SymbolTable", () => {
 				ownerId: "class:User",
 			});
 			expect(
-				model.fields.lookupFieldByOwner("class:User", "id")!.declaredType,
+				model.fields.lookupFieldByOwner("class:User", "id")?.declaredType,
 			).toBe("number");
 			expect(
-				model.fields.lookupFieldByOwner("class:User", "email")!.declaredType,
+				model.fields.lookupFieldByOwner("class:User", "email")?.declaredType,
 			).toBe("string");
 			expect(
-				model.fields.lookupFieldByOwner("class:User", "createdAt")!.declaredType,
+				model.fields.lookupFieldByOwner("class:User", "createdAt")?.declaredType,
 			).toBe("Date");
 		});
 
@@ -814,9 +814,9 @@ describe("SymbolTable", () => {
 			});
 			const def = model.fields.lookupFieldByOwner("class:Player", "score");
 			expect(def).toBeDefined();
-			expect(def!.nodeId).toBe("prop:score");
-			expect(def!.filePath).toBe("src/models.ts");
-			expect(def!.type).toBe("Property");
+			expect(def?.nodeId).toBe("prop:score");
+			expect(def?.filePath).toBe("src/models.ts");
+			expect(def?.type).toBe("Property");
 		});
 
 		it("key collision is impossible between different owners sharing a field name", () => {
@@ -829,10 +829,10 @@ describe("SymbolTable", () => {
 				declaredType: "UUID",
 				ownerId: "class:B",
 			});
-			expect(model.fields.lookupFieldByOwner("class:A", "id")!.nodeId).toBe(
+			expect(model.fields.lookupFieldByOwner("class:A", "id")?.nodeId).toBe(
 				"prop:a:id",
 			);
-			expect(model.fields.lookupFieldByOwner("class:B", "id")!.nodeId).toBe(
+			expect(model.fields.lookupFieldByOwner("class:B", "id")?.nodeId).toBe(
 				"prop:b:id",
 			);
 			// An owner whose id is the concatenation of A's ownerId + fieldName must not match
@@ -1054,7 +1054,7 @@ describe("SymbolTable", () => {
 				qualifiedName: "app.User",
 			});
 			expect(model.types.lookupClassByName("User")).toHaveLength(1);
-			expect(model.types.lookupClassByName("User")[0]!.nodeId).toBe("class:User");
+			expect(model.types.lookupClassByName("User")[0]?.nodeId).toBe("class:User");
 			expect(model.types.lookupClassByQualifiedName("app.User")).toHaveLength(1);
 		});
 
@@ -1352,8 +1352,8 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Parent:parentMethod");
-		expect(result!.returnType).toBe("String");
+		expect(result?.nodeId).toBe("method:Parent:parentMethod");
+		expect(result?.returnType).toBe("String");
 	});
 
 	it("child override returns child version (direct hit, no walk)", () => {
@@ -1398,7 +1398,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Child:save");
+		expect(result?.nodeId).toBe("method:Child:save");
 	});
 
 	it("3-level inheritance: grandchild → child → parent, method on parent found", () => {
@@ -1424,8 +1424,8 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:A:greet");
-		expect(result!.returnType).toBe("Greeting");
+		expect(result?.nodeId).toBe("method:A:greet");
+		expect(result?.returnType).toBe("Greeting");
 	});
 
 	it("diamond pattern: first-wins strategy returns first ancestor match in BFS order", () => {
@@ -1459,7 +1459,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"first-wins",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:B:foo");
+		expect(result?.nodeId).toBe("method:B:foo");
 	});
 
 	it("diamond pattern: c3 strategy uses C3 linearization order", () => {
@@ -1494,7 +1494,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 		);
 		expect(result).toBeDefined();
 		// C3 linearization resolves to B before C in this hierarchy
-		expect(result!.nodeId).toBe("method:B:foo");
+		expect(result?.nodeId).toBe("method:B:foo");
 	});
 
 	it("c3 (Python): cyclic hierarchy falls back to BFS ancestor order", () => {
@@ -1525,7 +1525,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"c3",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:B:foo");
+		expect(result?.nodeId).toBe("method:B:foo");
 	});
 
 	it("qualified-syntax (Rust): returns undefined for inherited methods", () => {
@@ -1610,7 +1610,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"leftmost-base",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:A:render");
+		expect(result?.nodeId).toBe("method:A:render");
 	});
 
 	it("implements-split (Java): walks ancestors to find inherited method", () => {
@@ -1646,7 +1646,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Base:save");
+		expect(result?.nodeId).toBe("method:Base:save");
 	});
 
 	it("implements-split (Java): ambiguous default from two interfaces → BFS first-wins", () => {
@@ -1694,7 +1694,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 		);
 		expect(result).toBeDefined();
 		// BFS first-wins — I1 was declared first, so it wins.
-		expect(result!.nodeId).toBe("method:I1:handle");
+		expect(result?.nodeId).toBe("method:I1:handle");
 	});
 
 	it("implements-split (Java): class method takes precedence over interface default in BFS order", () => {
@@ -1752,7 +1752,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Base:handle");
+		expect(result?.nodeId).toBe("method:Base:handle");
 	});
 
 	it("implements-split (Kotlin): walks ancestors to find inherited method", () => {
@@ -1787,7 +1787,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Base:handle");
+		expect(result?.nodeId).toBe("method:Base:handle");
 	});
 
 	it("implements-split (C#): walks ancestors to find inherited method", () => {
@@ -1822,7 +1822,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Base:Execute");
+		expect(result?.nodeId).toBe("method:Base:Execute");
 	});
 
 	it("first-wins (JavaScript): walks ancestors to find inherited method", () => {
@@ -1859,7 +1859,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"first-wins",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Animal:speak");
+		expect(result?.nodeId).toBe("method:Animal:speak");
 	});
 
 	it("leftmost-base (C++): diamond inheritance resolves leftmost branch first", () => {
@@ -1902,7 +1902,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 		expect(result).toBeDefined();
 		// BFS via HeritageMap visits B before C (insertion order), so leftmost
 		// branch wins — matches C++ leftmost-base semantics for non-virtual base.
-		expect(result!.nodeId).toBe("method:B:render");
+		expect(result?.nodeId).toBe("method:B:render");
 	});
 
 	it("returns direct method on owner without walking (no heritage needed)", () => {
@@ -1928,7 +1928,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"implements-split",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:User:getName");
+		expect(result?.nodeId).toBe("method:User:getName");
 	});
 
 	// ── ruby-mixin: kind-aware MRO walk (prepend > self > include) ────
@@ -1982,7 +1982,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"ruby-mixin",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:PrependedOverride:serialize");
+		expect(result?.nodeId).toBe("method:PrependedOverride:serialize");
 	});
 
 	it("ruby-mixin: class's own method wins over include provider (shadow)", () => {
@@ -2032,7 +2032,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"ruby-mixin",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Account:greet");
+		expect(result?.nodeId).toBe("method:Account:greet");
 	});
 
 	it("ruby-mixin: include provider used when class lacks the method", () => {
@@ -2072,7 +2072,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"ruby-mixin",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Greetable:greet");
+		expect(result?.nodeId).toBe("method:Greetable:greet");
 	});
 
 	it("ruby-mixin: extend providers excluded from instance-dispatch walk", () => {
@@ -2161,7 +2161,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			singletonAncestry,
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:LoggerMixin:log");
+		expect(result?.nodeId).toBe("method:LoggerMixin:log");
 	});
 
 	it("ruby-mixin: transitive mixin — module provides method via an included module", () => {
@@ -2206,7 +2206,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"ruby-mixin",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:Inner:helper");
+		expect(result?.nodeId).toBe("method:Inner:helper");
 	});
 
 	it("ruby-mixin: stacked prepends — last-prepended wins", () => {
@@ -2238,7 +2238,7 @@ describe("lookupMethodByOwnerWithMRO", () => {
 			"ruby-mixin",
 		);
 		expect(result).toBeDefined();
-		expect(result!.nodeId).toBe("method:P2:foo");
+		expect(result?.nodeId).toBe("method:P2:foo");
 	});
 });
 
@@ -2271,9 +2271,9 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("User", "save", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:User:save");
-		expect(result!.returnType).toBe("void");
-		expect(result!.confidence).toBeGreaterThan(0);
+		expect(result?.nodeId).toBe("method:User:save");
+		expect(result?.returnType).toBe("void");
+		expect(result?.confidence).toBeGreaterThan(0);
 	});
 
 	it("resolves inherited method via MRO walk", () => {
@@ -2313,8 +2313,8 @@ describe("resolveMemberCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:Parent:validate");
-		expect(result!.returnType).toBe("boolean");
+		expect(result?.nodeId).toBe("method:Parent:validate");
+		expect(result?.returnType).toBe("boolean");
 	});
 
 	it("returns null for unknown owner type", () => {
@@ -2345,8 +2345,8 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("User", "save", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.confidence).toBe(0.95); // same-file tier
-		expect(result!.reason).toBe("same-file");
+		expect(result?.confidence).toBe(0.95); // same-file tier
+		expect(result?.reason).toBe("same-file");
 	});
 
 	it("returns result with import-scoped tier for cross-file resolution", () => {
@@ -2360,8 +2360,8 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("User", "save", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.confidence).toBe(0.9); // import-scoped tier
-		expect(result!.reason).toBe("import-resolved");
+		expect(result?.confidence).toBe(0.9); // import-scoped tier
+		expect(result?.reason).toBe("import-resolved");
 	});
 
 	it("resolves with heritage map across C3 MRO chain (Python)", () => {
@@ -2386,8 +2386,8 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("C", "foo", "src/main.py", ctx, map);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:A:foo");
-		expect(result!.returnType).toBe("str");
+		expect(result?.nodeId).toBe("method:A:foo");
+		expect(result?.returnType).toBe("str");
 	});
 
 	// -------------------------------------------------------------------------
@@ -2410,8 +2410,8 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("User", "save", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.confidence).toBe(0.9); // import-scoped
-		expect(result!.reason).toBe("import-resolved");
+		expect(result?.confidence).toBe(0.9); // import-scoped
+		expect(result?.reason).toBe("import-resolved");
 	});
 
 	// -------------------------------------------------------------------------
@@ -2466,8 +2466,8 @@ describe("resolveMemberCall", () => {
 
 		const result = resolveMemberCall("User", "name", "src/app.rs", ctx);
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:User:name");
-		expect(result!.returnType).toBe("String");
+		expect(result?.nodeId).toBe("method:User:name");
+		expect(result?.returnType).toBe("String");
 	});
 
 	// -------------------------------------------------------------------------
@@ -2509,12 +2509,12 @@ describe("resolveMemberCall", () => {
 		// `user.save()` is unambiguous — only auth.User has `save`.
 		const saveResult = resolveMemberCall("User", "save", "src/app.py", ctx);
 		expect(saveResult).not.toBeNull();
-		expect(saveResult!.nodeId).toBe("method:auth:User:save");
+		expect(saveResult?.nodeId).toBe("method:auth:User:save");
 
 		// `user.archive()` is also unambiguous — only legacy.User has `archive`.
 		const archiveResult = resolveMemberCall("User", "archive", "src/app.py", ctx);
 		expect(archiveResult).not.toBeNull();
-		expect(archiveResult!.nodeId).toBe("method:legacy:User:archive");
+		expect(archiveResult?.nodeId).toBe("method:legacy:User:archive");
 	});
 
 	it("returns null when homonym classes BOTH own the method (genuine ambiguity)", () => {
@@ -2589,7 +2589,7 @@ describe("resolveMemberCall", () => {
 
 		const result = resolveMemberCall("User", "save", "src/app.ts", ctx, map);
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:BaseUser:save");
+		expect(result?.nodeId).toBe("method:BaseUser:save");
 	});
 
 	it("C++: resolves diamond inheritance via leftmost-base MRO", () => {
@@ -2648,8 +2648,8 @@ describe("resolveMemberCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:Base:method");
-		expect(result!.returnType).toBe("int");
+		expect(result?.nodeId).toBe("method:Base:method");
+		expect(result?.returnType).toBe("int");
 	});
 
 	// -------------------------------------------------------------------------
@@ -2709,8 +2709,8 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("MyService", "Save", "src/app.cs", ctx, map);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:BaseService:Save");
-		expect(result!.returnType).toBe("void");
+		expect(result?.nodeId).toBe("method:BaseService:Save");
+		expect(result?.returnType).toBe("void");
 	});
 
 	it("Kotlin: walks implements-split to find inherited method via interface", () => {
@@ -2749,8 +2749,8 @@ describe("resolveMemberCall", () => {
 		const result = resolveMemberCall("User", "validate", "src/app.kt", ctx, map);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:Validator:validate");
-		expect(result!.returnType).toBe("Boolean");
+		expect(result?.nodeId).toBe("method:Validator:validate");
+		expect(result?.returnType).toBe("Boolean");
 	});
 });
 
@@ -2850,7 +2850,7 @@ describe("resolveCallTarget thin dispatcher (SM-19)", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:User:save");
+		expect(result?.nodeId).toBe("method:User:save");
 	});
 
 	it("preComputedArgTypes ignored for member calls — resolveMemberCall resolves directly", () => {
@@ -2877,7 +2877,7 @@ describe("resolveCallTarget thin dispatcher (SM-19)", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("method:User:save");
+		expect(result?.nodeId).toBe("method:User:save");
 	});
 });
 
@@ -2905,7 +2905,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("ctor:User");
+		expect(result?.nodeId).toBe("ctor:User");
 	});
 
 	it("returns class node when no constructor exists", () => {
@@ -2915,7 +2915,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:User");
+		expect(result?.nodeId).toBe("class:User");
 	});
 
 	it("returns null for non-class symbol", () => {
@@ -2965,7 +2965,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.ts", ctx, 2);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("ctor:User:2");
+		expect(result?.nodeId).toBe("ctor:User:2");
 	});
 
 	it("returns correct confidence tier for import-scoped class", () => {
@@ -2975,8 +2975,8 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.confidence).toBe(0.9); // import-scoped tier
-		expect(result!.reason).toBe("import-resolved");
+		expect(result?.confidence).toBe(0.9); // import-scoped tier
+		expect(result?.reason).toBe("import-resolved");
 	});
 
 	it("returns correct confidence tier for same-file class", () => {
@@ -2985,8 +2985,8 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.confidence).toBe(0.95); // same-file tier
-		expect(result!.reason).toBe("same-file");
+		expect(result?.confidence).toBe(0.95); // same-file tier
+		expect(result?.reason).toBe("same-file");
 	});
 
 	it("returns null for ambiguous homonym classes without constructor", () => {
@@ -3014,7 +3014,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:User");
+		expect(result?.nodeId).toBe("class:User");
 	});
 
 	it("routes through resolveCallTarget for free-form call targeting a class (Swift/Kotlin)", () => {
@@ -3031,7 +3031,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:User");
+		expect(result?.nodeId).toBe("class:User");
 	});
 
 	it("reuses the pre-computed tiered result instead of calling ctx.resolve twice", () => {
@@ -3063,7 +3063,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("ctor:User");
+		expect(result?.nodeId).toBe("ctor:User");
 		expect(resolveCallCount).toBe(0); // ctx.resolve must not have been called again
 	});
 
@@ -3092,7 +3092,7 @@ describe("resolveStaticCall", () => {
 
 		expect(result).not.toBeNull();
 		// Prefers Constructor node over Class node when ownerId is present.
-		expect(result!.nodeId).toBe("ctor:java:User");
+		expect(result?.nodeId).toBe("ctor:java:User");
 	});
 
 	it("routes through resolveCallTarget for Python free-form constructor (User())", () => {
@@ -3109,7 +3109,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:py:User");
+		expect(result?.nodeId).toBe("class:py:User");
 	});
 
 	it("routes through resolveCallTarget for Kotlin free-form constructor (User())", () => {
@@ -3126,7 +3126,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:kt:User");
+		expect(result?.nodeId).toBe("class:kt:User");
 	});
 
 	// -------------------------------------------------------------------------
@@ -3143,7 +3143,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.rs", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("struct:User");
+		expect(result?.nodeId).toBe("struct:User");
 	});
 
 	it("returns a Record node when no constructor exists (positive regression guard)", () => {
@@ -3153,7 +3153,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/App.cs", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("record:User");
+		expect(result?.nodeId).toBe("record:User");
 	});
 
 	it("null-routes when the sole candidate is an Interface (Java/C#/TS)", () => {
@@ -3206,7 +3206,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/user.rs", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("struct:rs:User");
+		expect(result?.nodeId).toBe("struct:rs:User");
 	});
 
 	it("null-routes when the sole candidate is a Rust Impl block (no Struct present)", () => {
@@ -3236,7 +3236,7 @@ describe("resolveStaticCall", () => {
 		const result = resolveStaticCall("User", "src/app.rs", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("ctor:rs:User");
+		expect(result?.nodeId).toBe("ctor:rs:User");
 	});
 
 	it("routes through resolveCallTarget and null-routes Interface constructor-shaped calls", () => {
@@ -3302,7 +3302,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("record:cs:User");
+		expect(result?.nodeId).toBe("record:cs:User");
 	});
 
 	it("threads argCount through resolveCallTarget → S0 → resolveStaticCall for arity disambiguation", () => {
@@ -3333,7 +3333,7 @@ describe("resolveStaticCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("ctor:User:2");
+		expect(result?.nodeId).toBe("ctor:User:2");
 	});
 });
 
@@ -3355,9 +3355,9 @@ describe("resolveFreeCall", () => {
 		const result = resolveFreeCall("doStuff", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:doStuff");
-		expect(result!.confidence).toBe(0.9); // import-scoped tier
-		expect(result!.reason).toBe("import-resolved");
+		expect(result?.nodeId).toBe("func:doStuff");
+		expect(result?.confidence).toBe(0.9); // import-scoped tier
+		expect(result?.reason).toBe("import-resolved");
 	});
 
 	it("resolves a free function call via same-file resolution", () => {
@@ -3366,9 +3366,9 @@ describe("resolveFreeCall", () => {
 		const result = resolveFreeCall("helper", "src/app.ts", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:helper");
-		expect(result!.confidence).toBe(0.95); // same-file tier
-		expect(result!.reason).toBe("same-file");
+		expect(result?.nodeId).toBe("func:helper");
+		expect(result?.confidence).toBe(0.95); // same-file tier
+		expect(result?.reason).toBe("same-file");
 	});
 
 	it("returns null when no candidates exist", () => {
@@ -3393,7 +3393,7 @@ describe("resolveFreeCall", () => {
 		const result = resolveFreeCall("User", "src/app.swift", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:User");
+		expect(result?.nodeId).toBe("class:User");
 	});
 
 	it("delegates to resolveStaticCall for Record free-form targets (C#/Kotlin)", () => {
@@ -3403,7 +3403,7 @@ describe("resolveFreeCall", () => {
 		const result = resolveFreeCall("User", "src/App.cs", ctx);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("record:cs:User");
+		expect(result?.nodeId).toBe("record:cs:User");
 	});
 
 	it("null-routes Trait free-form calls via resolveStaticCall", () => {
@@ -3444,7 +3444,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:doStuff");
+		expect(result?.nodeId).toBe("func:doStuff");
 		expect(resolveCallCount).toBe(0);
 	});
 
@@ -3462,7 +3462,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:doStuff");
+		expect(result?.nodeId).toBe("func:doStuff");
 	});
 
 	// -------------------------------------------------------------------------
@@ -3491,7 +3491,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:go:doStuff");
+		expect(result?.nodeId).toBe("func:go:doStuff");
 	});
 
 	it("resolves a Python free function (def helper(): ... helper())", () => {
@@ -3505,7 +3505,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:py:helper");
+		expect(result?.nodeId).toBe("func:py:helper");
 	});
 
 	it("resolves a Rust free function outside any impl block (free_fn())", () => {
@@ -3524,7 +3524,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:rs:free_fn");
+		expect(result?.nodeId).toBe("func:rs:free_fn");
 	});
 
 	it("resolves a Java statically-imported function (doStuff() after import static Utils.doStuff)", () => {
@@ -3547,7 +3547,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:java:doStuff");
+		expect(result?.nodeId).toBe("func:java:doStuff");
 	});
 
 	it("resolves a JavaScript module-level function (moduleFn())", () => {
@@ -3566,7 +3566,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:js:moduleFn");
+		expect(result?.nodeId).toBe("func:js:moduleFn");
 	});
 
 	// R3 — Arity filtering: call.argCount must narrow overloaded free functions
@@ -3588,7 +3588,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:helper:2");
+		expect(result?.nodeId).toBe("func:helper:2");
 	});
 
 	it("narrows overloaded free functions by argCount (0-arg overload selected)", () => {
@@ -3607,7 +3607,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:helper:0");
+		expect(result?.nodeId).toBe("func:helper:0");
 	});
 
 	// R4 — Tier 3 (global) resolution: function globally visible but not
@@ -3630,9 +3630,9 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:global:helper");
-		expect(result!.confidence).toBe(0.5); // TIER_CONFIDENCE.global
-		expect(result!.reason).toBe("global");
+		expect(result?.nodeId).toBe("func:global:helper");
+		expect(result?.confidence).toBe(0.5); // TIER_CONFIDENCE.global
+		expect(result?.reason).toBe("global");
 	});
 
 	// R5 — preComputedArgTypes worker path: when parse-worker pre-computes
@@ -3674,7 +3674,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:helper:str");
+		expect(result?.nodeId).toBe("func:helper:str");
 	});
 
 	it("disambiguates overloads via preComputedArgTypes (Int overload matched)", () => {
@@ -3712,7 +3712,7 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:helper:int");
+		expect(result?.nodeId).toBe("func:helper:int");
 	});
 
 	// R6 — Enum free-form null-route: locks in the current behavior that
@@ -3782,7 +3782,7 @@ describe("resolveFreeCall", () => {
 		// behavior guard for finding #4 in the PR #756 review — if the dedup
 		// heuristic changes, this test surfaces that intent.
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("class:User:primary");
+		expect(result?.nodeId).toBe("class:User:primary");
 	});
 
 	// -------------------------------------------------------------------------
@@ -3831,7 +3831,7 @@ describe("resolveFreeCall", () => {
 		// filter and is preferred over the Class (CONSTRUCTOR_TARGET_TYPES puts
 		// Constructor first). Guards the (c) case in the retry-reasons comment.
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("ctor:User:ownerless");
+		expect(result?.nodeId).toBe("ctor:User:ownerless");
 	});
 
 	it("resolves a PHP free function (top-level helper())", () => {
@@ -3854,6 +3854,6 @@ describe("resolveFreeCall", () => {
 		);
 
 		expect(result).not.toBeNull();
-		expect(result!.nodeId).toBe("func:php:helper");
+		expect(result?.nodeId).toBe("func:php:helper");
 	});
 });

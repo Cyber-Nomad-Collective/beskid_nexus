@@ -52,7 +52,7 @@ function groupSwiftFilesByTarget(
 	const targets = [...swiftPackageConfig.targets.entries()].map(
 		([name, dir]) => ({
 			name,
-			prefix: dir.replace(/\\/g, "/") + "/",
+			prefix: `${dir.replace(/\\/g, "/")}/`,
 		}),
 	);
 

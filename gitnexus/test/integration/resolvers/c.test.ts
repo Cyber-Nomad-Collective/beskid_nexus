@@ -2,7 +2,7 @@
  * C: struct + include-based imports + function calls across files
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect } from "vitest";
 import {
 	createResolverParityIt,

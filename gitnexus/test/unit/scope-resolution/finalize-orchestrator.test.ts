@@ -115,7 +115,7 @@ describe("finalizeScopeModel: single file", () => {
 		});
 		const out = finalizeScopeModel([file]);
 		expect(out.referenceSites).toHaveLength(1);
-		expect(out.referenceSites[0]!.name).toBe("save");
+		expect(out.referenceSites[0]?.name).toBe("save");
 	});
 
 	it("aggregates large referenceSites without variadic push stack overflow", () => {
@@ -165,9 +165,9 @@ describe("finalizeScopeModel: cross-file imports", () => {
 
 		const appImports = out.imports.get(appFile.moduleScope) ?? [];
 		expect(appImports).toHaveLength(1);
-		expect(appImports[0]!.linkStatus).toBeUndefined();
-		expect(appImports[0]!.targetFile).toBe("models.ts");
-		expect(appImports[0]!.targetDefId).toBe("def:User");
+		expect(appImports[0]?.linkStatus).toBeUndefined();
+		expect(appImports[0]?.targetFile).toBe("models.ts");
+		expect(appImports[0]?.targetDefId).toBe("def:User");
 	});
 
 	it("leaves imports unresolved when no resolveImportTarget is supplied (default hook)", () => {
@@ -185,7 +185,7 @@ describe("finalizeScopeModel: cross-file imports", () => {
 		const out = finalizeScopeModel([appFile]);
 		const appImports = out.imports.get(appFile.moduleScope) ?? [];
 		expect(appImports).toHaveLength(1);
-		expect(appImports[0]!.linkStatus).toBe("unresolved");
+		expect(appImports[0]?.linkStatus).toBe("unresolved");
 	});
 
 	it("surfaces FinalizeStats for observability", () => {
@@ -222,7 +222,7 @@ describe("MutableSemanticModel.attachScopeIndexes", () => {
 		model.attachScopeIndexes(indexes);
 
 		expect(model.scopes).toBe(indexes);
-		expect(model.scopes!.stats.totalFiles).toBe(0);
+		expect(model.scopes?.stats.totalFiles).toBe(0);
 	});
 
 	it("freezes the attached bundle (callers cannot mutate after attach)", () => {

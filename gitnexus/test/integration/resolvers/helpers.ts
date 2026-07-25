@@ -2,8 +2,8 @@
  * Shared test helpers for language resolution integration tests.
  */
 
+import path from "node:path";
 import type { GraphRelationship } from "gitnexus-shared";
-import path from "path";
 import { it as vitestIt } from "vitest";
 import type { PipelineOptions } from "../../../src/core/ingestion/pipeline.js";
 import { runPipelineFromRepo } from "../../../src/core/ingestion/pipeline.js";

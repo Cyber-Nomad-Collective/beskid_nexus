@@ -179,7 +179,7 @@ export function assignService(
 	let bestLength = 0;
 
 	for (const boundary of boundaries) {
-		const prefix = boundary.servicePath + "/";
+		const prefix = `${boundary.servicePath}/`;
 		if (
 			normalized.startsWith(prefix) &&
 			boundary.servicePath.length > bestLength

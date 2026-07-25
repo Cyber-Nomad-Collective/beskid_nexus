@@ -54,13 +54,13 @@ export function resolvePhpImportInternal(
 		for (const [nsPrefix, dirPrefix] of sorted) {
 			const nsPrefixSlash = nsPrefix.replace(/\\/g, "/");
 			if (
-				normalized.startsWith(nsPrefixSlash + "/") ||
+				normalized.startsWith(`${nsPrefixSlash}/`) ||
 				normalized === nsPrefixSlash
 			) {
 				const remainder = normalized.slice(nsPrefixSlash.length).replace(/^\//, "");
 
 				// 1. Try class-style PSR-4: full path → file (e.g. App\Models\User → app/Models/User.php)
-				const filePath = dirPrefix + (remainder ? "/" + remainder : "") + ".php";
+				const filePath = `${dirPrefix + (remainder ? `/${remainder}` : "")}.php`;
 				if (allFiles.has(filePath)) return filePath;
 				if (index) {
 					const result = index.getInsensitive(filePath);
@@ -72,7 +72,7 @@ export function resolvePhpImportInternal(
 				const lastSlash = remainder.lastIndexOf("/");
 				const nsDir =
 					lastSlash >= 0
-						? dirPrefix + "/" + remainder.slice(0, lastSlash)
+						? `${dirPrefix}/${remainder.slice(0, lastSlash)}`
 						: dirPrefix;
 
 				// Prefer SuffixIndex directory lookup (O(log n + matches)) over linear scan
@@ -82,7 +82,7 @@ export function resolvePhpImportInternal(
 				}
 
 				// Fallback: linear scan (only when SuffixIndex unavailable)
-				const nsDirPrefix = nsDir.endsWith("/") ? nsDir : nsDir + "/";
+				const nsDirPrefix = nsDir.endsWith("/") ? nsDir : `${nsDir}/`;
 				for (const f of allFiles) {
 					if (
 						f.startsWith(nsDirPrefix) &&

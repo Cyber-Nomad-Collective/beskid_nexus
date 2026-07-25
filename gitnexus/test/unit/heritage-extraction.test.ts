@@ -325,7 +325,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 	it("returns null for non-heritage call names", () => {
 		const callNode = makeCallNode([makeConstantArg("Foo")], "class", "Bar");
 		expect(
-			extractor.extractFromCall!("puts", callNode as any, rubyCtx),
+			extractor.extractFromCall?.("puts", callNode as any, rubyCtx),
 		).toBeNull();
 	});
 
@@ -335,7 +335,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			"class",
 			"User",
 		);
-		const result = extractor.extractFromCall!(
+		const result = extractor.extractFromCall?.(
 			"include",
 			callNode as any,
 			rubyCtx,
@@ -351,7 +351,11 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			"class",
 			"Post",
 		);
-		const result = extractor.extractFromCall!("extend", callNode as any, rubyCtx);
+		const result = extractor.extractFromCall?.(
+			"extend",
+			callNode as any,
+			rubyCtx,
+		);
 		expect(result).toEqual([
 			{ className: "Post", parentName: "ActiveSupport::Concern", kind: "extend" },
 		]);
@@ -363,7 +367,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			"class",
 			"Service",
 		);
-		const result = extractor.extractFromCall!(
+		const result = extractor.extractFromCall?.(
 			"prepend",
 			callNode as any,
 			rubyCtx,
@@ -379,7 +383,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			"module",
 			"AppHelper",
 		);
-		const result = extractor.extractFromCall!(
+		const result = extractor.extractFromCall?.(
 			"include",
 			callNode as any,
 			rubyCtx,
@@ -396,7 +400,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			makeConstantArg("Mod3"),
 		];
 		const callNode = makeCallNode(args, "class", "MyClass");
-		const result = extractor.extractFromCall!(
+		const result = extractor.extractFromCall?.(
 			"include",
 			callNode as any,
 			rubyCtx,
@@ -421,7 +425,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			childForFieldName: (name: string) =>
 				name === "arguments" ? argList : undefined,
 		};
-		const result = extractor.extractFromCall!(
+		const result = extractor.extractFromCall?.(
 			"include",
 			callNode as any,
 			rubyCtx,
@@ -436,7 +440,7 @@ describe("Ruby HeritageExtractor — call-based heritage", () => {
 			makeConstantArg("Mod2"),
 		];
 		const callNode = makeCallNode(args, "class", "MyClass");
-		const result = extractor.extractFromCall!(
+		const result = extractor.extractFromCall?.(
 			"include",
 			callNode as any,
 			rubyCtx,
@@ -462,7 +466,7 @@ describe("HeritageExtraction language configs", () => {
 	it("Ruby config has callBasedHeritage", () => {
 		expect(rubyHeritageConfig.language).toBe(SupportedLanguages.Ruby);
 		expect(rubyHeritageConfig.callBasedHeritage).toBeDefined();
-		expect(rubyHeritageConfig.callBasedHeritage!.callNames).toEqual(
+		expect(rubyHeritageConfig.callBasedHeritage?.callNames).toEqual(
 			new Set(["include", "extend", "prepend"]),
 		);
 	});

@@ -66,7 +66,7 @@ describe("synthesizeWildcardImportBindings", () => {
 		expect(total).toBe(1);
 		const mainBindings = ctx.namedImportMap.get("cmd/main.go");
 		expect(mainBindings).toBeDefined();
-		expect(mainBindings!.get("Helper")).toEqual({
+		expect(mainBindings?.get("Helper")).toEqual({
 			sourcePath: "pkg/util.go",
 			exportedName: "Helper",
 		});
@@ -95,8 +95,8 @@ describe("synthesizeWildcardImportBindings", () => {
 		const aliasMap = ctx.moduleAliasMap.get("app.py");
 		expect(aliasMap).toBeDefined();
 		// basename stem → full path
-		expect(aliasMap!.get("models")).toBe("models.py");
-		expect(aliasMap!.get("helpers")).toBe("utils/helpers.py");
+		expect(aliasMap?.get("models")).toBe("models.py");
+		expect(aliasMap?.get("helpers")).toBe("utils/helpers.py");
 	});
 
 	it("caps synthesis at MAX_SYNTHETIC_BINDINGS_PER_FILE (1000) per file", () => {
@@ -124,7 +124,7 @@ describe("synthesizeWildcardImportBindings", () => {
 		expect(total).toBe(1000);
 		const bindings = ctx.namedImportMap.get("cmd/main.go");
 		expect(bindings).toBeDefined();
-		expect(bindings!.size).toBe(1000);
+		expect(bindings?.size).toBe(1000);
 	});
 
 	it("skips symbols already present in namedImportMap (dedup)", () => {
@@ -154,7 +154,7 @@ describe("synthesizeWildcardImportBindings", () => {
 		// Only "Other" should have been synthesized; "Helper" was skipped.
 		expect(total).toBe(1);
 		const bindings = ctx.namedImportMap.get("cmd/main.go")!;
-		expect(bindings.get("Helper")!.sourcePath).toBe("other/source.go"); // untouched
+		expect(bindings.get("Helper")?.sourcePath).toBe("other/source.go"); // untouched
 		expect(bindings.get("Other")).toEqual({
 			sourcePath: "pkg/util.go",
 			exportedName: "Other",

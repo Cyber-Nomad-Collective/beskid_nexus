@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	FIXTURES,
@@ -30,7 +30,7 @@ describe("Next.js route mapping", () => {
 		expect(edges.length).toBeGreaterThanOrEqual(2);
 		const grantsRoute = edges.find((e) => e.target === "/api/grants");
 		expect(grantsRoute).toBeDefined();
-		expect(grantsRoute!.sourceFilePath).toContain("app/api/grants/route.ts");
+		expect(grantsRoute?.sourceFilePath).toContain("app/api/grants/route.ts");
 	});
 
 	it("creates FETCHES edge from consumer to Route node", () => {
@@ -53,15 +53,15 @@ describe("Next.js route mapping", () => {
 			e.sourceFilePath.includes("GrantsList"),
 		);
 		expect(dynamicFetch).toBeDefined();
-		expect(dynamicFetch!.target).toBe("/api/organizations/[slug]/grants");
+		expect(dynamicFetch?.target).toBe("/api/organizations/[slug]/grants");
 	});
 
 	it("links project-level middleware.ts to matching API routes", () => {
 		const routes = getNodesByLabelFull(result, "Route");
 		const grants = routes.find((r) => r.name === "/api/grants");
 		expect(grants).toBeDefined();
-		expect(grants!.properties.middleware).toBeDefined();
-		expect(grants!.properties.middleware).toContain("middleware");
+		expect(grants?.properties.middleware).toBeDefined();
+		expect(grants?.properties.middleware).toContain("middleware");
 	});
 
 	it("links middleware to all routes matching the matcher pattern", () => {

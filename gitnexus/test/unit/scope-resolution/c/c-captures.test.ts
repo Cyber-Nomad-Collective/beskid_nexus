@@ -80,7 +80,7 @@ describe("emitCScopeCaptures — struct declarations", () => {
 			t.includes("@declaration.struct"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("User");
+		expect(m?.["@declaration.name"].text).toBe("User");
 	});
 
 	it("captures typedef struct with @declaration.struct (not typedef)", () => {
@@ -88,7 +88,7 @@ describe("emitCScopeCaptures — struct declarations", () => {
 			t.includes("@declaration.struct"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("User");
+		expect(m?.["@declaration.name"].text).toBe("User");
 	});
 
 	it("suppresses @declaration.typedef when struct already captured same range", () => {
@@ -107,7 +107,7 @@ describe("emitCScopeCaptures — union declarations", () => {
 			t.includes("@declaration.union"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Data");
+		expect(m?.["@declaration.name"].text).toBe("Data");
 	});
 
 	it("captures typedef union with @declaration.union", () => {
@@ -115,7 +115,7 @@ describe("emitCScopeCaptures — union declarations", () => {
 			t.includes("@declaration.union"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Value");
+		expect(m?.["@declaration.name"].text).toBe("Value");
 	});
 });
 
@@ -125,7 +125,7 @@ describe("emitCScopeCaptures — enum declarations", () => {
 			t.includes("@declaration.enum"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Color");
+		expect(m?.["@declaration.name"].text).toBe("Color");
 	});
 
 	it("captures enum constants as @declaration.const", () => {
@@ -145,7 +145,7 @@ describe("emitCScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("add");
+		expect(m?.["@declaration.name"].text).toBe("add");
 	});
 
 	it("captures function prototype (declaration) with @declaration.function", () => {
@@ -153,7 +153,7 @@ describe("emitCScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("add");
+		expect(m?.["@declaration.name"].text).toBe("add");
 	});
 
 	it("captures pointer-return function definition", () => {
@@ -161,7 +161,7 @@ describe("emitCScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("create");
+		expect(m?.["@declaration.name"].text).toBe("create");
 	});
 
 	it("captures pointer-return function prototype", () => {
@@ -169,7 +169,7 @@ describe("emitCScopeCaptures — function declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("get_name");
+		expect(m?.["@declaration.name"].text).toBe("get_name");
 	});
 });
 
@@ -179,7 +179,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.typedef"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("MyInt");
+		expect(m?.["@declaration.name"].text).toBe("MyInt");
 	});
 
 	it("captures function pointer typedef as @declaration.typedef", () => {
@@ -187,7 +187,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.typedef"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("callback");
+		expect(m?.["@declaration.name"].text).toBe("callback");
 	});
 
 	it("captures struct field as @declaration.field", () => {
@@ -195,7 +195,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.field"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("x");
+		expect(m?.["@declaration.name"].text).toBe("x");
 	});
 
 	it("captures pointer struct field as @declaration.field", () => {
@@ -203,7 +203,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.field"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("next");
+		expect(m?.["@declaration.name"].text).toBe("next");
 	});
 
 	it("captures variable with initializer as @declaration.variable", () => {
@@ -211,7 +211,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.variable"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("x");
+		expect(m?.["@declaration.name"].text).toBe("x");
 	});
 
 	it("captures macro as @declaration.macro", () => {
@@ -219,7 +219,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.macro"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("MAX");
+		expect(m?.["@declaration.name"].text).toBe("MAX");
 	});
 
 	it("captures function-like macro as @declaration.macro", () => {
@@ -227,7 +227,7 @@ describe("emitCScopeCaptures — other declarations", () => {
 			t.includes("@declaration.macro"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("SQUARE");
+		expect(m?.["@declaration.name"].text).toBe("SQUARE");
 	});
 });
 
@@ -237,8 +237,8 @@ describe("emitCScopeCaptures — imports", () => {
 			t.includes("@import.statement"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("header.h");
-		expect(m!["@import.kind"].text).toBe("wildcard");
+		expect(m?.["@import.source"].text).toBe("header.h");
+		expect(m?.["@import.kind"].text).toBe("wildcard");
 	});
 
 	it("captures system #include with @import.system tag", () => {
@@ -246,7 +246,7 @@ describe("emitCScopeCaptures — imports", () => {
 			t.includes("@import.statement"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@import.system"]).toBeDefined();
+		expect(m?.["@import.system"]).toBeDefined();
 	});
 
 	it("captures nested path includes", () => {
@@ -254,7 +254,7 @@ describe("emitCScopeCaptures — imports", () => {
 			t.includes("@import.statement"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("utils/helpers.h");
+		expect(m?.["@import.source"].text).toBe("utils/helpers.h");
 	});
 });
 
@@ -264,7 +264,7 @@ describe("emitCScopeCaptures — references", () => {
 			t.includes("@reference.call.free"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("foo");
+		expect(m?.["@reference.name"].text).toBe("foo");
 	});
 
 	it("captures member call via pointer (ptr->func())", () => {
@@ -272,7 +272,7 @@ describe("emitCScopeCaptures — references", () => {
 			t.includes("@reference.call.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("method");
+		expect(m?.["@reference.name"].text).toBe("method");
 	});
 
 	it("captures field reads", () => {
@@ -280,7 +280,7 @@ describe("emitCScopeCaptures — references", () => {
 			t.includes("@reference.read"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("field");
+		expect(m?.["@reference.name"].text).toBe("field");
 	});
 
 	it("captures field writes (assignment)", () => {
@@ -288,7 +288,7 @@ describe("emitCScopeCaptures — references", () => {
 			t.includes("@reference.write"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("field");
+		expect(m?.["@reference.name"].text).toBe("field");
 	});
 });
 
@@ -298,7 +298,7 @@ describe("emitCScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.parameter"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("x");
+		expect(m?.["@type-binding.name"].text).toBe("x");
 	});
 
 	it("captures variable type bindings", () => {
@@ -306,7 +306,7 @@ describe("emitCScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.assignment"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("x");
+		expect(m?.["@type-binding.name"].text).toBe("x");
 	});
 });
 
@@ -316,7 +316,7 @@ describe("emitCScopeCaptures — arity metadata", () => {
 			t.includes("@declaration.parameter-count"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("2");
+		expect(m?.["@declaration.parameter-count"].text).toBe("2");
 	});
 
 	it("synthesizes parameter-types on function definitions", () => {
@@ -324,7 +324,7 @@ describe("emitCScopeCaptures — arity metadata", () => {
 			t.includes("@declaration.parameter-types"),
 		);
 		expect(m).toBeDefined();
-		const types = JSON.parse(m!["@declaration.parameter-types"].text);
+		const types = JSON.parse(m?.["@declaration.parameter-types"].text);
 		expect(types).toEqual(["int", "float"]);
 	});
 
@@ -333,8 +333,8 @@ describe("emitCScopeCaptures — arity metadata", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.parameter-count"].text).toBe("0");
-		expect(m!["@declaration.required-parameter-count"].text).toBe("0");
+		expect(m?.["@declaration.parameter-count"].text).toBe("0");
+		expect(m?.["@declaration.required-parameter-count"].text).toBe("0");
 	});
 
 	it("variadic function has undefined parameter-count but defined required-parameter-count", () => {
@@ -343,8 +343,8 @@ describe("emitCScopeCaptures — arity metadata", () => {
 		);
 		expect(m).toBeDefined();
 		// variadic → parameterCount is undefined (not emitted)
-		expect(m!["@declaration.parameter-count"]).toBeUndefined();
-		expect(m!["@declaration.required-parameter-count"].text).toBe("1");
+		expect(m?.["@declaration.parameter-count"]).toBeUndefined();
+		expect(m?.["@declaration.required-parameter-count"].text).toBe("1");
 	});
 
 	it("synthesizes arity on call references", () => {
@@ -353,7 +353,7 @@ describe("emitCScopeCaptures — arity metadata", () => {
 			(t) => t.includes("@reference.call.free") && t.includes("@reference.arity"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.arity"].text).toBe("2");
+		expect(m?.["@reference.arity"].text).toBe("2");
 	});
 
 	it("zero-argument call has arity 0", () => {
@@ -362,7 +362,7 @@ describe("emitCScopeCaptures — arity metadata", () => {
 			(t) => t.includes("@reference.call.free") && t.includes("@reference.arity"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.arity"].text).toBe("0");
+		expect(m?.["@reference.arity"].text).toBe("0");
 	});
 });
 

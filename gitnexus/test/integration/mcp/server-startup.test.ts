@@ -128,7 +128,7 @@ function spawnMcpServer(): SpawnedServer {
 				state = 0;
 				try {
 					pushMessage(JSON.parse(bodyBuf.toString("utf8")));
-				} catch (err) {
+				} catch (_err) {
 					// Body that doesn't parse as JSON is a fatal protocol error.
 					stray.push(bodyBuf);
 				}
@@ -229,7 +229,7 @@ describe("MCP server end-to-end startup", () => {
 			expect(initResponse.id).toBe(1);
 			expect(initResponse.error).toBeUndefined();
 			expect(initResponse.result).toBeDefined();
-			expect(initResponse.result!.serverInfo.name).toMatch(/gitnexus/i);
+			expect(initResponse.result?.serverInfo.name).toMatch(/gitnexus/i);
 			expect(firstFrameAt - startedAt).toBeLessThan(FIRST_FRAME_BUDGET_MS);
 
 			// initialized notification (no response expected)
@@ -245,7 +245,7 @@ describe("MCP server end-to-end startup", () => {
 
 			expect(toolsResponse.id).toBe(2);
 			expect(toolsResponse.result).toBeDefined();
-			const toolNames = (toolsResponse.result!.tools ?? []).map((t) => t.name);
+			const toolNames = (toolsResponse.result?.tools ?? []).map((t) => t.name);
 			// The published GitNexus tool set. Adjust if the surface changes.
 			const expectedTools = [
 				"list_repos",

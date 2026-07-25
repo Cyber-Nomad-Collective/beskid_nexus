@@ -1,7 +1,7 @@
 import type { User } from "./user";
 
-function processEntries(entries: Map<string, User>) {
-	for (const [key, user] of entries) {
+function _processEntries(entries: Map<string, User>) {
+	for (const [_key, user] of entries) {
 		user.save();
 	}
 }

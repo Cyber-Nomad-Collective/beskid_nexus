@@ -9,8 +9,8 @@ describe("Group MCP tools", () => {
 		for (const name of GROUP_TOOL_NAMES) {
 			const tool = GITNEXUS_TOOLS.find((t) => t.name === name);
 			expect(tool, `tool ${name} should be registered`).toBeDefined();
-			expect(tool!.description.length).toBeGreaterThan(10);
-			expect(tool!.inputSchema.type).toBe("object");
+			expect(tool?.description.length).toBeGreaterThan(10);
+			expect(tool?.inputSchema.type).toBe("object");
 		}
 	});
 

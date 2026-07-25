@@ -117,7 +117,7 @@ function methodNamesInClassBody(body: Parser.SyntaxNode): string[] {
 	const names: string[] = [];
 	for (let i = 0; i < body.namedChildCount; i++) {
 		const child = body.namedChild(i);
-		if (!child || child.type !== "method_declaration") continue;
+		if (child?.type !== "method_declaration") continue;
 		const name = child.childForFieldName("name");
 		if (name?.text) names.push(name.text);
 	}

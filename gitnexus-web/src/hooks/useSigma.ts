@@ -31,7 +31,7 @@ const rgbToHex = (r: number, g: number, b: number): string => {
 		[r, g, b]
 			.map((x) => {
 				const hex = Math.max(0, Math.min(255, Math.round(x))).toString(16);
-				return hex.length === 1 ? "0" + hex : hex;
+				return hex.length === 1 ? `0${hex}` : hex;
 			})
 			.join("")
 	);
@@ -507,7 +507,12 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
 			sigmaRef.current = null;
 			graphRef.current = null;
 		};
-	}, []);
+	}, [
+		setSelectedNode,
+		options.onStageClick,
+		options.onNodeHover,
+		options.onNodeClick,
+	]);
 
 	// Run ForceAtlas2 layout
 	const runLayout = useCallback(
@@ -581,7 +586,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
 	const focusNode = useCallback((nodeId: string) => {
 		const sigma = sigmaRef.current;
 		const graph = graphRef.current;
-		if (!sigma || !graph || !graph.hasNode(nodeId)) return;
+		if (!sigma || !graph?.hasNode(nodeId)) return;
 
 		// Skip if already focused on this node (prevents double-click issues)
 		const alreadySelected = selectedNodeRef.current === nodeId;

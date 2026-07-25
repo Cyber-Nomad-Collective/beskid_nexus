@@ -79,8 +79,8 @@ describe("Group sync integration", () => {
 			l.contractId.includes("/api/users"),
 		);
 		expect(usersLink).toBeDefined();
-		expect(usersLink!.matchType).toBe("exact");
-		expect(usersLink!.confidence).toBe(1.0);
+		expect(usersLink?.matchType).toBe("exact");
+		expect(usersLink?.confidence).toBe(1.0);
 
 		const healthUnmatched = result.unmatched.some((c) =>
 			c.contractId.includes("/api/health"),

@@ -8,18 +8,18 @@
  * CORS is restricted to localhost, private/LAN networks, and the deployed site.
  */
 
+import { fork } from "node:child_process";
+import fs from "node:fs/promises";
 import { createRequire } from "node:module";
-import { fork } from "child_process";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import cors from "cors";
 import express from "express";
-import fs from "fs/promises";
 import {
 	type GraphNode,
 	type GraphRelationship,
 	NODE_TABLES,
 } from "gitnexus-shared";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
 import {
 	closeLbug,
 	executePrepared,
@@ -343,7 +343,7 @@ export const writeNdjsonRecord = async (
 	ensureStreamIsWritable(res, signal);
 
 	try {
-		const canContinue = res.write(JSON.stringify(record) + "\n");
+		const canContinue = res.write(`${JSON.stringify(record)}\n`);
 		if (!canContinue) {
 			await waitForDrain(res, signal);
 		}
@@ -820,7 +820,7 @@ export const createServer = async (
 	// on OPTIONS requests and expects the allow header in the response.
 	// Note: the actual Allow-Private-Network header is already set by the global
 	// middleware above, so we just need to call next() here.
-	app.options("*", (_req, res, next) => {
+	app.options("*", (_req, _res, next) => {
 		next();
 	});
 
@@ -1148,7 +1148,7 @@ export const createServer = async (
 			const message = err.message || "Failed to build graph";
 			if (res.headersSent) {
 				try {
-					res.write(JSON.stringify({ type: "error", error: message }) + "\n");
+					res.write(`${JSON.stringify({ type: "error", error: message })}\n`);
 				} catch {
 					// Best-effort only after streaming has started.
 				}
@@ -1753,7 +1753,7 @@ export const createServer = async (
 									releaseRepoLock(analyzeLockKey);
 									jobManager.updateJob(job.id, {
 										status: "failed",
-										error: `Worker crashed ${MAX_WORKER_RETRIES + 1} times (code ${code})${stderrChunks ? ": " + stderrChunks.trim().split("\n").pop() : ""}`,
+										error: `Worker crashed ${MAX_WORKER_RETRIES + 1} times (code ${code})${stderrChunks ? `: ${stderrChunks.trim().split("\n").pop()}` : ""}`,
 									});
 								}
 							});
@@ -1944,14 +1944,14 @@ export const createServer = async (
 					releaseRepoLock(repoLockPath);
 					// Don't overwrite 'failed' if the job was cancelled while the pipeline was running
 					const current = embedJobManager.getJob(job.id);
-					if (!current || current.status !== "failed") {
+					if (current?.status !== "failed") {
 						embedJobManager.updateJob(job.id, { status: "complete" });
 					}
 				} catch (err: any) {
 					clearTimeout(embedTimeout);
 					releaseRepoLock(repoLockPath);
 					const current = embedJobManager.getJob(job.id);
-					if (!current || current.status !== "failed") {
+					if (current?.status !== "failed") {
 						embedJobManager.updateJob(job.id, {
 							status: "failed",
 							error: err.message || "Embedding generation failed",

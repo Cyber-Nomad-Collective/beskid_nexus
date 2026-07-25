@@ -1,6 +1,6 @@
 import { Repo, User } from "./models";
 
-function main(): void {
+function _main(): void {
 	const user = new User();
 	user.save();
 

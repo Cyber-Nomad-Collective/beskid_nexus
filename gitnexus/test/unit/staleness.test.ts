@@ -7,7 +7,7 @@
  * - Git failure → fail open (not stale)
  */
 
-import { execFileSync } from "child_process";
+import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import {
 	checkStaleness,

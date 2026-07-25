@@ -22,6 +22,6 @@ export class UserService {
 	}
 }
 
-function internalHelper(): string {
+function _internalHelper(): string {
 	return "helper";
 }

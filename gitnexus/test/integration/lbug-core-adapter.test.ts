@@ -9,8 +9,8 @@
  * and opens a new one — sharing a single handle avoids unnecessary churn.
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { withTestLbugDB } from "../helpers/test-indexed-db.js";
 

@@ -7,8 +7,8 @@
  * cross-community connections.
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import type { KnowledgeGraph } from "../core/graph/types.js";
 import type {
 	CommunityMembership,
@@ -73,7 +73,7 @@ export const generateSkillFiles = async (
 	const { communityResult, processResult, graph } = pipelineResult;
 	const outputDir = path.join(repoPath, ".claude", "skills", "generated");
 
-	if (!communityResult || !communityResult.memberships.length) {
+	if (!communityResult?.memberships.length) {
 		console.log("\n  Skills: no communities detected, skipping skill generation");
 		return { skills: [], outputPath: outputDir };
 	}
@@ -207,7 +207,7 @@ export const generateSkillFiles = async (
 const buildCommunitiesFromMemberships = (
 	memberships: CommunityMembership[],
 	graph: KnowledgeGraph,
-	repoPath: string,
+	_repoPath: string,
 ): CommunityNode[] => {
 	// Group memberships by communityId
 	const groups = new Map<string, string[]>();

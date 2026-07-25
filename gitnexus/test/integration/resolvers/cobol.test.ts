@@ -9,7 +9,7 @@
  *   CUSTDAT.cpy, COPYLIB.cpy, RUNJOBS.jcl
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	edgeSet,

@@ -557,8 +557,8 @@ describe("extractNextjsMiddlewareConfig", () => {
     `;
 		const result = extractNextjsMiddlewareConfig(content);
 		expect(result).toBeDefined();
-		expect(result!.matchers).toEqual(["/api/:path*", "/dashboard/:path*"]);
-		expect(result!.exportedName).toBe("middleware");
+		expect(result?.matchers).toEqual(["/api/:path*", "/dashboard/:path*"]);
+		expect(result?.exportedName).toBe("middleware");
 	});
 
 	it("extracts single string matcher", () => {
@@ -567,7 +567,7 @@ describe("extractNextjsMiddlewareConfig", () => {
       export const config = { matcher: '/dashboard/:path*' };
     `;
 		const result = extractNextjsMiddlewareConfig(content);
-		expect(result!.matchers).toEqual(["/dashboard/:path*"]);
+		expect(result?.matchers).toEqual(["/dashboard/:path*"]);
 	});
 
 	it("extracts default export name as wrappedFunction", () => {
@@ -577,9 +577,9 @@ describe("extractNextjsMiddlewareConfig", () => {
       export const config = { matcher: ['/api/:path*'] };
     `;
 		const result = extractNextjsMiddlewareConfig(content);
-		expect(result!.exportedName).toBe("auth");
-		expect(result!.wrappedFunctions).toContain("auth");
-		expect(result!.matchers).toEqual(["/api/:path*"]);
+		expect(result?.exportedName).toBe("auth");
+		expect(result?.wrappedFunctions).toContain("auth");
+		expect(result?.matchers).toEqual(["/api/:path*"]);
 	});
 
 	it("extracts chain composition", () => {
@@ -588,7 +588,7 @@ describe("extractNextjsMiddlewareConfig", () => {
       export const config = { matcher: ['/((?!api|_next).*)'] };
     `;
 		const result = extractNextjsMiddlewareConfig(content);
-		expect(result!.wrappedFunctions).toEqual(["withAuth", "withI18n"]);
+		expect(result?.wrappedFunctions).toEqual(["withAuth", "withI18n"]);
 	});
 
 	it("extracts nested wrapper composition from default export", () => {
@@ -597,7 +597,7 @@ describe("extractNextjsMiddlewareConfig", () => {
       export const config = { matcher: ['/api/:path*'] };
     `;
 		const result = extractNextjsMiddlewareConfig(content);
-		expect(result!.wrappedFunctions).toEqual(["withRateLimit", "withAuth"]);
+		expect(result?.wrappedFunctions).toEqual(["withRateLimit", "withAuth"]);
 	});
 
 	it("extracts regex-style negative lookahead matcher", () => {
@@ -608,16 +608,16 @@ describe("extractNextjsMiddlewareConfig", () => {
       };
     `;
 		const result = extractNextjsMiddlewareConfig(content);
-		expect(result!.matchers).toHaveLength(1);
-		expect(result!.matchers[0]).toContain("(?!api|_next");
+		expect(result?.matchers).toHaveLength(1);
+		expect(result?.matchers[0]).toContain("(?!api|_next");
 	});
 
 	it("treats middleware without config.matcher as match-all", () => {
 		const content = `export function middleware(req) { return NextResponse.next(); }`;
 		const result = extractNextjsMiddlewareConfig(content);
 		expect(result).toBeDefined();
-		expect(result!.matchers).toEqual([]);
-		expect(result!.exportedName).toBe("middleware");
+		expect(result?.matchers).toEqual([]);
+		expect(result?.exportedName).toBe("middleware");
 	});
 
 	it("detects arrow function const export", () => {
@@ -629,15 +629,15 @@ describe("extractNextjsMiddlewareConfig", () => {
     `;
 		const result = extractNextjsMiddlewareConfig(content);
 		expect(result).toBeDefined();
-		expect(result!.exportedName).toBe("middleware");
-		expect(result!.matchers).toEqual(["/dashboard/:path*"]);
+		expect(result?.exportedName).toBe("middleware");
+		expect(result?.matchers).toEqual(["/dashboard/:path*"]);
 	});
 
 	it("handles export default function middleware(...)", () => {
 		const content = `export default function middleware(req) { return NextResponse.next(); }`;
 		const result = extractNextjsMiddlewareConfig(content);
 		expect(result).toBeDefined();
-		expect(result!.exportedName).toBe("middleware");
+		expect(result?.exportedName).toBe("middleware");
 	});
 });
 

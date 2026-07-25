@@ -1,6 +1,6 @@
 import { getUser } from "./service";
 
-function processChain() {
+function _processChain() {
 	const user = getUser();
 	const addr = user.address;
 	const city = addr.getCity();

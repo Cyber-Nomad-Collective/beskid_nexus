@@ -4,7 +4,7 @@
 
 import fs from "node:fs";
 import os from "node:os";
-import path from "path";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
 	edgeSet,
@@ -96,7 +96,7 @@ describe("TypeScript heritage resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -145,7 +145,7 @@ describe("TypeScript ambiguous symbol resolution", () => {
 		for (const edge of [...extends_, ...implements_]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -190,7 +190,7 @@ describe("TypeScript generic awaited call resolution", () => {
 			(c) => c.source === "authenticateUser" && c.target === "verifyToken",
 		);
 		expect(authCall).toBeDefined();
-		expect(authCall!.targetFilePath).toBe("src/token.ts");
+		expect(authCall?.targetFilePath).toBe("src/token.ts");
 	});
 
 	it("resolves authenticateAdmin → verifyToken via awaited generic call", () => {
@@ -199,7 +199,7 @@ describe("TypeScript generic awaited call resolution", () => {
 			(c) => c.source === "authenticateAdmin" && c.target === "verifyToken",
 		);
 		expect(adminCall).toBeDefined();
-		expect(adminCall!.targetFilePath).toBe("src/token.ts");
+		expect(adminCall?.targetFilePath).toBe("src/token.ts");
 	});
 
 	it("resolves authenticateGuest → verify via awaited generic member call", () => {
@@ -208,7 +208,7 @@ describe("TypeScript generic awaited call resolution", () => {
 			(c) => c.source === "authenticateGuest" && c.target === "verify",
 		);
 		expect(guestCall).toBeDefined();
-		expect(guestCall!.targetFilePath).toBe("src/service.ts");
+		expect(guestCall?.targetFilePath).toBe("src/service.ts");
 	});
 
 	it("verifyToken has exactly 2 incoming CALLS edges (both free-call callers resolved)", () => {
@@ -236,8 +236,8 @@ describe("TypeScript member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.targetFilePath).toBe("src/user.ts");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.targetFilePath).toBe("src/user.ts");
 	});
 
 	it("detects User class and save method", () => {
@@ -272,16 +272,16 @@ describe("TypeScript constructor-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("processUser");
-		expect(ctorCall!.targetLabel).toBe("Class");
-		expect(ctorCall!.targetFilePath).toBe("src/user.ts");
+		expect(ctorCall?.source).toBe("processUser");
+		expect(ctorCall?.targetLabel).toBe("Class");
+		expect(ctorCall?.targetFilePath).toBe("src/user.ts");
 	});
 
 	it("also resolves user.save() as a member call", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
+		expect(saveCall?.source).toBe("processUser");
 	});
 
 	it("detects User class, save method, and processUser function", () => {
@@ -324,8 +324,8 @@ describe("TypeScript receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
-		expect(repoSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("resolves constructor calls for both User and Repo", () => {
@@ -396,15 +396,15 @@ describe("TypeScript named import disambiguation", () => {
 		const calls = getRelationships(result, "CALLS");
 		const formatCall = calls.find((c) => c.target === "formatData");
 		expect(formatCall).toBeDefined();
-		expect(formatCall!.source).toBe("processInput");
-		expect(formatCall!.targetFilePath).toBe("src/format-upper.ts");
+		expect(formatCall?.source).toBe("processInput");
+		expect(formatCall?.targetFilePath).toBe("src/format-upper.ts");
 	});
 
 	it("emits IMPORTS edge to format-upper.ts", () => {
 		const imports = getRelationships(result, "IMPORTS");
 		const appImport = imports.find((e) => e.source === "app.ts");
 		expect(appImport).toBeDefined();
-		expect(appImport!.targetFilePath).toBe("src/format-upper.ts");
+		expect(appImport?.targetFilePath).toBe("src/format-upper.ts");
 	});
 });
 
@@ -485,12 +485,12 @@ describe("TypeScript alias import resolution", () => {
 		);
 
 		expect(userCtor).toBeDefined();
-		expect(userCtor!.source).toBe("main");
-		expect(userCtor!.targetFilePath).toBe("src/models.ts");
+		expect(userCtor?.source).toBe("main");
+		expect(userCtor?.targetFilePath).toBe("src/models.ts");
 
 		expect(repoCtor).toBeDefined();
-		expect(repoCtor!.source).toBe("main");
-		expect(repoCtor!.targetFilePath).toBe("src/models.ts");
+		expect(repoCtor?.source).toBe("main");
+		expect(repoCtor?.targetFilePath).toBe("src/models.ts");
 	});
 
 	it("resolves u.save() and r.persist() as member calls", () => {
@@ -499,17 +499,17 @@ describe("TypeScript alias import resolution", () => {
 		const persistCall = calls.find((c) => c.target === "persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
+		expect(saveCall?.source).toBe("main");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("main");
+		expect(persistCall?.source).toBe("main");
 	});
 
 	it("emits IMPORTS edge from app.ts to models.ts", () => {
 		const imports = getRelationships(result, "IMPORTS");
 		const appImport = imports.find((e) => e.sourceFilePath === "src/app.ts");
 		expect(appImport).toBeDefined();
-		expect(appImport!.targetFilePath).toBe("src/models.ts");
+		expect(appImport?.targetFilePath).toBe("src/models.ts");
 	});
 });
 
@@ -537,16 +537,16 @@ describe("TypeScript re-export chain resolution", () => {
 			(c) => c.target === "User" && c.targetLabel === "Class",
 		);
 		expect(userCtor).toBeDefined();
-		expect(userCtor!.source).toBe("main");
-		expect(userCtor!.targetFilePath).toBe("src/base.ts");
+		expect(userCtor?.source).toBe("main");
+		expect(userCtor?.targetFilePath).toBe("src/base.ts");
 	});
 
 	it("resolves user.save() through re-export chain to base.ts", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("src/base.ts");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("src/base.ts");
 	});
 
 	it("resolves new Repo() through re-export chain to base.ts", () => {
@@ -555,16 +555,16 @@ describe("TypeScript re-export chain resolution", () => {
 			(c) => c.target === "Repo" && c.targetLabel === "Class",
 		);
 		expect(repoCtor).toBeDefined();
-		expect(repoCtor!.source).toBe("main");
-		expect(repoCtor!.targetFilePath).toBe("src/base.ts");
+		expect(repoCtor?.source).toBe("main");
+		expect(repoCtor?.targetFilePath).toBe("src/base.ts");
 	});
 
 	it("resolves repo.persist() through re-export chain to base.ts", () => {
 		const calls = getRelationships(result, "CALLS");
 		const persistCall = calls.find((c) => c.target === "persist");
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("main");
-		expect(persistCall!.targetFilePath).toBe("src/base.ts");
+		expect(persistCall?.source).toBe("main");
+		expect(persistCall?.targetFilePath).toBe("src/base.ts");
 	});
 });
 
@@ -592,16 +592,16 @@ describe("TypeScript export type re-export chain resolution", () => {
 			(c) => c.target === "User" && c.targetLabel === "Class",
 		);
 		expect(userCtor).toBeDefined();
-		expect(userCtor!.source).toBe("main");
-		expect(userCtor!.targetFilePath).toBe("src/base.ts");
+		expect(userCtor?.source).toBe("main");
+		expect(userCtor?.targetFilePath).toBe("src/base.ts");
 	});
 
 	it("resolves user.save() through export type re-export chain to base.ts", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("src/base.ts");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("src/base.ts");
 	});
 });
 
@@ -623,7 +623,7 @@ describe("TypeScript local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/app.ts");
+		expect(saveCall?.targetFilePath).toBe("src/app.ts");
 	});
 
 	it("does NOT resolve save to utils.ts", () => {
@@ -653,8 +653,8 @@ describe("TypeScript variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "logEntry");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("processInput");
-		expect(logCall!.targetFilePath).toBe("src/logger.ts");
+		expect(logCall?.source).toBe("processInput");
+		expect(logCall?.targetFilePath).toBe("src/logger.ts");
 	});
 });
 
@@ -692,8 +692,8 @@ describe("TypeScript constructor-inferred type resolution", () => {
 		);
 		expect(userCtor).toBeDefined();
 		expect(repoCtor).toBeDefined();
-		expect(userCtor!.targetLabel).toBe("Class");
-		expect(repoCtor!.targetLabel).toBe("Class");
+		expect(userCtor?.targetLabel).toBe("Class");
+		expect(repoCtor?.targetLabel).toBe("Class");
 	});
 
 	it("resolves user.save() to src/user.ts via constructor-inferred type", () => {
@@ -702,7 +702,7 @@ describe("TypeScript constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/user.ts",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() to src/repo.ts via constructor-inferred type", () => {
@@ -711,7 +711,7 @@ describe("TypeScript constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/repo.ts",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -758,7 +758,7 @@ describe("JavaScript constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/user.js",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() to src/repo.js via constructor-inferred type", () => {
@@ -767,7 +767,7 @@ describe("JavaScript constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/repo.js",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -805,7 +805,7 @@ describe("TypeScript this resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/models/User.ts");
+		expect(saveCall?.targetFilePath).toBe("src/models/User.ts");
 	});
 });
 
@@ -849,7 +849,7 @@ describe("TypeScript parent resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -1057,7 +1057,7 @@ describe("TypeScript nullable receiver resolution (optional chaining)", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/user.ts",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves user?.greet() to User.greet via receiver typing", () => {
@@ -1066,7 +1066,7 @@ describe("TypeScript nullable receiver resolution (optional chaining)", () => {
 			(c) => c.target === "greet" && c.targetFilePath === "src/user.ts",
 		);
 		expect(greetCall).toBeDefined();
-		expect(greetCall!.source).toBe("processEntities");
+		expect(greetCall?.source).toBe("processEntities");
 	});
 
 	it("resolves repo?.save() to Repo.save via receiver typing", () => {
@@ -1075,7 +1075,7 @@ describe("TypeScript nullable receiver resolution (optional chaining)", () => {
 			(c) => c.target === "save" && c.targetFilePath === "src/repo.ts",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits constructor CALLS edges for both User and Repo", () => {
@@ -1356,7 +1356,7 @@ describe("TypeScript assignment chain propagation (Tier 2)", () => {
 		);
 		// Positive: alias.save() must resolve to User#save
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processEntities");
+		expect(saveCall?.source).toBe("processEntities");
 		// Negative: alias.save() must NOT resolve to Repo#save
 		const wrongCall = calls.find(
 			(c) =>
@@ -1375,14 +1375,14 @@ describe("TypeScript assignment chain propagation (Tier 2)", () => {
 			(c) => c.target === "save" && c.targetFilePath.includes("repo.ts"),
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 		// Negative: rAlias.save() must NOT resolve to User#save (only)
 		const userSave = calls.find(
 			(c) => c.target === "save" && c.targetFilePath.includes("user.ts"),
 		);
 		expect(userSave).toBeDefined();
 		// Both resolve separately — alias → User, rAlias → Repo
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -1611,16 +1611,16 @@ describe("TypeScript overloaded-receiver resolution (receiverKey collision fix)"
 			(c) => c.target === "save" && c.targetFilePath.includes("User"),
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("run");
+		expect(userSave?.source).toBe("run");
 		// Negative: must not resolve to Repo#save
-		const wrongSave = calls.find(
+		const _wrongSave = calls.find(
 			(c) =>
 				c.target === "save" &&
 				c.source === "run" &&
 				c.targetFilePath.includes("Repo"),
 		);
 		// If only one save target resolves to User (not Repo), we correctly exclude Repo
-		expect(userSave!.targetFilePath).toContain("User");
+		expect(userSave?.targetFilePath).toContain("User");
 	});
 
 	it("resolves repo.save() to Repo#save (models/Repo.ts), not User#save", () => {
@@ -1629,8 +1629,8 @@ describe("TypeScript overloaded-receiver resolution (receiverKey collision fix)"
 			(c) => c.target === "save" && c.targetFilePath.includes("Repo"),
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("run");
-		expect(repoSave!.targetFilePath).toContain("Repo");
+		expect(repoSave?.source).toBe("run");
+		expect(repoSave?.targetFilePath).toContain("Repo");
 	});
 
 	it("emits exactly 2 save() CALLS edges — one per class", () => {
@@ -2123,7 +2123,7 @@ describe("Field type resolution (TypeScript)", () => {
 			e.targetFilePath.includes("models"),
 		);
 		expect(addressSave).toBeDefined();
-		expect(addressSave!.source).toBe("processUser");
+		expect(addressSave?.source).toBe("processUser");
 	});
 
 	it("emits ACCESSES read edge for user.address field access in chain", () => {
@@ -2158,26 +2158,26 @@ describe("Field type resolution (TypeScript)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.isReadonly).toBe(false);
-		expect(city!.properties.declaredType).toBe("string");
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.isReadonly).toBe(false);
+		expect(city?.properties.declaredType).toBe("string");
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.isStatic).toBe(false);
-		expect(addr!.properties.isReadonly).toBe(false);
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.isStatic).toBe(false);
+		expect(addr?.properties.isReadonly).toBe(false);
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 
 	it("marks Config.DEFAULT as static", () => {
 		const properties = getNodesByLabelFull(result, "Property");
 		const def = properties.find((p) => p.name === "DEFAULT");
 		expect(def).toBeDefined();
-		expect(def!.properties.isStatic).toBe(true);
-		expect(def!.properties.declaredType).toBe("Config");
-		expect(def!.properties.visibility).toBe("public");
+		expect(def?.properties.isStatic).toBe(true);
+		expect(def?.properties.declaredType).toBe("Config");
+		expect(def?.properties.visibility).toBe("public");
 	});
 });
 
@@ -2377,9 +2377,9 @@ describe("Write access tracking (TypeScript)", () => {
 		const nameWrite = writes.find((e) => e.target === "name");
 		const addressWrite = writes.find((e) => e.target === "address");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("updateUser");
+		expect(nameWrite?.source).toBe("updateUser");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("updateUser");
+		expect(addressWrite?.source).toBe("updateUser");
 	});
 
 	it("write ACCESSES edges have confidence 1.0", () => {
@@ -3072,7 +3072,7 @@ describe("TypeScript Child extends Parent — inherited method resolution (SM-9)
 			(c) => c.target === "parentMethod" && c.targetFilePath.includes("Parent.ts"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });
 
@@ -3111,16 +3111,16 @@ describe("TypeScript tsconfig path alias resolution (registry-primary)", () => {
 			(c) => c.target === "UserService" && c.targetLabel === "Class",
 		);
 		expect(ctor).toBeDefined();
-		expect(ctor!.source).toBe("main");
-		expect(ctor!.targetFilePath).toBe("src/services/user.ts");
+		expect(ctor?.source).toBe("main");
+		expect(ctor?.targetFilePath).toBe("src/services/user.ts");
 	});
 
 	it("resolves svc.save() through alias to services/user.ts", () => {
 		const calls = getRelationships(result, "CALLS");
 		const save = calls.find((c) => c.target === "save");
 		expect(save).toBeDefined();
-		expect(save!.source).toBe("main");
-		expect(save!.targetFilePath).toBe("src/services/user.ts");
+		expect(save?.source).toBe("main");
+		expect(save?.targetFilePath).toBe("src/services/user.ts");
 	});
 });
 
@@ -3184,7 +3184,7 @@ describe("TypeScript literal dynamic import resolution (registry-primary)", () =
 		// `import('…')` calls to a target file — accept that here so the
 		// CI parity gate stays green; the registry-primary path remains the
 		// authoritative guarantee.
-		if (process.env["REGISTRY_PRIMARY_TYPESCRIPT"] !== "0") {
+		if (process.env.REGISTRY_PRIMARY_TYPESCRIPT !== "0") {
 			expect(imports.map((e) => e.targetFilePath)).toContain("src/feature.ts");
 		}
 	});
@@ -3290,7 +3290,7 @@ export function createUtf8User(): void {
 					c.source === source && c.target === "User" && c.targetLabel === "Class",
 			);
 			expect(ctor).toBeDefined();
-			expect(ctor!.targetFilePath).toBe("src/models.ts");
+			expect(ctor?.targetFilePath).toBe("src/models.ts");
 		}
 	});
 
@@ -3299,7 +3299,7 @@ export function createUtf8User(): void {
 		for (const source of ["createAsciiUser", "createUtf8User"]) {
 			const save = calls.find((c) => c.source === source && c.target === "save");
 			expect(save).toBeDefined();
-			expect(save!.targetFilePath).toBe("src/models.ts");
+			expect(save?.targetFilePath).toBe("src/models.ts");
 		}
 	});
 });

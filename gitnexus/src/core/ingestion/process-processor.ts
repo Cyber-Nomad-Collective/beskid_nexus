@@ -246,7 +246,7 @@ const buildCallsGraph = (graph: KnowledgeGraph): AdjacencyList => {
 			if (!adj.has(rel.sourceId)) {
 				adj.set(rel.sourceId, []);
 			}
-			adj.get(rel.sourceId)!.push(rel.targetId);
+			adj.get(rel.sourceId)?.push(rel.targetId);
 		}
 	}
 
@@ -261,7 +261,7 @@ const buildReverseCallsGraph = (graph: KnowledgeGraph): AdjacencyList => {
 			if (!adj.has(rel.targetId)) {
 				adj.set(rel.targetId, []);
 			}
-			adj.get(rel.targetId)!.push(rel.sourceId);
+			adj.get(rel.targetId)?.push(rel.sourceId);
 		}
 	}
 

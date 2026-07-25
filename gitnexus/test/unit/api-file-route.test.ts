@@ -129,7 +129,7 @@ describe("handleFileRequest — security wiring", () => {
 	it("rejects a common-prefix sibling directory escape (path.relative idiom)", async () => {
 		// The classic pitfall of `startsWith(root + sep)` is that '/tmp/repo' does
 		// not catch '/tmp/repo-evil/x'. The path.relative idiom does.
-		const sibling = path.basename(tmpRoot) + "-evil/secret";
+		const sibling = `${path.basename(tmpRoot)}-evil/secret`;
 		const { status, body } = await invoke({ path: `../${sibling}` });
 		expect(status).toBe(403);
 		expect(body.error).toBe("Path traversal denied");

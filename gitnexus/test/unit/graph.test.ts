@@ -60,7 +60,7 @@ describe("createKnowledgeGraph", () => {
 		g.addNode(node1);
 		g.addNode(node2);
 		expect(g.nodeCount).toBe(1);
-		expect(g.getNode("fn:foo")!.properties.name).toBe("foo"); // first one wins
+		expect(g.getNode("fn:foo")?.properties.name).toBe("foo"); // first one wins
 	});
 
 	// ─── removeNode ─────────────────────────────────────────────────────

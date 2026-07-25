@@ -240,8 +240,7 @@ export function populatePhpNamespaceSiblings(
 			for (const [name, defs] of defsByName) {
 				// Skip if already locally declared (origin: 'local' wins).
 				const local = scope.bindings.get(name);
-				if (local !== undefined && local.some((b) => b.origin === "local"))
-					continue;
+				if (local?.some((b) => b.origin === "local")) continue;
 
 				for (const def of defs) {
 					if (def.filePath === filePath) continue; // don't self-inject

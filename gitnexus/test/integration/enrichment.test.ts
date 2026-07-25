@@ -151,8 +151,8 @@ describe("enrichment", () => {
 
 			const result = await enrichClusters(communities, memberMap, emptyLLM);
 			expect(result.enrichments.size).toBe(2);
-			expect(result.enrichments.get("comm_0")!.name).toBe("Authentication");
-			expect(result.enrichments.get("comm_1")!.name).toBe("Utilities");
+			expect(result.enrichments.get("comm_0")?.name).toBe("Authentication");
+			expect(result.enrichments.get("comm_1")?.name).toBe("Utilities");
 		});
 
 		it("handles zero communities gracefully", async () => {
@@ -268,9 +268,9 @@ describe("enrichment", () => {
 
 			// All communities should get heuristic fallback
 			expect(result.enrichments.size).toBe(3);
-			expect(result.enrichments.get("comm_0")!.name).toBe("Authentication");
-			expect(result.enrichments.get("comm_1")!.name).toBe("Utilities");
-			expect(result.enrichments.get("comm_2")!.name).toBe("Routing");
+			expect(result.enrichments.get("comm_0")?.name).toBe("Authentication");
+			expect(result.enrichments.get("comm_1")?.name).toBe("Utilities");
+			expect(result.enrichments.get("comm_2")?.name).toBe("Routing");
 		});
 	});
 });

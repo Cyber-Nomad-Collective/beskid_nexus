@@ -5,9 +5,9 @@
  * Used in embedding text to enrich metadata with microservice context.
  */
 
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
 const MAPPING_FILE = path.join(
 	os.homedir(),

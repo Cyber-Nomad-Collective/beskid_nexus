@@ -7,7 +7,7 @@ async function fetchUser(name) {
 	return new User(name);
 }
 
-async function processUser() {
+async function _processUser() {
 	const user = await fetchUser("alice");
 	user.save();
 }

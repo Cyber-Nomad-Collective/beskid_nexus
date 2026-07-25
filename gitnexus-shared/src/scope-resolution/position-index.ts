@@ -138,7 +138,7 @@ function findLastStartLteIndex(
 	let hi = arr.length;
 	while (lo < hi) {
 		const mid = (lo + hi) >>> 1;
-		if (startIsAtOrBefore(arr[mid]!.range, line, col)) {
+		if (startIsAtOrBefore(arr[mid]?.range, line, col)) {
 			lo = mid + 1;
 		} else {
 			hi = mid;

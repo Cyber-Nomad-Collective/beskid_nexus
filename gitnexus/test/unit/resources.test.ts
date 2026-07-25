@@ -63,14 +63,14 @@ describe("getResourceDefinitions", () => {
 		const defs = getResourceDefinitions();
 		const repos = defs.find((d) => d.uri === "gitnexus://repos");
 		expect(repos).toBeDefined();
-		expect(repos!.mimeType).toBe("text/yaml");
+		expect(repos?.mimeType).toBe("text/yaml");
 	});
 
 	it("includes setup resource", () => {
 		const defs = getResourceDefinitions();
 		const setup = defs.find((d) => d.uri === "gitnexus://setup");
 		expect(setup).toBeDefined();
-		expect(setup!.mimeType).toBe("text/markdown");
+		expect(setup?.mimeType).toBe("text/markdown");
 	});
 
 	it("each definition has uri, name, description, mimeType", () => {

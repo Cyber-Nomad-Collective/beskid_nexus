@@ -248,7 +248,7 @@ function parseCopyStatements(
 			endLine = lineNum;
 		} else {
 			// Continue accumulating
-			accumulator += " " + text.trim();
+			accumulator += ` ${text.trim()}`;
 			endLine = lineNum;
 		}
 

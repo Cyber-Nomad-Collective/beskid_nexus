@@ -315,7 +315,7 @@ const buildGraphologyGraph = (
  */
 const createCommunityNodes = (
 	communities: Record<string, number>,
-	communityCount: number,
+	_communityCount: number,
 	graph: GraphInstance,
 	knowledgeGraph: KnowledgeGraph,
 ): CommunityNode[] => {
@@ -326,7 +326,7 @@ const createCommunityNodes = (
 		if (!communityMembers.has(commNum)) {
 			communityMembers.set(commNum, []);
 		}
-		communityMembers.get(commNum)!.push(nodeId);
+		communityMembers.get(commNum)?.push(nodeId);
 	});
 
 	// Build node lookup for file paths

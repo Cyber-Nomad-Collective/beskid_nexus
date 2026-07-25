@@ -79,7 +79,7 @@ export function applyHfEnvOverrides(env: HfEnvSubset): void {
 	// truthy guard already handles the unset/empty cases.
 	const endpoint = process.env.HF_ENDPOINT?.trim();
 	if (endpoint) {
-		env.remoteHost = endpoint.endsWith("/") ? endpoint : endpoint + "/";
+		env.remoteHost = endpoint.endsWith("/") ? endpoint : `${endpoint}/`;
 	}
 }
 

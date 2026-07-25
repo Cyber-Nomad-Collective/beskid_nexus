@@ -86,7 +86,7 @@ const STUB_PATTERNS = compilePatterns({
 function hasGrpcServiceAnnotation(classNode: Parser.SyntaxNode): boolean {
 	for (let i = 0; i < classNode.namedChildCount; i++) {
 		const child = classNode.namedChild(i);
-		if (!child || child.type !== "modifiers") continue;
+		if (child?.type !== "modifiers") continue;
 		for (let j = 0; j < child.namedChildCount; j++) {
 			const mod = child.namedChild(j);
 			if (!mod) continue;

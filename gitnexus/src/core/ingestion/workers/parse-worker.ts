@@ -448,7 +448,7 @@ function findClassNodeByQualifiedName(node: SyntaxNode): SyntaxNode | null {
 
 	// Check if the inner declarator is a qualified_identifier (Foo::bar)
 	const innerDecl = funcDecl.childForFieldName("declarator");
-	if (!innerDecl || innerDecl.type !== "qualified_identifier") return null;
+	if (innerDecl?.type !== "qualified_identifier") return null;
 
 	const scope = innerDecl.childForFieldName("scope");
 	if (!scope) return null;
@@ -1650,17 +1650,15 @@ const processFileGroup = (
 			}
 
 			// Extract import paths before skipping
-			if (captureMap["import"] && captureMap["import.source"]) {
+			if (captureMap.import && captureMap["import.source"]) {
 				const rawImportPath = preprocessImportPath(
 					captureMap["import.source"].text,
-					captureMap["import"],
+					captureMap.import,
 					provider,
 				);
 				if (!rawImportPath) continue;
 				const extractor = provider.namedBindingExtractor;
-				const namedBindings = extractor
-					? extractor(captureMap["import"])
-					: undefined;
+				const namedBindings = extractor ? extractor(captureMap.import) : undefined;
 				result.imports.push({
 					filePath: file.path,
 					rawImportPath,
@@ -1672,7 +1670,7 @@ const processFileGroup = (
 
 			// Extract assignment sites (field write access)
 			if (
-				captureMap["assignment"] &&
+				captureMap.assignment &&
 				captureMap["assignment.receiver"] &&
 				captureMap["assignment.property"]
 			) {
@@ -1680,30 +1678,30 @@ const processFileGroup = (
 				const propertyName = captureMap["assignment.property"].text;
 				if (receiverText && propertyName) {
 					const srcId =
-						findEnclosingFunctionId(captureMap["assignment"], file.path, provider) ||
+						findEnclosingFunctionId(captureMap.assignment, file.path, provider) ||
 						generateId("File", file.path);
 					let receiverTypeName: string | undefined;
 					if (typeEnv) {
 						receiverTypeName =
-							typeEnv.lookup(receiverText, captureMap["assignment"]) ?? undefined;
+							typeEnv.lookup(receiverText, captureMap.assignment) ?? undefined;
 					}
 					result.assignments.push({
 						filePath: file.path,
 						sourceId: srcId,
 						receiverText,
 						propertyName,
-						line: captureMap["assignment"].startPosition.row + 1,
+						line: captureMap.assignment.startPosition.row + 1,
 						...(receiverTypeName ? { receiverTypeName } : {}),
 					});
 				}
-				if (!captureMap["call"]) continue;
+				if (!captureMap.call) continue;
 			}
 
 			// Store decorator metadata for later association with definitions
-			if (captureMap["decorator"] && captureMap["decorator.name"]) {
+			if (captureMap.decorator && captureMap["decorator.name"]) {
 				const decoratorName = captureMap["decorator.name"].text;
 				const decoratorArg = captureMap["decorator.arg"]?.text;
-				const decoratorNode = captureMap["decorator"];
+				const decoratorNode = captureMap.decorator;
 				// Store by the decorator's end line — the definition follows immediately after
 				fileDecorators.set(decoratorNode.endPosition.row, {
 					name: decoratorName,
@@ -1754,14 +1752,14 @@ const processFileGroup = (
 			// HTTP client calls: axios.get('/path'), $.post('/path'), requests.get('/path')
 			// Skip methods also in EXPRESS_ROUTE_METHODS to avoid double-registering Express
 			// routes as both route definitions AND consumers (both queries match same AST node)
-			if (captureMap["http_client"] && captureMap["http_client.url"]) {
+			if (captureMap.http_client && captureMap["http_client.url"]) {
 				const method = captureMap["http_client.method"]?.text;
 				const url = captureMap["http_client.url"].text;
 				if (method && HTTP_CLIENT_ONLY_METHODS.has(method) && url.startsWith("/")) {
 					result.fetchCalls.push({
 						filePath: file.path,
 						fetchURL: url,
-						lineNumber: captureMap["http_client"].startPosition.row + lineOffset,
+						lineNumber: captureMap.http_client.startPosition.row + lineOffset,
 					});
 				}
 				continue;
@@ -1769,7 +1767,7 @@ const processFileGroup = (
 
 			// Express/Hono route registration: app.get('/path', handler)
 			if (
-				captureMap["express_route"] &&
+				captureMap.express_route &&
 				captureMap["express_route.method"] &&
 				captureMap["express_route.path"]
 			) {
@@ -1779,7 +1777,7 @@ const processFileGroup = (
 					// Extract the receiver (the object the method is called on) to filter out
 					// HTTP client calls like axios.get('/api/users') that match the same pattern
 					// as Express route registrations.
-					const callNode = captureMap["express_route"];
+					const callNode = captureMap.express_route;
 					const funcNode =
 						callNode.childForFieldName?.("function") ?? callNode.children?.[0];
 					// Walk through nested member_expressions and call_expressions to
@@ -1829,15 +1827,15 @@ const processFileGroup = (
 						routePath,
 						httpMethod,
 						decoratorName: `express.${method}`,
-						lineNumber: captureMap["express_route"].startPosition.row + lineOffset,
+						lineNumber: captureMap.express_route.startPosition.row + lineOffset,
 					});
 				}
 				continue;
 			}
 
 			// Extract call sites
-			if (captureMap["call"]) {
-				const callNode = captureMap["call"];
+			if (captureMap.call) {
+				const callNode = captureMap.call;
 				const callNameNode = captureMap["call.name"];
 				const callExtractor = provider.callExtractor;
 
@@ -1907,7 +1905,7 @@ const processFileGroup = (
 
 						// Dispatch: route language-specific calls (properties, imports)
 						// Heritage routing is handled by heritageExtractor.extractFromCall above.
-						const routed = callRouter?.(calledName, captureMap["call"]);
+						const routed = callRouter?.(calledName, captureMap.call);
 						if (routed) {
 							if (routed.kind === "skip") continue;
 
@@ -1922,7 +1920,7 @@ const processFileGroup = (
 
 							if (routed.kind === "properties") {
 								const propEnclosingInfo = cachedFindEnclosingClassInfo(
-									captureMap["call"],
+									captureMap.call,
 									file.path,
 									provider.resolveEnclosingOwner,
 								);
@@ -1930,7 +1928,7 @@ const processFileGroup = (
 								// Enrich routed properties with FieldExtractor metadata
 								let routedFieldMap: Map<string, FieldInfo> | undefined;
 								if (provider.fieldExtractor && typeEnv) {
-									const classNode = findEnclosingClassNode(captureMap["call"]);
+									const classNode = findEnclosingClassNode(captureMap.call);
 									if (classNode) {
 										routedFieldMap = getFieldInfo(classNode, provider, {
 											typeEnv,
@@ -2118,7 +2116,7 @@ const processFileGroup = (
 			const defaultNodeLabel = getLabelFromCaptures(captureMap, provider);
 			if (!defaultNodeLabel) continue;
 
-			const nameNode = captureMap["name"];
+			const nameNode = captureMap.name;
 			const extractedClassSymbol =
 				definitionNode && provider.classExtractor?.isTypeDeclaration(definitionNode)
 					? provider.classExtractor.extract(definitionNode, {
@@ -2283,9 +2281,7 @@ const processFileGroup = (
 				(captureMap["template-arguments"]
 					? extractTemplateArguments(captureMap["template-arguments"].text)
 					: undefined) ??
-				(nameNode && nameNode.text
-					? extractTemplateArguments(nameNode.text)
-					: undefined);
+				(nameNode?.text ? extractTemplateArguments(nameNode.text) : undefined);
 			const classTemplateTag =
 				(nodeLabel === "Class" ||
 					nodeLabel === "Struct" ||
@@ -2613,21 +2609,21 @@ const mergeResult = (target: ParseWorkerResult, src: ParseWorkerResult) => {
 	target.fileCount += src.fileCount;
 };
 
-parentPort!.on("message", (msg: WorkerIncomingMessage) => {
+parentPort?.on("message", (msg: WorkerIncomingMessage) => {
 	try {
 		// Legacy single-message mode (backward compat): array of files
 		if (Array.isArray(msg)) {
 			const result = processBatch(msg, (filesProcessed) => {
-				parentPort!.postMessage({ type: "progress", filesProcessed });
+				parentPort?.postMessage({ type: "progress", filesProcessed });
 			});
-			parentPort!.postMessage({ type: "result", data: result });
+			parentPort?.postMessage({ type: "result", data: result });
 			return;
 		}
 
 		// Sub-batch mode: { type: 'sub-batch', files: [...] }
 		if (msg.type === "sub-batch") {
 			const result = processBatch(msg.files, (filesProcessed) => {
-				parentPort!.postMessage({
+				parentPort?.postMessage({
 					type: "progress",
 					filesProcessed: cumulativeProcessed + filesProcessed,
 				});
@@ -2635,13 +2631,13 @@ parentPort!.on("message", (msg: WorkerIncomingMessage) => {
 			cumulativeProcessed += result.fileCount;
 			mergeResult(accumulated, result);
 			// Signal ready for next sub-batch
-			parentPort!.postMessage({ type: "sub-batch-done" });
+			parentPort?.postMessage({ type: "sub-batch-done" });
 			return;
 		}
 
 		// Flush: send accumulated results
 		if (msg.type === "flush") {
-			parentPort!.postMessage({ type: "result", data: accumulated });
+			parentPort?.postMessage({ type: "result", data: accumulated });
 			// Reset for potential reuse
 			accumulated = {
 				nodes: [],
@@ -2667,6 +2663,6 @@ parentPort!.on("message", (msg: WorkerIncomingMessage) => {
 		}
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
-		parentPort!.postMessage({ type: "error", error: message });
+		parentPort?.postMessage({ type: "error", error: message });
 	}
 });

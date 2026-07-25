@@ -295,7 +295,7 @@ describe("buildProviderIndex", () => {
 		// Key should be normalized (lowercased package)
 		expect(index.has("grpc::com.example.userservice/GetUser")).toBe(true);
 		expect(index.get("grpc::com.example.userservice/GetUser")).toHaveLength(1);
-		expect(index.get("grpc::com.example.userservice/GetUser")![0].role).toBe(
+		expect(index.get("grpc::com.example.userservice/GetUser")?.[0].role).toBe(
 			"provider",
 		);
 	});

@@ -15,8 +15,8 @@
  * from the same Database is the officially supported concurrency pattern.
  */
 
+import fs from "node:fs/promises";
 import lbug from "@ladybugdb/core";
-import fs from "fs/promises";
 import { loadFTSExtension } from "./lbug-adapter.js";
 import { createLbugDatabase, isWalCorruptionError } from "./lbug-config.js";
 
@@ -297,7 +297,7 @@ async function tryQuarantineAndReopen(
 	dbPath: string,
 	repoId: string,
 ): Promise<lbug.Database> {
-	const walPath = dbPath + ".wal";
+	const walPath = `${dbPath}.wal`;
 	const quarantineName = `${walPath}.corrupt.${Date.now()}-${Math.random().toString(36).slice(2)}`;
 	try {
 		await fs.rename(walPath, quarantineName);

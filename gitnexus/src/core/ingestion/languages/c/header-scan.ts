@@ -1,5 +1,5 @@
-import { type Dirent, readdirSync } from "fs";
-import { join, relative } from "path";
+import { type Dirent, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 
 /** C header extensions to scan for in the workspace. */
 const HEADER_EXTENSIONS = new Set([".h"]);

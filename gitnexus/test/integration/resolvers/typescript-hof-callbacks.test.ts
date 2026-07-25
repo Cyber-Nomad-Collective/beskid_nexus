@@ -35,7 +35,7 @@
  * report with both caller and callee defined in-fixture.
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	edgeSet,

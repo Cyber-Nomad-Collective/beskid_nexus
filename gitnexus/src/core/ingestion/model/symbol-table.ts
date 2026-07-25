@@ -304,7 +304,7 @@ export const createSymbolTable = (): InternalSymbolTable => {
 		if (!fileMap.has(name)) {
 			fileMap.set(name, [def]);
 		} else {
-			fileMap.get(name)!.push(def);
+			fileMap.get(name)?.push(def);
 		}
 
 		// B. Callable Index — gated by FREE_CALLABLE_TYPES.

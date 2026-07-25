@@ -22,11 +22,11 @@
  * the cache itself is always safe to reuse.
  */
 
-import { createHash } from "crypto";
-import fs from "fs/promises";
-import { createRequire } from "module";
-import path from "path";
-import { fileURLToPath } from "url";
+import { createHash } from "node:crypto";
+import fs from "node:fs/promises";
+import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ParseWorkerResult } from "../core/ingestion/workers/parse-worker.js";
 
 /**

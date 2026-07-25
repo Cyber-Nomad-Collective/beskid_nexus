@@ -71,7 +71,7 @@ export const resolveImportPath = (
 				const rewritten =
 					tsconfigPaths.baseUrl === "."
 						? targetPrefix + remainder
-						: tsconfigPaths.baseUrl + "/" + targetPrefix + remainder;
+						: `${tsconfigPaths.baseUrl}/${targetPrefix}${remainder}`;
 
 				// Try direct resolution from repo root
 				const resolved = tryResolveWithExtensions(rewritten, allFiles);

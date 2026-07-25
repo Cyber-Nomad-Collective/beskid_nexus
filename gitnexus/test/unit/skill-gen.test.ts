@@ -6,9 +6,9 @@
  * and the on-disk SKILL.md files produced.
  */
 
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { generateSkillFiles } from "../../src/cli/skill-gen.js";
 import { createKnowledgeGraph } from "../../src/core/graph/graph.js";
@@ -1102,7 +1102,7 @@ describe("generateSkillFiles — file output", () => {
 		// Extract the Key Files section between "## Key Files" and the next "##"
 		const keyFilesMatch = content.match(/## Key Files\n([\s\S]*?)(?=\n##)/);
 		expect(keyFilesMatch).not.toBeNull();
-		const keyFilesSection = keyFilesMatch![1];
+		const keyFilesSection = keyFilesMatch?.[1];
 		// Key Files section should use forward slashes only
 		expect(keyFilesSection).not.toMatch(/\\/);
 		// Verify it actually has file paths

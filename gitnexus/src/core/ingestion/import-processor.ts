@@ -148,7 +148,7 @@ function createImportEdgeHelpers(graph: KnowledgeGraph, importMap: ImportMap) {
 	const addImportEdge = (filePath: string, resolvedPath: string) => {
 		addImportGraphEdge(filePath, resolvedPath);
 		if (!importMap.has(filePath)) importMap.set(filePath, new Set());
-		importMap.get(filePath)!.add(resolvedPath);
+		importMap.get(filePath)?.add(resolvedPath);
 	};
 
 	return {
@@ -167,7 +167,7 @@ function createImportEdgeHelpers(graph: KnowledgeGraph, importMap: ImportMap) {
 function applyImportResult(
 	result: ImportResult,
 	filePath: string,
-	importMap: ImportMap,
+	_importMap: ImportMap,
 	packageMap: PackageMap | undefined,
 	addImportEdge: (from: string, to: string) => void,
 	addImportGraphEdge: (from: string, to: string) => void,
@@ -183,7 +183,7 @@ function applyImportResult(
 			addImportGraphEdge(filePath, resolvedFile);
 		}
 		if (!packageMap.has(filePath)) packageMap.set(filePath, new Set());
-		packageMap.get(filePath)!.add(result.dirSuffix);
+		packageMap.get(filePath)?.add(result.dirSuffix);
 	} else {
 		// 'files' kind, or 'package' without PackageMap — use ImportMap directly
 		const files = result.files;
@@ -337,7 +337,7 @@ export const processImports = async (
 				tree = parseSourceSafe(parser, parseContent, undefined, {
 					bufferSize: getTreeSitterBufferSize(parseContent),
 				});
-			} catch (parseError) {
+			} catch (_parseError) {
 				continue;
 			}
 			wasReparsed = true;
@@ -358,7 +358,7 @@ export const processImports = async (
 						file: file.path,
 						language,
 						err: queryError?.message || queryError,
-						queryPreview: queryStr.substring(0, 200) + "...",
+						queryPreview: `${queryStr.substring(0, 200)}...`,
 						contentPreview: file.content.substring(0, 300),
 						astRootType: tree.rootNode?.type,
 						astHasError: tree.rootNode?.hasError,
@@ -375,7 +375,7 @@ export const processImports = async (
 			const captureMap: Record<string, any> = {};
 			match.captures.forEach((c) => (captureMap[c.name] = c.node));
 
-			if (captureMap["import"]) {
+			if (captureMap.import) {
 				const sourceNode = captureMap["import.source"];
 				if (!sourceNode) {
 					if (isDev) {
@@ -386,7 +386,7 @@ export const processImports = async (
 
 				const rawImportPath = preprocessImportPath(
 					sourceNode.text,
-					captureMap["import"],
+					captureMap.import,
 					provider,
 				);
 				if (!rawImportPath) return;
@@ -399,7 +399,7 @@ export const processImports = async (
 				);
 				const extractor = provider.namedBindingExtractor;
 				const bindings =
-					namedImportMap && extractor ? extractor(captureMap["import"]) : undefined;
+					namedImportMap && extractor ? extractor(captureMap.import) : undefined;
 				applyImportResult(
 					result,
 					file.path,
@@ -414,13 +414,10 @@ export const processImports = async (
 			}
 
 			// ---- Language-specific call-as-import routing (Ruby require, etc.) ----
-			if (captureMap["call"]) {
+			if (captureMap.call) {
 				const callNameNode = captureMap["call.name"];
 				if (callNameNode) {
-					const routed = provider.callRouter?.(
-						callNameNode.text,
-						captureMap["call"],
-					);
+					const routed = provider.callRouter?.(callNameNode.text, captureMap.call);
 					if (routed && routed.kind === "import") {
 						totalImportsFound++;
 						const result = provider.importResolver(

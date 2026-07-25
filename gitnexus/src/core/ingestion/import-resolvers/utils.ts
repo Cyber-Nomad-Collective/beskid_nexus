@@ -181,7 +181,7 @@ export function suffixResolve(
 		const suffix = pathParts.slice(i).join("/");
 		for (const ext of EXTENSIONS) {
 			const suffixWithExt = suffix + ext;
-			const suffixPattern = "/" + suffixWithExt;
+			const suffixPattern = `/${suffixWithExt}`;
 			const matchIdx = normalizedFileList.findIndex(
 				(filePath) =>
 					filePath.endsWith(suffixPattern) ||

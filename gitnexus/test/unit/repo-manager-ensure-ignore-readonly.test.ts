@@ -4,7 +4,7 @@
  * fs/promises; a delegating vi.mock is required for cross-platform mock rejects.
  */
 
-import path from "path";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fswCtx = vi.hoisted(() => ({
@@ -17,7 +17,7 @@ vi.mock("fs/promises", async (importOriginal) => {
 	const d = actual.default;
 	fswCtx.realWrite = d.writeFile.bind(d);
 	fswCtx.writeFileMock.mockImplementation((...args) =>
-		fswCtx.realWrite!(...args),
+		fswCtx.realWrite?.(...args),
 	);
 	return {
 		default: new Proxy(d, {
@@ -32,7 +32,7 @@ vi.mock("fs/promises", async (importOriginal) => {
 	};
 });
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import { _captureLogger } from "../../src/core/logger.js";
 import { ensureGitNexusIgnored } from "../../src/storage/repo-manager.js";
 import { createTempDir } from "../helpers/test-db.js";
@@ -47,7 +47,7 @@ describe("ensureGitNexusIgnored — mocked writeFile (EROFS / EACCES / EPERM)", 
 		tmpRepo = await createTempDir("gitnexus-ro-ignore-mock-");
 		fswCtx.writeFileMock.mockClear();
 		fswCtx.writeFileMock.mockImplementation((...args) =>
-			fswCtx.realWrite!(...args),
+			fswCtx.realWrite?.(...args),
 		);
 	});
 

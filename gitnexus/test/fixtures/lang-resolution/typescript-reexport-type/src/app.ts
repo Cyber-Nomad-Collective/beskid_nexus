@@ -1,6 +1,6 @@
-import type { Repo, User } from "./models";
+export {};
 
-function main(): void {
+function _main(): void {
 	const user = new User();
 	user.save();
 

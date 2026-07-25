@@ -68,11 +68,11 @@ function extractDecoratorName(decorator: SyntaxNode): string | undefined {
 	const expr = decorator.firstNamedChild;
 	if (!expr) return undefined;
 
-	if (expr.type === "identifier") return "@" + expr.text;
-	if (expr.type === "attribute") return "@" + expr.text;
+	if (expr.type === "identifier") return `@${expr.text}`;
+	if (expr.type === "attribute") return `@${expr.text}`;
 	if (expr.type === "call") {
 		const fn = expr.childForFieldName("function");
-		return fn ? "@" + fn.text : undefined;
+		return fn ? `@${fn.text}` : undefined;
 	}
 	return undefined;
 }
@@ -81,7 +81,7 @@ function hasDecorator(node: SyntaxNode, name: string): boolean {
 	const decorators = collectDecorators(node);
 	for (const dec of decorators) {
 		const decName = extractDecoratorName(dec);
-		if (decName === "@" + name || decName?.endsWith("." + name)) return true;
+		if (decName === `@${name}` || decName?.endsWith(`.${name}`)) return true;
 	}
 	return false;
 }

@@ -5,10 +5,10 @@
  * If already cloned, does git pull instead.
  */
 
-import { spawn } from "child_process";
-import fs from "fs/promises";
-import { isIP } from "net";
-import path from "path";
+import { spawn } from "node:child_process";
+import fs from "node:fs/promises";
+import { isIP } from "node:net";
+import path from "node:path";
 import { logger } from "../core/logger.js";
 import { parseRepoNameFromUrl } from "../storage/git.js";
 import { getCloneRoot } from "../storage/repo-manager.js";
@@ -286,7 +286,7 @@ export function normalizeGitUrlForCompare(url: string): string {
 			pathname = pathname.slice(0, -1);
 		}
 		parsed.pathname = pathname;
-		return `${parsed.protocol}//${parsed.hostname}${parsed.port ? ":" + parsed.port : ""}${parsed.pathname}`;
+		return `${parsed.protocol}//${parsed.hostname}${parsed.port ? `:${parsed.port}` : ""}${parsed.pathname}`;
 	} catch {
 		// Non-URL forms (e.g. `git@github.com:owner/repo`) — return the trimmed
 		// form lowercased on the hostname-ish prefix. SSH-form normalization

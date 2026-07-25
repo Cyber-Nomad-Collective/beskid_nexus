@@ -14,16 +14,16 @@ if (!process.env.ORT_LOG_LEVEL) {
 	process.env.ORT_LOG_LEVEL = "3";
 }
 
+import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import {
 	env,
 	type FeatureExtractionPipeline,
 	type ProgressInfo,
 	pipeline,
 } from "@huggingface/transformers";
-import { execFileSync } from "child_process";
-import { existsSync } from "fs";
-import { createRequire } from "module";
-import { dirname, join } from "path";
 import { logger } from "../logger.js";
 import { resolveEmbeddingConfig } from "./config.js";
 import {

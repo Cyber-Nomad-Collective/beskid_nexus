@@ -79,30 +79,30 @@ describe("isRegistryPrimary", () => {
 	});
 
 	it("returns true when the env var is 'true' (lowercase)", () => {
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "true";
+		process.env.REGISTRY_PRIMARY_PYTHON = "true";
 		expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(true);
 	});
 
 	it("returns true when the env var is '1'", () => {
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "1";
+		process.env.REGISTRY_PRIMARY_PYTHON = "1";
 		expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(true);
 	});
 
 	it("returns true when the env var is 'yes'", () => {
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "yes";
+		process.env.REGISTRY_PRIMARY_PYTHON = "yes";
 		expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(true);
 	});
 
 	it("accepts mixed-case and whitespace-padded truthy values", () => {
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "  TRUE  ";
+		process.env.REGISTRY_PRIMARY_PYTHON = "  TRUE  ";
 		expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(true);
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "Yes";
+		process.env.REGISTRY_PRIMARY_PYTHON = "Yes";
 		expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(true);
 	});
 
 	it("returns false for falsy-looking values ('false', '0', empty, 'off')", () => {
 		for (const value of ["false", "0", "", "off", "no", "disabled"]) {
-			process.env["REGISTRY_PRIMARY_PYTHON"] = value;
+			process.env.REGISTRY_PRIMARY_PYTHON = value;
 			expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(false);
 		}
 	});
@@ -110,13 +110,13 @@ describe("isRegistryPrimary", () => {
 	it("returns false for unrecognized tokens (fail-safe on typos)", () => {
 		// User meant to type 'true' but fat-fingered — conservative: treat as off.
 		for (const value of ["ture", "tru", "yeah", "enable", "y"]) {
-			process.env["REGISTRY_PRIMARY_PYTHON"] = value;
+			process.env.REGISTRY_PRIMARY_PYTHON = value;
 			expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(false);
 		}
 	});
 
 	it("isolates flags per-language (one on does not affect others)", () => {
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "true";
+		process.env.REGISTRY_PRIMARY_PYTHON = "true";
 		expect(isRegistryPrimary(SupportedLanguages.Python)).toBe(true);
 		// Java is not in MIGRATED_LANGUAGES — default false stays
 		// false regardless of Python's flag.
@@ -128,20 +128,20 @@ describe("isRegistryPrimary", () => {
 		// deterministically `false`, independent of which languages have
 		// been flipped to registry-primary.
 		expect(isRegistryPrimary(SupportedLanguages.Java)).toBe(false);
-		process.env["REGISTRY_PRIMARY_JAVA"] = "true";
+		process.env.REGISTRY_PRIMARY_JAVA = "true";
 		expect(isRegistryPrimary(SupportedLanguages.Java)).toBe(true);
-		delete process.env["REGISTRY_PRIMARY_JAVA"];
+		delete process.env.REGISTRY_PRIMARY_JAVA;
 		expect(isRegistryPrimary(SupportedLanguages.Java)).toBe(false);
 	});
 
 	it("handles the CPlusPlus → REGISTRY_PRIMARY_CPP mapping correctly", () => {
-		process.env["REGISTRY_PRIMARY_CPP"] = "true";
+		process.env.REGISTRY_PRIMARY_CPP = "true";
 		expect(isRegistryPrimary(SupportedLanguages.CPlusPlus)).toBe(true);
 		// Negative: the TS-key-style name is NOT read. CPlusPlus is now in
 		// MIGRATED_LANGUAGES, so we must explicitly opt it out via the
 		// canonical env var to verify the wrong-name var has no effect.
-		process.env["REGISTRY_PRIMARY_CPP"] = "false";
-		process.env["REGISTRY_PRIMARY_CPLUSPLUS"] = "true";
+		process.env.REGISTRY_PRIMARY_CPP = "false";
+		process.env.REGISTRY_PRIMARY_CPLUSPLUS = "true";
 		expect(isRegistryPrimary(SupportedLanguages.CPlusPlus)).toBe(false);
 	});
 });
@@ -168,7 +168,7 @@ describe("primaryLanguages", () => {
 		for (const lang of MIGRATED_LANGUAGES) {
 			process.env[envVarNameFor(lang)] = "false";
 		}
-		process.env["REGISTRY_PRIMARY_JAVA"] = "1";
+		process.env.REGISTRY_PRIMARY_JAVA = "1";
 		const enabled = primaryLanguages();
 		expect(enabled.has(SupportedLanguages.Python)).toBe(false);
 		expect(enabled.has(SupportedLanguages.CSharp)).toBe(false);
@@ -181,7 +181,7 @@ describe("primaryLanguages", () => {
 	});
 
 	it("returns a plain Set (not a frozen proxy) — consistent shape", () => {
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "true";
+		process.env.REGISTRY_PRIMARY_PYTHON = "true";
 		const enabled = primaryLanguages();
 		expect(enabled).toBeInstanceOf(Set);
 	});

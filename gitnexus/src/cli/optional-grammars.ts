@@ -12,7 +12,7 @@
  * is unavailable instead of silently getting a degraded index.
  */
 
-import { createRequire } from "module";
+import { createRequire } from "node:module";
 import { cliWarn } from "./cli-message.js";
 
 const _require = createRequire(import.meta.url);

@@ -34,7 +34,7 @@ function writeStderr(msg: string): void {
 	// progress-bar redirection (see `cli/analyze.ts:barLog`) or other
 	// routing. The structured tee below still goes through the logger so
 	// log aggregation works either way.
-	process.stderr.write(msg.endsWith("\n") ? msg : msg + "\n");
+	process.stderr.write(msg.endsWith("\n") ? msg : `${msg}\n`);
 }
 
 /**

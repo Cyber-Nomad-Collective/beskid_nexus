@@ -4,7 +4,7 @@
 
 import fs from "node:fs";
 import os from "node:os";
-import path from "path";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -92,7 +92,7 @@ describe("Python relative import & heritage resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -177,8 +177,8 @@ describe("Python member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process_user");
-		expect(saveCall!.targetFilePath).toBe("user.py");
+		expect(saveCall?.source).toBe("process_user");
+		expect(saveCall?.targetFilePath).toBe("user.py");
 	});
 
 	it("classifies regular and dunder class-body functions as Method nodes", () => {
@@ -222,8 +222,8 @@ describe("Python receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("process_entities");
-		expect(repoSave!.source).toBe("process_entities");
+		expect(userSave?.source).toBe("process_entities");
+		expect(repoSave?.source).toBe("process_entities");
 	});
 });
 
@@ -245,15 +245,15 @@ describe("Python named import disambiguation", () => {
 		const calls = getRelationships(result, "CALLS");
 		const formatCall = calls.find((c) => c.target === "format_data");
 		expect(formatCall).toBeDefined();
-		expect(formatCall!.source).toBe("process_input");
-		expect(formatCall!.targetFilePath).toBe("format_upper.py");
+		expect(formatCall?.source).toBe("process_input");
+		expect(formatCall?.targetFilePath).toBe("format_upper.py");
 	});
 
 	it("emits IMPORTS edge to format_upper.py", () => {
 		const imports = getRelationships(result, "IMPORTS");
 		const appImport = imports.find((e) => e.source === "app.py");
 		expect(appImport).toBeDefined();
-		expect(appImport!.targetFilePath).toBe("format_upper.py");
+		expect(appImport?.targetFilePath).toBe("format_upper.py");
 	});
 });
 
@@ -275,8 +275,8 @@ describe("Python variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "log_entry");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("process_input");
-		expect(logCall!.targetFilePath).toBe("logger.py");
+		expect(logCall?.source).toBe("process_input");
+		expect(logCall?.targetFilePath).toBe("logger.py");
 	});
 });
 
@@ -304,12 +304,12 @@ describe("Python alias import resolution", () => {
 		const persistCall = calls.find((c) => c.target === "persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("models.py");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("models.py");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("main");
-		expect(persistCall!.targetFilePath).toBe("models.py");
+		expect(persistCall?.source).toBe("main");
+		expect(persistCall?.targetFilePath).toBe("models.py");
 	});
 
 	it("emits exactly 1 IMPORTS edge: app.py → models.py", () => {
@@ -355,7 +355,7 @@ describe("Python plain import alias resolution (import X as Y)", () => {
 			(c) => c.target === "save" && c.source === "main",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("models.py");
+		expect(saveCall?.targetFilePath).toBe("models.py");
 	});
 
 	it("resolves m.Repo() and r.persist() to models.py via alias", () => {
@@ -364,7 +364,7 @@ describe("Python plain import alias resolution (import X as Y)", () => {
 			(c) => c.target === "persist" && c.source === "main",
 		);
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.targetFilePath).toBe("models.py");
+		expect(persistCall?.targetFilePath).toBe("models.py");
 	});
 
 	it("resolves a.User() and v.login() to auth.py via alias (disambiguation)", () => {
@@ -373,7 +373,7 @@ describe("Python plain import alias resolution (import X as Y)", () => {
 			(c) => c.target === "login" && c.source === "main",
 		);
 		expect(loginCall).toBeDefined();
-		expect(loginCall!.targetFilePath).toBe("auth.py");
+		expect(loginCall?.targetFilePath).toBe("auth.py");
 	});
 });
 
@@ -399,8 +399,8 @@ describe("Python same-name collision via module alias (Issue #417)", () => {
 		);
 		expect(getMetricsCall).toBeDefined();
 		// Must resolve to metrics.py, NOT router.py (self-call)
-		expect(getMetricsCall!.sourceFilePath).toBe("router.py");
-		expect(getMetricsCall!.targetFilePath).toBe("metrics.py");
+		expect(getMetricsCall?.sourceFilePath).toBe("router.py");
+		expect(getMetricsCall?.targetFilePath).toBe("metrics.py");
 	});
 
 	it("emits IMPORTS edge: router.py → metrics.py (module alias registered)", () => {
@@ -435,7 +435,7 @@ describe("Python ancestor directory import resolution (Issue #417)", () => {
 				i.targetFilePath.includes("middleware"),
 		);
 		expect(middlewareImport).toBeDefined();
-		expect(middlewareImport!.targetFilePath).toBe("backend/middleware.py");
+		expect(middlewareImport?.targetFilePath).toBe("backend/middleware.py");
 	});
 
 	it("resolves _canonical() call to middleware.py:get_remaining_slots via alias", () => {
@@ -446,8 +446,8 @@ describe("Python ancestor directory import resolution (Issue #417)", () => {
 				c.sourceFilePath === "backend/services/auth.py",
 		);
 		expect(canonicalCall).toBeDefined();
-		expect(canonicalCall!.target).toBe("get_remaining_slots");
-		expect(canonicalCall!.targetFilePath).toBe("backend/middleware.py");
+		expect(canonicalCall?.target).toBe("get_remaining_slots");
+		expect(canonicalCall?.targetFilePath).toBe("backend/middleware.py");
 	});
 
 	it("resolves depth-2 ancestor import: a/b/c/deep.py → a/utils.py (not suffix match)", () => {
@@ -457,7 +457,7 @@ describe("Python ancestor directory import resolution (Issue #417)", () => {
 				i.sourceFilePath === "a/b/c/deep.py" && i.targetFilePath.includes("utils"),
 		);
 		expect(utilsImport).toBeDefined();
-		expect(utilsImport!.targetFilePath).toBe("a/utils.py");
+		expect(utilsImport?.targetFilePath).toBe("a/utils.py");
 	});
 
 	it("resolves format_currency() call across depth-2 ancestor import", () => {
@@ -466,7 +466,7 @@ describe("Python ancestor directory import resolution (Issue #417)", () => {
 			(c) => c.source === "render_price" && c.target === "format_currency",
 		);
 		expect(fmtCall).toBeDefined();
-		expect(fmtCall!.targetFilePath).toBe("a/utils.py");
+		expect(fmtCall?.targetFilePath).toBe("a/utils.py");
 	});
 });
 
@@ -964,16 +964,16 @@ describe("Python re-export chain resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
-		expect(saveCall!.targetFilePath).toBe("models/base.py");
+		expect(saveCall?.source).toBe("main");
+		expect(saveCall?.targetFilePath).toBe("models/base.py");
 	});
 
 	it("resolves repo.persist() through __init__.py barrel to models/base.py", () => {
 		const calls = getRelationships(result, "CALLS");
 		const persistCall = calls.find((c) => c.target === "persist");
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("main");
-		expect(persistCall!.targetFilePath).toBe("models/base.py");
+		expect(persistCall?.source).toBe("main");
+		expect(persistCall?.targetFilePath).toBe("models/base.py");
 	});
 });
 
@@ -997,7 +997,7 @@ describe("Python local definition shadows import", () => {
 			(c) => c.target === "save" && c.source === "main",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("app.py");
+		expect(saveCall?.targetFilePath).toBe("app.py");
 	});
 });
 
@@ -1025,8 +1025,8 @@ describe("Python bare import resolution (proximity over index order)", () => {
 		const imports = getRelationships(result, "IMPORTS");
 		const imp = imports.find((e) => e.sourceFilePath === "services/auth.py");
 		expect(imp).toBeDefined();
-		expect(imp!.targetFilePath).toBe("services/user.py");
-		expect(imp!.targetFilePath).not.toBe("models/user.py");
+		expect(imp?.targetFilePath).toBe("services/user.py");
+		expect(imp?.targetFilePath).not.toBe("models/user.py");
 	});
 
 	it("resolves svc.execute() CALLS edge to UserService#execute in services/user.py", () => {
@@ -1037,7 +1037,7 @@ describe("Python bare import resolution (proximity over index order)", () => {
 			(c) => c.target === "execute" && c.targetFilePath === "services/user.py",
 		);
 		expect(executeCall).toBeDefined();
-		expect(executeCall!.source).toBe("authenticate");
+		expect(executeCall?.source).toBe("authenticate");
 	});
 });
 
@@ -1069,7 +1069,7 @@ describe("Python constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/user.py",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("process_entities");
+		expect(userSave?.source).toBe("process_entities");
 	});
 
 	it("resolves repo.save() to models/repo.py via constructor-inferred type", () => {
@@ -1078,7 +1078,7 @@ describe("Python constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/repo.py",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("process_entities");
+		expect(repoSave?.source).toBe("process_entities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -1134,8 +1134,8 @@ describe("Python constructor-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process");
-		expect(saveCall!.targetFilePath).toBe("models.py");
+		expect(saveCall?.source).toBe("process");
+		expect(saveCall?.targetFilePath).toBe("models.py");
 	});
 });
 
@@ -1165,7 +1165,7 @@ describe("Python self resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("models/user.py");
+		expect(saveCall?.targetFilePath).toBe("models/user.py");
 	});
 });
 
@@ -1198,7 +1198,7 @@ describe("Python parent resolution", () => {
 		const extends_ = getRelationships(result, "EXTENDS");
 		const target = result.graph.getNode(extends_[0].rel.targetId);
 		expect(target).toBeDefined();
-		expect(target!.properties.filePath).toBe("models/base.py");
+		expect(target?.properties.filePath).toBe("models/base.py");
 	});
 });
 
@@ -1272,7 +1272,7 @@ describe("Python qualified constructor inference", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models.py",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("main");
+		expect(saveCall?.source).toBe("main");
 	});
 
 	it("resolves user.greet() via qualified constructor (models.User)", () => {
@@ -1281,7 +1281,7 @@ describe("Python qualified constructor inference", () => {
 			(c) => c.target === "greet" && c.targetFilePath === "models.py",
 		);
 		expect(greetCall).toBeDefined();
-		expect(greetCall!.source).toBe("main");
+		expect(greetCall?.source).toBe("main");
 	});
 });
 
@@ -1312,7 +1312,7 @@ describe("Python walrus operator type inference", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models.py",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("process");
+		expect(saveCall?.source).toBe("process");
 	});
 });
 
@@ -1343,7 +1343,7 @@ describe("Python class-level annotation resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "user.py",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("process");
+		expect(userSave?.source).toBe("process");
 	});
 
 	it("resolves active_repo.save() to Repo.save via file-level annotation", () => {
@@ -1352,7 +1352,7 @@ describe("Python class-level annotation resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "repo.py",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("process");
+		expect(repoSave?.source).toBe("process");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -1397,7 +1397,7 @@ describe("Python return type inference", () => {
 			(c) => c.target === "save" && c.source === "process_user",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toContain("models.py");
+		expect(saveCall?.targetFilePath).toContain("models.py");
 	});
 });
 
@@ -1510,7 +1510,7 @@ describe("Python nullable receiver resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "user.py",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("process_entities");
+		expect(userSave?.source).toBe("process_entities");
 	});
 
 	it("resolves repo.save() to Repo.save via nullable receiver typing", () => {
@@ -1519,7 +1519,7 @@ describe("Python nullable receiver resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "repo.py",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("process_entities");
+		expect(repoSave?.source).toBe("process_entities");
 	});
 
 	it("user.save() does NOT resolve to Repo.save (negative disambiguation)", () => {
@@ -1619,7 +1619,7 @@ describe("Python assignment chain propagation", () => {
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -2130,16 +2130,16 @@ describe("Field type resolution (Python)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.isReadonly).toBe(false);
-		expect(city!.properties.declaredType).toBe("str");
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.isReadonly).toBe(false);
+		expect(city?.properties.declaredType).toBe("str");
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.isStatic).toBe(false);
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.isStatic).toBe(false);
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 });
 
@@ -2195,9 +2195,9 @@ describe("Write access tracking (Python)", () => {
 		const nameWrite = writes.find((e) => e.target === "name");
 		const addressWrite = writes.find((e) => e.target === "address");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("update_user");
+		expect(nameWrite?.source).toBe("update_user");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("update_user");
+		expect(addressWrite?.source).toBe("update_user");
 	});
 });
 
@@ -3026,7 +3026,7 @@ describe("Python Child extends Parent — inherited method resolution (SM-9)", (
 				c.target === "parent_method" && c.targetFilePath.includes("parent.py"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });
 
@@ -3060,7 +3060,7 @@ describe("Python Grandchild→Child→Parent — 3-level C3 MRO walk (SM-11)", (
 				c.target === "gp_method" && c.targetFilePath.includes("grandparent.py"),
 		);
 		expect(gpCall).toBeDefined();
-		expect(gpCall!.source).toBe("run");
+		expect(gpCall?.source).toBe("run");
 	});
 });
 
@@ -3087,8 +3087,8 @@ describe("Python same-file method-name collision across classes", () => {
 		const fromUseUser = saveCalls.find((c) => c.source === "use_user");
 		expect(fromUseUser).toBeDefined();
 		// targetId encodes qualifier: Method:models.py:User.save#0
-		expect(fromUseUser!.rel.targetId).toContain("User.save");
-		expect(fromUseUser!.rel.targetId).not.toContain("Document.save");
+		expect(fromUseUser?.rel.targetId).toContain("User.save");
+		expect(fromUseUser?.rel.targetId).not.toContain("Document.save");
 	});
 
 	it("d.save() resolves to Document.save, not User.save", () => {
@@ -3096,8 +3096,8 @@ describe("Python same-file method-name collision across classes", () => {
 		const saveCalls = calls.filter((c) => c.target === "save");
 		const fromUseDoc = saveCalls.find((c) => c.source === "use_document");
 		expect(fromUseDoc).toBeDefined();
-		expect(fromUseDoc!.rel.targetId).toContain("Document.save");
-		expect(fromUseDoc!.rel.targetId).not.toContain("User.save");
+		expect(fromUseDoc?.rel.targetId).toContain("Document.save");
+		expect(fromUseDoc?.rel.targetId).not.toContain("User.save");
 	});
 
 	it("exactly two CALLS edges to save() — one per class, no duplication to wrong target", () => {
@@ -3138,9 +3138,9 @@ describe("Python module export vs method-name collision in same file", () => {
 		expect(fromModuleExport).toBeDefined();
 		// Target must be the top-level Function save, not the User.save Method.
 		// Node id format: `Function:mod.py:save` vs `Method:mod.py:User.save#0`.
-		expect(fromModuleExport!.rel.targetId).toContain("Function:");
-		expect(fromModuleExport!.rel.targetId).toContain("mod.py:save");
-		expect(fromModuleExport!.rel.targetId).not.toContain("User.save");
+		expect(fromModuleExport?.rel.targetId).toContain("Function:");
+		expect(fromModuleExport?.rel.targetId).toContain("mod.py:save");
+		expect(fromModuleExport?.rel.targetId).not.toContain("User.save");
 	});
 
 	it("u.save() resolves to User.save Method via typed receiver", () => {
@@ -3148,7 +3148,7 @@ describe("Python module export vs method-name collision in same file", () => {
 		const saveCalls = calls.filter((c) => c.target === "save");
 		const fromMethod = saveCalls.find((c) => c.source === "use_method");
 		expect(fromMethod).toBeDefined();
-		expect(fromMethod!.rel.targetId).toContain("User.save");
+		expect(fromMethod?.rel.targetId).toContain("User.save");
 	});
 
 	it("exactly two CALLS edges to save — one to the free function, one to the method", () => {
@@ -3208,7 +3208,7 @@ describe("Python class-body attribute does NOT leak into module export index", (
 			(c) => c.source === "use_helper" && c.target === "helper",
 		);
 		expect(helperCall).toBeDefined();
-		expect(helperCall!.rel.targetId).toContain("mod.py:helper");
+		expect(helperCall?.rel.targetId).toContain("mod.py:helper");
 	});
 });
 
@@ -3238,7 +3238,7 @@ describe("Python function-local import feeds chained receiver-bound call", () =>
 			(c) => c.source === "do_work" && c.target === "get_user",
 		);
 		expect(getUserCall).toBeDefined();
-		expect(getUserCall!.rel.targetId).toContain("svc.py:get_user");
+		expect(getUserCall?.rel.targetId).toContain("svc.py:get_user");
 	});
 
 	it("emits CALLS edge do_work -> User.save via function-local-scoped import return-type", () => {
@@ -3248,7 +3248,7 @@ describe("Python function-local import feeds chained receiver-bound call", () =>
 		);
 		expect(saveCall).toBeDefined();
 		// Target must be the User.save Method in svc.py.
-		expect(saveCall!.rel.targetId).toContain("User.save");
+		expect(saveCall?.rel.targetId).toContain("User.save");
 	});
 });
 
@@ -3279,7 +3279,7 @@ describe("Python function-local namespace import feeds receiver-bound call", () 
 			(c) => c.source === "outer" && c.target === "call",
 		);
 		expect(callEdge).toBeDefined();
-		expect(callEdge!.rel.targetId).toContain("svc.py:call");
+		expect(callEdge?.rel.targetId).toContain("svc.py:call");
 	});
 
 	it("sanity: unrelated function without local import is still parsed as a Function node", () => {
@@ -3314,7 +3314,7 @@ describe("Python class-body namespace import feeds method receiver-bound call", 
 			(c) => c.source === "use" && c.target === "helper",
 		);
 		expect(callEdge).toBeDefined();
-		expect(callEdge!.rel.targetId).toContain("mod.py:helper");
+		expect(callEdge?.rel.targetId).toContain("mod.py:helper");
 	});
 });
 
@@ -3372,7 +3372,7 @@ def create_utf8_user():
 		for (const source of ["create_ascii_user", "create_utf8_user"]) {
 			const save = calls.find((c) => c.source === source && c.target === "save");
 			expect(save).toBeDefined();
-			expect(save!.targetFilePath).toBe("models.py");
+			expect(save?.targetFilePath).toBe("models.py");
 		}
 	});
 });

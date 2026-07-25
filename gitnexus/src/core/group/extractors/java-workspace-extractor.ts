@@ -136,7 +136,7 @@ async function scanJavaImports(
 		while ((match = importRegex.exec(content)) !== null) {
 			const fullImport = match[1];
 			for (const [basePkg, artifactKey] of knownPackages) {
-				if (fullImport.startsWith(basePkg + ".") || fullImport === basePkg) {
+				if (fullImport.startsWith(`${basePkg}.`) || fullImport === basePkg) {
 					const parts = fullImport.split(".");
 					const className = parts[parts.length - 1];
 					if (isPascalCase(className)) {
@@ -174,11 +174,11 @@ async function findJavaFiles(repoPath: string): Promise<string[]> {
 			const childRel = rel ? `${rel}/${entry.name}` : entry.name;
 			if (entry.isDirectory()) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel + "/")) continue;
+				if (ig?.ignores(`${childRel}/`)) continue;
 				await walk(path.join(dir, entry.name), childRel);
 			} else if (entry.name.endsWith(".java") || entry.name.endsWith(".kt")) {
 				if (shouldIgnorePath(childRel)) continue;
-				if (ig && ig.ignores(childRel)) continue;
+				if (ig?.ignores(childRel)) continue;
 				results.push(childRel);
 			}
 		}

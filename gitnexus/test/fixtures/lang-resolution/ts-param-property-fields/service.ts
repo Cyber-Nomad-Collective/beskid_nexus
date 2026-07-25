@@ -1,5 +1,5 @@
 import type { User } from "./models";
 
-function processUser(user: User) {
+function _processUser(user: User) {
 	user.address.save();
 }

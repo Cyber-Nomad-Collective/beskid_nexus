@@ -309,8 +309,8 @@ describe("finalize", () => {
 			);
 			const cycles = out.sccs.filter((scc) => scc.isCycle);
 			expect(cycles.length).toBe(1);
-			expect(cycles[0]!.files.length).toBe(2);
-			expect(new Set(cycles[0]!.files)).toEqual(new Set(["a", "b"]));
+			expect(cycles[0]?.files.length).toBe(2);
+			expect(new Set(cycles[0]?.files)).toEqual(new Set(["a", "b"]));
 		});
 
 		it("separates disjoint SCCs", () => {
@@ -389,9 +389,9 @@ describe("finalize", () => {
 			const ghost = aEdges.find((e) => e.localName === "Ghost");
 			expect(ghost).toBeDefined();
 			// Cap-hit distinction: file target is known, but name never resolved.
-			expect(ghost!.targetFile).toBe("b");
-			expect(ghost!.linkStatus).toBe("unresolved");
-			expect(ghost!.targetDefId).toBeUndefined();
+			expect(ghost?.targetFile).toBe("b");
+			expect(ghost?.linkStatus).toBe("unresolved");
+			expect(ghost?.targetDefId).toBeUndefined();
 		});
 	});
 
@@ -427,7 +427,7 @@ describe("finalize", () => {
 			);
 			const edges = out.imports.get(a.moduleScope) ?? [];
 			expect(edges.length).toBe(1);
-			expect(edges[0]!.linkStatus).toBe("unresolved");
+			expect(edges[0]?.linkStatus).toBe("unresolved");
 		});
 
 		it("expanded bindings land at `origin: wildcard`", () => {
@@ -442,7 +442,7 @@ describe("finalize", () => {
 			expect(bindings.length).toBeGreaterThanOrEqual(1);
 			const imported = bindings.find((br) => br.origin === "wildcard");
 			expect(imported).toBeDefined();
-			expect(imported!.def.nodeId).toBe("def:b.X");
+			expect(imported?.def.nodeId).toBe("def:b.X");
 		});
 	});
 
@@ -604,9 +604,9 @@ describe("finalize", () => {
 			// `transitiveVia` enumerates every intermediate file from chain1
 			// through chain1000 — proves the closure walked the full path.
 			expect(edge.transitiveVia).toBeDefined();
-			expect(edge.transitiveVia!.length).toBe(CHAIN_LEN);
-			expect(edge.transitiveVia![0]).toBe("chain1");
-			expect(edge.transitiveVia![CHAIN_LEN - 1]).toBe(`chain${CHAIN_LEN}`);
+			expect(edge.transitiveVia?.length).toBe(CHAIN_LEN);
+			expect(edge.transitiveVia?.[0]).toBe("chain1");
+			expect(edge.transitiveVia?.[CHAIN_LEN - 1]).toBe(`chain${CHAIN_LEN}`);
 		});
 
 		it("first-match-wins when the closure encounters multiple sources for the same name", () => {
@@ -685,7 +685,7 @@ describe("finalize", () => {
 
 			const bindings = bindingsFor(out, a.moduleScope, "np");
 			expect(bindings.some((b) => b.origin === "namespace")).toBe(true);
-			expect(bindings.find((b) => b.origin === "namespace")!.def.nodeId).toBe(
+			expect(bindings.find((b) => b.origin === "namespace")?.def.nodeId).toBe(
 				"def:numpy",
 			);
 		});
@@ -720,8 +720,8 @@ describe("finalize", () => {
 			);
 			const bindings = bindingsFor(out, a.moduleScope, "X");
 			expect(bindings.length).toBe(1);
-			expect(bindings[0]!.origin).toBe("local");
-			expect(bindings[0]!.def.nodeId).toBe("def:a.X");
+			expect(bindings[0]?.origin).toBe("local");
+			expect(bindings[0]?.def.nodeId).toBe("def:a.X");
 		});
 
 		it("layers imports on top of local defs via mergeBindings", () => {
@@ -770,8 +770,8 @@ describe("finalize", () => {
 			for (let i = 0; i < N; i++) {
 				const bindings = bindingsFor(out, consumer.moduleScope, `Leaf${i}`);
 				expect(bindings.length).toBe(1);
-				expect(bindings[0]!.origin).toBe("import");
-				expect(bindings[0]!.def.nodeId).toBe(`def:leaf${i}.Leaf${i}`);
+				expect(bindings[0]?.origin).toBe("import");
+				expect(bindings[0]?.def.nodeId).toBe(`def:leaf${i}.Leaf${i}`);
 			}
 		});
 
@@ -795,7 +795,7 @@ describe("finalize", () => {
 			const bindings = bindingsFor(out, a.moduleScope, "User");
 			// Only the last merged layer (the import) remains.
 			expect(bindings.length).toBe(1);
-			expect(bindings[0]!.origin).toBe("import");
+			expect(bindings[0]?.origin).toBe("import");
 		});
 	});
 
@@ -819,8 +819,8 @@ describe("finalize", () => {
 				defaultHooks(files),
 			);
 			// First SCC processed must be `c` (leaf), last must be `a`.
-			expect(out.sccs[0]!.files[0]).toBe("c");
-			expect(out.sccs[out.sccs.length - 1]!.files[0]).toBe("a");
+			expect(out.sccs[0]?.files[0]).toBe("c");
+			expect(out.sccs[out.sccs.length - 1]?.files[0]).toBe("a");
 		});
 	});
 });

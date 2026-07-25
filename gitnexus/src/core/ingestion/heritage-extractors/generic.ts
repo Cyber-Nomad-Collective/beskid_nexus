@@ -43,7 +43,7 @@ export function createHeritageExtractor(
 
 		extract(
 			captureMap: CaptureMap,
-			context: HeritageExtractorContext,
+			_context: HeritageExtractorContext,
 		): HeritageInfo[] {
 			const classNode = captureMap["heritage.class"];
 			if (!classNode) return [];
@@ -83,7 +83,7 @@ export function createHeritageExtractor(
 						context: HeritageExtractorContext,
 					): HeritageInfo[] | null {
 						if (!callNameSet.has(calledName)) return null;
-						return actualConfig.callBasedHeritage!.extract(
+						return actualConfig.callBasedHeritage?.extract(
 							calledName,
 							callNode,
 							context.filePath,

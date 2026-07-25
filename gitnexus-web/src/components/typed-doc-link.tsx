@@ -12,7 +12,7 @@ function fields(body: string): Record<string, string> {
 			.split("\n")
 			.map((line) => line.match(/^([A-Za-z][\w-]*):\s*(.+)$/))
 			.filter((match): match is RegExpMatchArray => match != null)
-			.map((match) => [match[1]!, match[2]!.trim()]),
+			.map((match) => [match[1]!, match[2]?.trim()]),
 	);
 }
 

@@ -1,7 +1,7 @@
-import fs from "fs/promises";
-import { createRequire } from "module";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const PKG_VERSION = (

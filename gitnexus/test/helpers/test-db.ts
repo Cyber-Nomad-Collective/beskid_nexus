@@ -4,9 +4,9 @@
  * Creates temporary directories for tests and provides cleanup that tolerates
  * LadybugDB's known Windows handle-release lag after retries.
  */
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
 export interface TestDBHandle {
 	dbPath: string;

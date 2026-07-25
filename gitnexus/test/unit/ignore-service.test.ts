@@ -1,6 +1,6 @@
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import {
 	afterAll,
 	afterEach,
@@ -395,9 +395,9 @@ describe("loadIgnoreRules", () => {
 		await fs.writeFile(path.join(tmpDir, ".gitignore"), "data/\nlogs/\n");
 		const ig = await loadIgnoreRules(tmpDir);
 		expect(ig).not.toBeNull();
-		expect(ig!.ignores("data/file.txt")).toBe(true);
-		expect(ig!.ignores("logs/app.log")).toBe(true);
-		expect(ig!.ignores("src/index.ts")).toBe(false);
+		expect(ig?.ignores("data/file.txt")).toBe(true);
+		expect(ig?.ignores("logs/app.log")).toBe(true);
+		expect(ig?.ignores("src/index.ts")).toBe(false);
 		await fs.unlink(path.join(tmpDir, ".gitignore"));
 	});
 
@@ -408,9 +408,9 @@ describe("loadIgnoreRules", () => {
 		);
 		const ig = await loadIgnoreRules(tmpDir);
 		expect(ig).not.toBeNull();
-		expect(ig!.ignores("vendor/lib.js")).toBe(true);
-		expect(ig!.ignores("src/app.test.ts")).toBe(true);
-		expect(ig!.ignores("src/app.ts")).toBe(false);
+		expect(ig?.ignores("vendor/lib.js")).toBe(true);
+		expect(ig?.ignores("src/app.test.ts")).toBe(true);
+		expect(ig?.ignores("src/app.ts")).toBe(false);
 		await fs.unlink(path.join(tmpDir, ".gitnexusignore"));
 	});
 
@@ -419,9 +419,9 @@ describe("loadIgnoreRules", () => {
 		await fs.writeFile(path.join(tmpDir, ".gitnexusignore"), "vendor/\n");
 		const ig = await loadIgnoreRules(tmpDir);
 		expect(ig).not.toBeNull();
-		expect(ig!.ignores("data/file.txt")).toBe(true);
-		expect(ig!.ignores("vendor/lib.js")).toBe(true);
-		expect(ig!.ignores("src/index.ts")).toBe(false);
+		expect(ig?.ignores("data/file.txt")).toBe(true);
+		expect(ig?.ignores("vendor/lib.js")).toBe(true);
+		expect(ig?.ignores("src/index.ts")).toBe(false);
 		await fs.unlink(path.join(tmpDir, ".gitignore"));
 		await fs.unlink(path.join(tmpDir, ".gitnexusignore"));
 	});
@@ -433,8 +433,8 @@ describe("loadIgnoreRules", () => {
 		);
 		const ig = await loadIgnoreRules(tmpDir);
 		expect(ig).not.toBeNull();
-		expect(ig!.ignores("data/file.txt")).toBe(true);
-		expect(ig!.ignores("src/index.ts")).toBe(false);
+		expect(ig?.ignores("data/file.txt")).toBe(true);
+		expect(ig?.ignores("src/index.ts")).toBe(false);
 		await fs.unlink(path.join(tmpDir, ".gitignore"));
 	});
 });
@@ -661,7 +661,7 @@ describe("loadIgnoreRules — GITNEXUS_NO_GITIGNORE env var", () => {
 		try {
 			const ig = await loadIgnoreRules(tmpDir);
 			expect(ig).not.toBeNull();
-			expect(ig!.ignores("vendor/lib.js")).toBe(true);
+			expect(ig?.ignores("vendor/lib.js")).toBe(true);
 		} finally {
 			if (original === undefined) {
 				delete process.env.GITNEXUS_NO_GITIGNORE;

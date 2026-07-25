@@ -175,7 +175,7 @@ const findClassPropertyElementType = (
 			const elem = child.namedChild(j);
 			if (elem?.type !== "property_element") continue;
 			const varNameNode = elem.firstNamedChild; // variable_name node
-			if (varNameNode?.text === "$" + propName) {
+			if (varNameNode?.text === `$${propName}`) {
 				return extractClassPropertyElementType(child);
 			}
 		}
@@ -209,7 +209,7 @@ const collectPhpDocParams = (methodNode: SyntaxNode): Map<string, string> => {
 		const paramName = match[2]; // without $ prefix
 		if (typeName) {
 			// Store with $ prefix to match how PHP variables appear in the env
-			params.set("$" + paramName, typeName);
+			params.set(`$${paramName}`, typeName);
 		}
 	}
 
@@ -217,10 +217,10 @@ const collectPhpDocParams = (methodNode: SyntaxNode): Map<string, string> => {
 	PHPDOC_PARAM_ALT_RE.lastIndex = 0;
 	while ((match = PHPDOC_PARAM_ALT_RE.exec(commentBlock)) !== null) {
 		const paramName = match[1];
-		if (params.has("$" + paramName)) continue; // standard format takes priority
+		if (params.has(`$${paramName}`)) continue; // standard format takes priority
 		const typeName = normalizePhpType(match[2]);
 		if (typeName) {
-			params.set("$" + paramName, typeName);
+			params.set(`$${paramName}`, typeName);
 		}
 	}
 	return params;
@@ -435,7 +435,7 @@ const findPhpParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const param = paramsNode.namedChild(i);
-					if (!param || param.type !== "simple_parameter") continue;
+					if (param?.type !== "simple_parameter") continue;
 					const nameNode = param.childForFieldName("name");
 					if (nameNode?.text !== iterableName) continue;
 					const typeNode = param.childForFieldName("type");
@@ -513,7 +513,7 @@ const extractForLoopBinding: ForLoopExtractor = (
 		const name = iterableNode.childForFieldName("name");
 		// PHP properties are stored in scopeEnv with $ prefix ($users), but
 		// member_access_expression.name returns without $ (users). Add $ to match.
-		if (name) iterableName = "$" + name.text;
+		if (name) iterableName = `$${name.text}`;
 	} else if (iterableNode?.type === "function_call_expression") {
 		// foreach (getUsers() as $user) — resolve via return type lookup
 		const calleeName = extractCalleeName(iterableNode);

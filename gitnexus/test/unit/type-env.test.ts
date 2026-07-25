@@ -429,7 +429,7 @@ describe("buildTypeEnv", () => {
       `,
 				Go,
 			);
-			const typeEnv = buildTypeEnv(tree, "go");
+			const _typeEnv = buildTypeEnv(tree, "go");
 			// Go parameter extraction depends on tree-sitter grammar structure
 			// Parameters may or may not have 'name'/'type' fields
 		});
@@ -493,7 +493,7 @@ describe("buildTypeEnv", () => {
 				"def process(user: User, repo: Repository): pass",
 				Python,
 			);
-			const typeEnv = buildTypeEnv(tree, "python");
+			const _typeEnv = buildTypeEnv(tree, "python");
 			// Python uses typed_parameter nodes, check if they match
 		});
 
@@ -3014,7 +3014,7 @@ class User : BaseModel<string> {
 				(b) => b.varName === "client",
 			);
 			expect(binding).toBeDefined();
-			expect(binding!.calleeName).toBe("HttpClient");
+			expect(binding?.calleeName).toBe("HttpClient");
 		});
 
 		it("does not extract from non-namespaced plain identifier (existing behavior)", () => {
@@ -3280,7 +3280,7 @@ svc = App::Models::Service.new
 				(b) => b.varName === "user",
 			);
 			expect(binding).toBeDefined();
-			expect(binding!.calleeName).toBe("GetUser");
+			expect(binding?.calleeName).toBe("GetUser");
 		});
 
 		it("unwraps .await in Rust: let user = get_user().await", () => {
@@ -3315,7 +3315,7 @@ svc = App::Models::Service.new
 				(b) => b.varName === "user",
 			);
 			expect(binding).toBeDefined();
-			expect(binding!.calleeName).toBe("GetUserAsync");
+			expect(binding?.calleeName).toBe("GetUserAsync");
 		});
 
 		it("returns constructor binding for C# var user = GetUser() (standalone call)", () => {
@@ -3334,7 +3334,7 @@ svc = App::Models::Service.new
 				(b) => b.varName === "user",
 			);
 			expect(binding).toBeDefined();
-			expect(binding!.calleeName).toBe("GetUser");
+			expect(binding?.calleeName).toBe("GetUser");
 		});
 	});
 
@@ -5949,10 +5949,10 @@ function process() {
 
 			const entries = acc.getFile("/src/test.ts");
 			expect(entries).toBeDefined();
-			const userEntry = entries!.find((e) => e.varName === "user");
+			const userEntry = entries?.find((e) => e.varName === "user");
 			expect(userEntry).toBeDefined();
-			expect(userEntry!.typeName).toBe("User");
-			expect(userEntry!.scope).toBe("");
+			expect(userEntry?.typeName).toBe("User");
+			expect(userEntry?.scope).toBe("");
 		});
 
 		// flush() is narrowed to file-scope-only, matching the worker-path
@@ -5994,12 +5994,12 @@ function process() {
 			// Exactly one entry: the file-scope `dbClient`. The two function-scope
 			// entries (`localRequest`, `localUser`) are dropped.
 			expect(entries).toHaveLength(1);
-			expect(entries![0].scope).toBe("");
-			expect(entries![0].varName).toBe("dbClient");
-			expect(entries![0].typeName).toBe("Database");
+			expect(entries?.[0].scope).toBe("");
+			expect(entries?.[0].varName).toBe("dbClient");
+			expect(entries?.[0].typeName).toBe("Database");
 			// Function-scope entries are absent from the accumulator.
-			expect(entries!.find((e) => e.varName === "localRequest")).toBeUndefined();
-			expect(entries!.find((e) => e.varName === "localUser")).toBeUndefined();
+			expect(entries?.find((e) => e.varName === "localRequest")).toBeUndefined();
+			expect(entries?.find((e) => e.varName === "localUser")).toBeUndefined();
 		});
 
 		it("flushes nothing for an empty TypeEnv", () => {

@@ -121,7 +121,7 @@ export async function runChunkedParseAndResolve(
 	allPaths: string[],
 	totalFiles: number,
 	repoPath: string,
-	pipelineStart: number,
+	_pipelineStart: number,
 	onProgress: ProgressFn,
 	options?: PipelineOptions,
 ): Promise<{
@@ -353,7 +353,7 @@ export async function runChunkedParseAndResolve(
 			}
 
 			let chunkWorkerData: WorkerExtractedData | null;
-			const cachedRaw = chunkHash ? parseCache!.entries.get(chunkHash) : undefined;
+			const cachedRaw = chunkHash ? parseCache?.entries.get(chunkHash) : undefined;
 
 			// Track every chunk hash we touched so the orchestrator can
 			// prune stale entries (chunks whose composition no longer
@@ -367,7 +367,7 @@ export async function runChunkedParseAndResolve(
 				chunkWorkerData = mergeChunkResults(graph, symbolTable, cachedRaw);
 				if (isDev) {
 					logger.info(
-						`📦 parse-cache HIT: chunk ${chunkIdx + 1}/${numChunks} (${chunkFiles.length} files, ${chunkHash!.slice(0, 8)})`,
+						`📦 parse-cache HIT: chunk ${chunkIdx + 1}/${numChunks} (${chunkFiles.length} files, ${chunkHash?.slice(0, 8)})`,
 					);
 				}
 				// Progress update so UI advances even on a cache hit.

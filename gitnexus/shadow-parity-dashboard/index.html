@@ -188,10 +188,10 @@
         let payload;
         try {
           const r = await fetch('./latest.json', { cache: 'no-store' });
-          if (!r.ok) throw new Error('HTTP ' + r.status);
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
           payload = await r.json();
         } catch (err) {
-          meta.textContent = 'Failed to load latest.json: ' + err.message;
+          meta.textContent = `Failed to load latest.json: ${err.message}`;
           table.style.display = 'none';
           empty.style.display = 'block';
           return;
@@ -229,7 +229,7 @@
           const tr = document.createElement('tr');
           const primaryTag = primary[row.language];
           const tag = primaryTag
-            ? '<span class="tag ' + primaryTag + '">primary: ' + primaryTag + '</span>'
+            ? `<span class="tag ${primaryTag}">primary: ${primaryTag}</span>`
             : '';
           const parityClass = parityClassFor(row.parity);
           tr.innerHTML =
@@ -267,12 +267,12 @@
           const div = document.createElement('div');
           div.className = 'card';
           div.innerHTML =
-            '<div class="k">' + escape(k) + '</div><div class="v">' + escape(String(v)) + '</div>';
+            `<div class="k">${escape(k)}</div><div class="v">${escape(String(v))}</div>`;
           return div;
         }
         function formatPct(x) {
-          if (typeof x !== 'number' || !isFinite(x)) return '—';
-          return (x * 100).toFixed(1) + '%';
+          if (typeof x !== 'number' || !Number.isFinite(x)) return '—';
+          return `${(x * 100).toFixed(1)}%`;
         }
         function parityClassFor(x) {
           if (typeof x !== 'number') return '';

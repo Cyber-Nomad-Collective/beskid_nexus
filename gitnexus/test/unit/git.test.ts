@@ -1,7 +1,7 @@
-import { execSync } from "child_process";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { execSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	findGitRootByDotGit,
@@ -102,7 +102,7 @@ describe("git utilities", () => {
 			mockExecSync.mockReturnValueOnce(Buffer.from("  /repo  \n"));
 			const result = getGitRoot("/repo/src");
 			expect(result).not.toBeNull();
-			expect(result!.trim()).toBe(result);
+			expect(result?.trim()).toBe(result);
 		});
 	});
 

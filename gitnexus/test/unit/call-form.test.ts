@@ -47,9 +47,9 @@ function extractCallCaptures(
 		for (const c of match.captures) {
 			captureMap[c.name] = c.node;
 		}
-		if (captureMap["call"] && captureMap["call.name"]) {
+		if (captureMap.call && captureMap["call.name"]) {
 			results.push({
-				callNode: captureMap["call"],
+				callNode: captureMap.call,
 				nameNode: captureMap["call.name"],
 				calledName: captureMap["call.name"].text,
 			});
@@ -72,7 +72,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call", () => {
@@ -84,7 +84,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -98,7 +98,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "print_result");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call", () => {
@@ -110,7 +110,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -121,7 +121,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Java);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call (with object)", () => {
@@ -130,7 +130,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Java);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -145,7 +145,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "DoStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call", () => {
@@ -158,7 +158,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "Save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -169,7 +169,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Go);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call via selector", () => {
@@ -178,7 +178,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Go);
 			const match = captures.find((c) => c.calledName === "Save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -189,7 +189,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Rust);
 			const match = captures.find((c) => c.calledName === "do_stuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call via field_expression", () => {
@@ -198,7 +198,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Rust);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 
 		it("detects scoped call as free (Foo::new)", () => {
@@ -207,7 +207,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Rust);
 			const match = captures.find((c) => c.calledName === "new");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 	});
 
@@ -222,7 +222,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call via field_expression", () => {
@@ -235,7 +235,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "run");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -246,7 +246,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.PHP);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call", () => {
@@ -255,7 +255,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.PHP);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 
 		it("detects static call as member", () => {
@@ -264,7 +264,7 @@ describe("inferCallForm", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.PHP);
 			const match = captures.find((c) => c.calledName === "bar");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 	});
 
@@ -279,7 +279,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects member call via navigation_expression", () => {
@@ -292,7 +292,7 @@ describe("inferCallForm", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
 		});
 
 		it("Foo() is a free call (constructor_invocation only in heritage context)", () => {
@@ -307,7 +307,7 @@ describe("inferCallForm", () => {
 			expect(match).toBeDefined();
 			// Kotlin Foo() is syntactically a call_expression, not constructor_invocation
 			// Constructor discrimination happens in Phase 2 via symbol kind matching
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("free");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("free");
 		});
 
 		it("detects constructor_invocation in heritage delegation as constructor", () => {
@@ -341,7 +341,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 
 		it('extracts "this" as receiver', () => {
@@ -354,7 +354,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("this");
+			expect(extractReceiverName(match?.nameNode)).toBe("this");
 		});
 
 		it("returns undefined for chained call receiver", () => {
@@ -366,7 +366,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBeUndefined();
+			expect(extractReceiverName(match?.nameNode)).toBeUndefined();
 		});
 
 		it("returns undefined for free call", () => {
@@ -378,7 +378,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBeUndefined();
+			expect(extractReceiverName(match?.nameNode)).toBeUndefined();
 		});
 
 		it("extracts receiver from optional chain call user?.save()", () => {
@@ -390,7 +390,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 
 		it('extracts "this" from optional chain call this?.save()', () => {
@@ -403,7 +403,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("this");
+			expect(extractReceiverName(match?.nameNode)).toBe("this");
 		});
 	});
 
@@ -417,7 +417,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 
 		it('extracts "self" as receiver', () => {
@@ -429,7 +429,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("self");
+			expect(extractReceiverName(match?.nameNode)).toBe("self");
 		});
 	});
 
@@ -440,7 +440,7 @@ describe("extractReceiverName", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Java);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 	});
 
@@ -451,7 +451,7 @@ describe("extractReceiverName", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Go);
 			const match = captures.find((c) => c.calledName === "Save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 	});
 
@@ -462,7 +462,7 @@ describe("extractReceiverName", () => {
 			const captures = extractCallCaptures(parser, code, SupportedLanguages.Rust);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 	});
 
@@ -477,7 +477,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "Save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 
 		it("captures null-conditional user?.Save() and extracts receiver", () => {
@@ -491,8 +491,8 @@ describe("extractReceiverName", () => {
 			const match = captures.find((c) => c.calledName === "Save");
 			// C# conditional_access_expression (user?.Save()) is now captured via member_binding_expression
 			expect(match).toBeDefined();
-			expect(inferCallForm(match!.callNode, match!.nameNode)).toBe("member");
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(inferCallForm(match?.callNode, match?.nameNode)).toBe("member");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 	});
 
@@ -507,7 +507,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 
 		it("extracts receiver from safe navigation user?.save()", () => {
@@ -520,7 +520,7 @@ describe("extractReceiverName", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			expect(extractReceiverName(match!.nameNode)).toBe("user");
+			expect(extractReceiverName(match?.nameNode)).toBe("user");
 		});
 	});
 });
@@ -535,8 +535,8 @@ describe("ownerId on SymbolDefinition", () => {
 
 		const def = st.lookupExactFull("src/foo.ts", "save");
 		expect(def).toBeDefined();
-		expect(def!.ownerId).toBe("Class:src/foo.ts:User");
-		expect(def!.parameterCount).toBe(1);
+		expect(def?.ownerId).toBe("Class:src/foo.ts:User");
+		expect(def?.parameterCount).toBe(1);
 	});
 
 	it("is undefined for Function symbols (no owner)", () => {
@@ -545,7 +545,7 @@ describe("ownerId on SymbolDefinition", () => {
 
 		const def = st.lookupExactFull("src/foo.ts", "helper");
 		expect(def).toBeDefined();
-		expect(def!.ownerId).toBeUndefined();
+		expect(def?.ownerId).toBeUndefined();
 	});
 
 	it("propagates ownerId through a free Function registration", () => {

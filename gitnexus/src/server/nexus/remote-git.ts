@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawn } from "node:child_process";
 
 /** Resolve remote HEAD for a git HTTPS URL (shallow check before analyze). */
 export const getRemoteHead = (

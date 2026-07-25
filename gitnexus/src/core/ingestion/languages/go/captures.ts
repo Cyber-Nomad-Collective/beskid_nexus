@@ -40,7 +40,7 @@ export function emitGoScopeCaptures(
 	for (const m of rawMatches) {
 		const grouped: Record<string, Capture> = {};
 		for (const c of m.captures) {
-			const tag = "@" + c.name;
+			const tag = `@${c.name}`;
 			if (tag.startsWith("@_")) continue; // skip anonymous captures
 			grouped[tag] = nodeToCapture(tag, c.node);
 		}

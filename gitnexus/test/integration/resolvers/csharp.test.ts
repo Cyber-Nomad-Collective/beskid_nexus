@@ -2,7 +2,7 @@
  * C#: heritage resolution via base_list + ambiguous namespace-import refusal
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -87,7 +87,7 @@ describe("C# heritage resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.targetLabel).toBe("Class");
+		expect(ctorCall?.targetLabel).toBe("Class");
 	});
 
 	it("detects 4 namespaces", () => {
@@ -106,7 +106,7 @@ describe("C# heritage resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -211,8 +211,8 @@ describe("C# member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "Save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("ProcessUser");
-		expect(saveCall!.targetFilePath).toBe("Models/User.cs");
+		expect(saveCall?.source).toBe("ProcessUser");
+		expect(saveCall?.targetFilePath).toBe("Models/User.cs");
 	});
 
 	it("detects User class and Save method", () => {
@@ -250,8 +250,8 @@ describe("C# collection-accessor unwrap", () => {
 			(c) => c.source === "RenderAll" && c.target === "Render",
 		);
 		expect(renderCall).toBeDefined();
-		expect(renderCall!.targetFilePath).toBe("Models/Widget.cs");
-		expect(["import-resolved", "global"]).toContain(renderCall!.rel.reason);
+		expect(renderCall?.targetFilePath).toBe("Models/Widget.cs");
+		expect(["import-resolved", "global"]).toContain(renderCall?.rel.reason);
 	});
 });
 
@@ -276,8 +276,8 @@ describe("C# using static member injection", () => {
 			(c) => c.source === "Compute" && c.target === "Square",
 		);
 		expect(sqCall).toBeDefined();
-		expect(sqCall!.targetFilePath).toBe("Helpers/MathUtils.cs");
-		expect(["import-resolved", "global"]).toContain(sqCall!.rel.reason);
+		expect(sqCall?.targetFilePath).toBe("Helpers/MathUtils.cs");
+		expect(["import-resolved", "global"]).toContain(sqCall?.rel.reason);
 	});
 });
 
@@ -307,10 +307,10 @@ describe("C# overload disambiguation and interface dispatch", () => {
 		// target Method node's parameterTypes length.
 		const target = result.graph.getNode(logCalls[0].rel.targetId);
 		expect(target).toBeDefined();
-		const parameterTypes = (target!.properties as { parameterTypes?: string[] })
+		const parameterTypes = (target?.properties as { parameterTypes?: string[] })
 			.parameterTypes;
 		expect(parameterTypes).toBeDefined();
-		expect(parameterTypes!.length).toBe(2);
+		expect(parameterTypes?.length).toBe(2);
 	});
 
 	it("Run → Greet emits primary edge to IGreeter.Greet plus interface-dispatch siblings", () => {
@@ -389,16 +389,16 @@ describe("C# primary constructor resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("Run");
-		expect(ctorCall!.targetLabel).toBe("Constructor");
-		expect(ctorCall!.targetFilePath).toBe("Models/User.cs");
+		expect(ctorCall?.source).toBe("Run");
+		expect(ctorCall?.targetLabel).toBe("Constructor");
+		expect(ctorCall?.targetFilePath).toBe("Models/User.cs");
 	});
 
 	it("also resolves user.Save() as a method call", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "Save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("Run");
+		expect(saveCall?.source).toBe("Run");
 	});
 
 	it("emits HAS_METHOD edge from User class to User constructor", () => {
@@ -451,8 +451,8 @@ describe("C# receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("ProcessEntities");
-		expect(repoSave!.source).toBe("ProcessEntities");
+		expect(userSave?.source).toBe("ProcessEntities");
+		expect(repoSave?.source).toBe("ProcessEntities");
 	});
 
 	it("resolves constructor calls for both User and Repo", () => {
@@ -488,14 +488,14 @@ describe("C# alias import resolution", () => {
 		const persistCall = calls.find((c) => c.target === "Persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("Run");
-		expect(saveCall!.targetLabel).toBe("Method");
-		expect(saveCall!.targetFilePath).toBe("Models/User.cs");
+		expect(saveCall?.source).toBe("Run");
+		expect(saveCall?.targetLabel).toBe("Method");
+		expect(saveCall?.targetFilePath).toBe("Models/User.cs");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("Run");
-		expect(persistCall!.targetLabel).toBe("Method");
-		expect(persistCall!.targetFilePath).toBe("Models/Repo.cs");
+		expect(persistCall?.source).toBe("Run");
+		expect(persistCall?.targetLabel).toBe("Method");
+		expect(persistCall?.targetFilePath).toBe("Models/Repo.cs");
 	});
 
 	it("emits exactly 2 IMPORTS edges via alias resolution", () => {
@@ -523,8 +523,8 @@ describe("C# variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "Record");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("Execute");
-		expect(logCall!.targetFilePath).toBe("Utils/Logger.cs");
+		expect(logCall?.source).toBe("Execute");
+		expect(logCall?.targetFilePath).toBe("Utils/Logger.cs");
 	});
 });
 
@@ -546,7 +546,7 @@ describe("C# local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "Save" && c.source === "Run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("App/Main.cs");
+		expect(saveCall?.targetFilePath).toBe("App/Main.cs");
 	});
 
 	it("does NOT resolve Save to Logger.cs", () => {
@@ -588,7 +588,7 @@ describe("C# foreach loop element type resolution", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "Models/User.cs",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("ProcessEntities");
+		expect(userSave?.source).toBe("ProcessEntities");
 	});
 
 	it("resolves repo.Save() in foreach to Repo#Save (not User#Save)", () => {
@@ -597,7 +597,7 @@ describe("C# foreach loop element type resolution", () => {
 			(c) => c.target === "Save" && c.targetFilePath === "Models/Repo.cs",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("ProcessEntities");
+		expect(repoSave?.source).toBe("ProcessEntities");
 	});
 
 	it("emits exactly 2 Save() CALLS edges (one per receiver type)", () => {
@@ -635,7 +635,7 @@ describe("C# this resolution", () => {
 			(c) => c.target === "Save" && c.source === "Process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/Models/User.cs");
+		expect(saveCall?.targetFilePath).toBe("src/Models/User.cs");
 	});
 });
 
@@ -679,7 +679,7 @@ describe("C# parent resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -722,7 +722,7 @@ describe("C# base resolution", () => {
 		// Emitting `'global'` unconditionally keeps the same-graph parity
 		// guarantee (ARCHITECTURE.md § Scope-Resolution Pipeline) and matches
 		// the legacy path under `REGISTRY_PRIMARY_CSHARP=0`.
-		expect(baseSave!.rel.reason).toBe("global");
+		expect(baseSave?.rel.reason).toBe("global");
 		const repoSave = calls.find(
 			(c) => c.target === "Save" && c.targetFilePath === "src/Models/Repo.cs",
 		);
@@ -761,7 +761,7 @@ describe("C# generic parent base resolution", () => {
 				c.targetFilePath === "src/Models/BaseModel.cs",
 		);
 		expect(baseSave).toBeDefined();
-		expect(baseSave!.rel.reason).toBe("global");
+		expect(baseSave?.rel.reason).toBe("global");
 		const repoSave = calls.find(
 			(c) => c.target === "Save" && c.targetFilePath === "src/Models/Repo.cs",
 		);
@@ -800,8 +800,8 @@ describe("C# is pattern matching resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const barkCall = calls.find((c) => c.target === "Bark");
 		expect(barkCall).toBeDefined();
-		expect(barkCall!.source).toBe("HandleAnimal");
-		expect(barkCall!.targetFilePath).toBe("Models/Animal.cs");
+		expect(barkCall?.source).toBe("HandleAnimal");
+		expect(barkCall?.targetFilePath).toBe("Models/Animal.cs");
 	});
 
 	it("emits EXTENDS edges for Dog and Cat", () => {
@@ -809,9 +809,9 @@ describe("C# is pattern matching resolution", () => {
 		const dogExtends = extends_.find((e) => e.source === "Dog");
 		const catExtends = extends_.find((e) => e.source === "Cat");
 		expect(dogExtends).toBeDefined();
-		expect(dogExtends!.target).toBe("Animal");
+		expect(dogExtends?.target).toBe("Animal");
 		expect(catExtends).toBeDefined();
-		expect(catExtends!.target).toBe("Animal");
+		expect(catExtends?.target).toBe("Animal");
 	});
 });
 
@@ -1085,7 +1085,7 @@ describe("C# assignment chain propagation", () => {
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -1565,14 +1565,14 @@ describe("Field type resolution (C#)", () => {
 
 		const city = properties.find((p) => p.name === "City");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.declaredType).toBe("string");
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.declaredType).toBe("string");
 
 		const addr = properties.find((p) => p.name === "Address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 });
 
@@ -2385,7 +2385,7 @@ describe("C# Child extends Parent — inherited method resolution (SM-9)", () =>
 			(c) => c.target === "ParentMethod" && c.targetFilePath.includes("Parent.cs"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("Run");
+		expect(parentMethodCall?.source).toBe("Run");
 	});
 });
 
@@ -2419,7 +2419,7 @@ describe("C# User implements IValidator — interface default method (SM-11)", (
 			(c) => c.target === "Validate" && c.targetFilePath.includes("Validator.cs"),
 		);
 		expect(validateCall).toBeDefined();
-		expect(validateCall!.source).toBe("Run");
+		expect(validateCall?.source).toBe("Run");
 	});
 });
 
@@ -2517,27 +2517,27 @@ describe("C# parse completeness (#903 regression)", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const greet = methods.find((m) => m.name === "Greet");
 		expect(greet).toBeDefined();
-		expect(greet!.properties.parameterCount).toBe(1);
-		expect(greet!.properties.returnType).toBe("string");
-		expect(greet!.properties.visibility).toBe("public");
+		expect(greet?.properties.parameterCount).toBe(1);
+		expect(greet?.properties.returnType).toBe("string");
+		expect(greet?.properties.visibility).toBe("public");
 	});
 
 	it("Main has parameterCount=1 and isStatic=true", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const main = methods.find((m) => m.name === "Main");
 		expect(main).toBeDefined();
-		expect(main!.properties.parameterCount).toBe(1);
-		expect(main!.properties.isStatic).toBe(true);
-		expect(main!.properties.visibility).toBe("public");
+		expect(main?.properties.parameterCount).toBe(1);
+		expect(main?.properties.isStatic).toBe(true);
+		expect(main?.properties.visibility).toBe("public");
 	});
 
 	it("Bar is abstract with parameterCount=0 and returnType=void", () => {
 		const methods = getNodesByLabelFull(result, "Method");
 		const bar = methods.find((m) => m.name === "Bar");
 		expect(bar).toBeDefined();
-		expect(bar!.properties.parameterCount).toBe(0);
-		expect(bar!.properties.isAbstract).toBe(true);
-		expect(bar!.properties.returnType).toBe("void");
+		expect(bar?.properties.parameterCount).toBe(0);
+		expect(bar?.properties.isAbstract).toBe(true);
+		expect(bar?.properties.returnType).toBe("void");
 	});
 
 	it("emits HAS_METHOD edges linking Greeter to its methods", () => {
@@ -2664,7 +2664,7 @@ describe("C# struct overload dispatch (implicit-this narrowing)", () => {
 		// implement implicit-`this` struct overload narrowing, so we
 		// accept any count there; the registry-primary path remains the
 		// authoritative guarantee.
-		if (process.env["REGISTRY_PRIMARY_CSHARP"] !== "0") {
+		if (process.env.REGISTRY_PRIMARY_CSHARP !== "0") {
 			expect(runToAdd.length).toBe(2);
 			const targetIds = new Set(runToAdd.map((c) => c.rel.targetId));
 			expect(targetIds.size).toBe(2);
@@ -2702,8 +2702,8 @@ describe("C# interface receiver static invocation (merged Case 2)", () => {
 		const calls = getRelationships(result, "CALLS");
 		const warnCall = calls.find((c) => c.source === "Go" && c.target === "Warn");
 		expect(warnCall).toBeDefined();
-		expect(warnCall!.targetFilePath).toBe("src/ILogger.cs");
-		expect(["import-resolved", "global"]).toContain(warnCall!.rel.reason);
+		expect(warnCall?.targetFilePath).toBe("src/ILogger.cs");
+		expect(["import-resolved", "global"]).toContain(warnCall?.rel.reason);
 	});
 });
 
@@ -2820,7 +2820,7 @@ describe("C# large-file + frozen-bucket regression (issue #1066)", () => {
 				c.targetLabel === "Class",
 		);
 		expect(ctor).toBeDefined();
-		expect(ctor!.targetFilePath).toBe("Models/User.cs");
+		expect(ctor?.targetFilePath).toBe("Models/User.cs");
 	});
 
 	it("resolves CreateUser -> Save through namespace siblings", () => {
@@ -2832,8 +2832,8 @@ describe("C# large-file + frozen-bucket regression (issue #1066)", () => {
 			(c) => c.source === "CreateUser" && c.target === "Save",
 		);
 		expect(save).toBeDefined();
-		expect(save!.targetFilePath).toBe("Models/User.cs");
-		expect(["import-resolved", "global"]).toContain(save!.rel.reason);
+		expect(save?.targetFilePath).toBe("Models/User.cs");
+		expect(["import-resolved", "global"]).toContain(save?.rel.reason);
 	});
 });
 
@@ -2885,7 +2885,7 @@ describe("C# frozen-binding collision via using-import (issue #1066 companion)",
 				c.source === "Run" && c.target === "User" && c.targetLabel === "Class",
 		);
 		expect(ctor).toBeDefined();
-		expect(ctor!.targetFilePath).toBe("App/Program.cs");
+		expect(ctor?.targetFilePath).toBe("App/Program.cs");
 	});
 });
 
@@ -2936,6 +2936,6 @@ describe("C# namespace-as-root with no trailing newline (issue #1086)", () => {
 				e.targetFilePath === "Models/User.cs",
 		);
 		expect(edge).toBeDefined();
-		expect(edge!.rel.reason).toBe("csharp-scope: using");
+		expect(edge?.rel.reason).toBe("csharp-scope: using");
 	});
 });

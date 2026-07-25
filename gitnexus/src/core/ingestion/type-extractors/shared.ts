@@ -658,7 +658,7 @@ export const extractRubyConstructorAssignment = (
 	if (left.type !== "identifier" && left.type !== "constant") return undefined;
 	if (right.type !== "call") return undefined;
 	const method = right.childForFieldName("method");
-	if (!method || method.text !== "new") return undefined;
+	if (method?.text !== "new") return undefined;
 	const receiver = right.childForFieldName("receiver");
 	if (!receiver) return undefined;
 	let calleeName: string;
@@ -667,7 +667,7 @@ export const extractRubyConstructorAssignment = (
 	} else if (receiver.type === "scope_resolution") {
 		// Models::User → extract last segment "User"
 		const last = receiver.lastNamedChild;
-		if (!last || last.type !== "constant") return undefined;
+		if (last?.type !== "constant") return undefined;
 		calleeName = last.text;
 	} else {
 		return undefined;
@@ -813,16 +813,16 @@ export function extractElementTypeFromString(
 	const openSquare = typeStr.indexOf("[");
 
 	let openIdx = -1;
-	let openChar = "";
+	let _openChar = "";
 	let closeChar = "";
 
 	if (openAngle >= 0 && (openSquare < 0 || openAngle < openSquare)) {
 		openIdx = openAngle;
-		openChar = "<";
+		_openChar = "<";
 		closeChar = ">";
 	} else if (openSquare >= 0) {
 		openIdx = openSquare;
-		openChar = "[";
+		_openChar = "[";
 		closeChar = "]";
 	}
 

@@ -8,7 +8,7 @@
  * Each test file gets a unique repoId to prevent MCP pool map collisions.
  * Seed data is NOT included — each test provides its own via options.seed.
  */
-import path from "path";
+import path from "node:path";
 import { afterAll, beforeAll, describe } from "vitest";
 import {
 	EMBEDDING_TABLE_NAME,

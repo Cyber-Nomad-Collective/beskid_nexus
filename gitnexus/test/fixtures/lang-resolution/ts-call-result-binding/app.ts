@@ -1,11 +1,11 @@
 import { getUser } from "./service";
 
-function processUser() {
+function _processUser() {
 	const user = getUser("alice");
 	user.save();
 }
 
-function processAlias() {
+function _processAlias() {
 	const user = getUser("bob");
 	const alias = user;
 	alias.save();

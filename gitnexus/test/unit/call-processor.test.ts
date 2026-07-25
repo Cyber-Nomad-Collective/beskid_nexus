@@ -5,13 +5,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // the per-language flag is forced off for this suite.
 let prevRegistryTypeScript: string | undefined;
 beforeEach(() => {
-	prevRegistryTypeScript = process.env["REGISTRY_PRIMARY_TYPESCRIPT"];
-	process.env["REGISTRY_PRIMARY_TYPESCRIPT"] = "false";
+	prevRegistryTypeScript = process.env.REGISTRY_PRIMARY_TYPESCRIPT;
+	process.env.REGISTRY_PRIMARY_TYPESCRIPT = "false";
 });
 afterEach(() => {
 	if (prevRegistryTypeScript === undefined)
-		delete process.env["REGISTRY_PRIMARY_TYPESCRIPT"];
-	else process.env["REGISTRY_PRIMARY_TYPESCRIPT"] = prevRegistryTypeScript;
+		delete process.env.REGISTRY_PRIMARY_TYPESCRIPT;
+	else process.env.REGISTRY_PRIMARY_TYPESCRIPT = prevRegistryTypeScript;
 });
 
 import { createKnowledgeGraph } from "../../src/core/graph/graph.js";
@@ -2246,7 +2246,7 @@ describe("extractReturnTypeName", () => {
 		// result is undefined — but the pre-cap itself does NOT reject it.
 		// We test this by verifying a 2048-char type that WOULD be valid in all
 		// other respects is still returned as undefined (post-cap rejects it).
-		const atLimit = "U" + "x".repeat(2047); // 2048 chars, starts with uppercase
+		const atLimit = `U${"x".repeat(2047)}`; // 2048 chars, starts with uppercase
 		// Post-cap (512) will reject this, but the pre-cap should not fire.
 		// The important assertion: no throw and the result is undefined from post-cap.
 		expect(extractReturnTypeName(atLimit)).toBeUndefined();
@@ -2261,13 +2261,13 @@ describe("extractReturnTypeName", () => {
 		// Construct a raw string that is under the 2048-char pre-cap but produces
 		// a final identifier longer than 512 characters after extraction.
 		// A bare uppercase identifier of 513 chars satisfies all rules except post-cap.
-		const longTypeName = "U" + "x".repeat(512); // 513 chars, starts with uppercase
+		const longTypeName = `U${"x".repeat(512)}`; // 513 chars, starts with uppercase
 		expect(extractReturnTypeName(longTypeName)).toBeUndefined();
 	});
 
 	it("post-cap: accepts extracted type name at exactly 512 characters (boundary)", () => {
 		// 512-char identifier should pass the post-cap check (> 512 rejects, not >=).
-		const atLimit = "U" + "x".repeat(511); // exactly 512 chars
+		const atLimit = `U${"x".repeat(511)}`; // exactly 512 chars
 		expect(extractReturnTypeName(atLimit)).toBe(atLimit);
 	});
 
@@ -2840,7 +2840,7 @@ describe("processCallsFromExtracted — interface dispatch", () => {
 		const toA = rels.find((r) => r.targetId === "Method:impl/A.java:execute");
 		const toB = rels.find((r) => r.targetId === "Method:impl/B.java:execute");
 		expect(primary).toBeDefined();
-		expect(primary!.confidence).toBeGreaterThan(0.7);
+		expect(primary?.confidence).toBeGreaterThan(0.7);
 		expect(toA?.confidence).toBe(0.7);
 		expect(toA?.reason).toBe("interface-dispatch");
 		expect(toB?.confidence).toBe(0.7);
@@ -2864,14 +2864,14 @@ describe("processCalls — D0 MRO fast path (SM-10)", () => {
 		// using .py fixtures. Python defaults to registry-primary now
 		// (MIGRATED_LANGUAGES), which gates call-processor out for
 		// Python files. Force the flag off so the legacy DAG runs.
-		prevRegistryPython = process.env["REGISTRY_PRIMARY_PYTHON"];
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "false";
+		prevRegistryPython = process.env.REGISTRY_PRIMARY_PYTHON;
+		process.env.REGISTRY_PRIMARY_PYTHON = "false";
 	});
 
 	afterEach(() => {
 		if (prevRegistryPython === undefined)
-			delete process.env["REGISTRY_PRIMARY_PYTHON"];
-		else process.env["REGISTRY_PRIMARY_PYTHON"] = prevRegistryPython;
+			delete process.env.REGISTRY_PRIMARY_PYTHON;
+		else process.env.REGISTRY_PRIMARY_PYTHON = prevRegistryPython;
 	});
 
 	const setupChildParent = () => {
@@ -3661,14 +3661,14 @@ describe("D2 widen path: lookupCallableByName via module alias", () => {
 		ctx = createResolutionContext();
 		// Force legacy DAG for .py fixtures — Python is registry-primary
 		// by default (MIGRATED_LANGUAGES) which would gate processCalls out.
-		prevRegistryPython = process.env["REGISTRY_PRIMARY_PYTHON"];
-		process.env["REGISTRY_PRIMARY_PYTHON"] = "false";
+		prevRegistryPython = process.env.REGISTRY_PRIMARY_PYTHON;
+		process.env.REGISTRY_PRIMARY_PYTHON = "false";
 	});
 
 	afterEach(() => {
 		if (prevRegistryPython === undefined)
-			delete process.env["REGISTRY_PRIMARY_PYTHON"];
-		else process.env["REGISTRY_PRIMARY_PYTHON"] = prevRegistryPython;
+			delete process.env.REGISTRY_PRIMARY_PYTHON;
+		else process.env.REGISTRY_PRIMARY_PYTHON = prevRegistryPython;
 	});
 
 	it("resolves method via module alias widen using lookupCallableByName", async () => {

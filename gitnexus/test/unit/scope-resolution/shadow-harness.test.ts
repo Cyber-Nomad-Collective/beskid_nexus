@@ -27,12 +27,12 @@ import {
 
 let savedEnv: string | undefined;
 beforeEach(() => {
-	savedEnv = process.env["GITNEXUS_SHADOW_MODE"];
-	delete process.env["GITNEXUS_SHADOW_MODE"];
+	savedEnv = process.env.GITNEXUS_SHADOW_MODE;
+	delete process.env.GITNEXUS_SHADOW_MODE;
 });
 afterEach(() => {
-	if (savedEnv === undefined) delete process.env["GITNEXUS_SHADOW_MODE"];
-	else process.env["GITNEXUS_SHADOW_MODE"] = savedEnv;
+	if (savedEnv === undefined) delete process.env.GITNEXUS_SHADOW_MODE;
+	else process.env.GITNEXUS_SHADOW_MODE = savedEnv;
 });
 
 // ─── Fixture helpers ──────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ const resolution = (nodeId: string): Resolution => ({
 });
 
 function enable(): void {
-	process.env["GITNEXUS_SHADOW_MODE"] = "true";
+	process.env.GITNEXUS_SHADOW_MODE = "true";
 }
 
 function freshHarness(): ShadowHarness {
@@ -71,14 +71,14 @@ describe("createShadowHarness: enabled flag", () => {
 
 	it("is enabled when GITNEXUS_SHADOW_MODE is 'true' / '1' / 'yes' / case-insensitive", () => {
 		for (const value of ["true", "1", "yes", "TRUE", "  Yes  "]) {
-			process.env["GITNEXUS_SHADOW_MODE"] = value;
+			process.env.GITNEXUS_SHADOW_MODE = value;
 			expect(freshHarness().enabled).toBe(true);
 		}
 	});
 
 	it("stays disabled for falsy-looking or typo values", () => {
 		for (const value of ["", "false", "0", "off", "tru"]) {
-			process.env["GITNEXUS_SHADOW_MODE"] = value;
+			process.env.GITNEXUS_SHADOW_MODE = value;
 			expect(freshHarness().enabled).toBe(false);
 		}
 	});
@@ -97,7 +97,7 @@ describe("createShadowHarness: enabled flag", () => {
 
 	it("does NOT re-check the env var per call (constructed-once semantics)", () => {
 		const h = freshHarness(); // disabled at construction
-		process.env["GITNEXUS_SHADOW_MODE"] = "true"; // flip AFTER construction
+		process.env.GITNEXUS_SHADOW_MODE = "true"; // flip AFTER construction
 		h.record({
 			language: SupportedLanguages.Python,
 			callsite: callsite(),

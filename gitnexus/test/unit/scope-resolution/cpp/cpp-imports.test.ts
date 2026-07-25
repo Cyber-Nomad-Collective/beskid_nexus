@@ -37,9 +37,9 @@ describe("C++ include decomposition (splitCppInclude)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCppInclude(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.source"].text).toBe("foo.h");
-		expect(match!["@import.kind"].text).toBe("wildcard");
-		expect(match!["@import.system"]).toBeUndefined();
+		expect(match?.["@import.source"].text).toBe("foo.h");
+		expect(match?.["@import.kind"].text).toBe("wildcard");
+		expect(match?.["@import.system"]).toBeUndefined();
 	});
 
 	it('decomposes system include "#include <iostream>"', () => {
@@ -47,8 +47,8 @@ describe("C++ include decomposition (splitCppInclude)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCppInclude(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.source"].text).toBe("iostream");
-		expect(match!["@import.system"]).toBeDefined();
+		expect(match?.["@import.source"].text).toBe("iostream");
+		expect(match?.["@import.system"]).toBeDefined();
 	});
 
 	it('decomposes C++ header include "#include \\"utils/helpers.hpp\\""', () => {
@@ -56,7 +56,7 @@ describe("C++ include decomposition (splitCppInclude)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCppInclude(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.source"].text).toBe("utils/helpers.hpp");
+		expect(match?.["@import.source"].text).toBe("utils/helpers.hpp");
 	});
 });
 
@@ -68,9 +68,9 @@ describe("C++ using declaration decomposition (splitCppUsingDecl)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCppUsingDecl(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.kind"].text).toBe("wildcard");
-		expect(match!["@import.source"].text).toBe("std");
-		expect(match!["@import.using-namespace"]).toBeDefined();
+		expect(match?.["@import.kind"].text).toBe("wildcard");
+		expect(match?.["@import.source"].text).toBe("std");
+		expect(match?.["@import.using-namespace"]).toBeDefined();
 	});
 
 	it('decomposes "using std::vector;" as named import', () => {
@@ -78,9 +78,9 @@ describe("C++ using declaration decomposition (splitCppUsingDecl)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCppUsingDecl(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.kind"].text).toBe("named");
-		expect(match!["@import.source"].text).toBe("std");
-		expect(match!["@import.name"].text).toBe("vector");
+		expect(match?.["@import.kind"].text).toBe("named");
+		expect(match?.["@import.source"].text).toBe("std");
+		expect(match?.["@import.name"].text).toBe("vector");
 	});
 
 	it('decomposes nested namespace "using namespace foo::bar;"', () => {
@@ -88,8 +88,8 @@ describe("C++ using declaration decomposition (splitCppUsingDecl)", () => {
 		expect(node).not.toBeNull();
 		const match = splitCppUsingDecl(node!);
 		expect(match).not.toBeNull();
-		expect(match!["@import.kind"].text).toBe("wildcard");
-		expect(match!["@import.source"].text).toBe("foo::bar");
+		expect(match?.["@import.kind"].text).toBe("wildcard");
+		expect(match?.["@import.source"].text).toBe("foo::bar");
 	});
 });
 
@@ -120,8 +120,8 @@ describe("C++ import interpretation (interpretCppImport)", () => {
 			"@import.name": capt("@import.name", "vector"),
 		});
 		expect(result).not.toBeNull();
-		expect(result!.kind).toBe("named");
-		expect(result!.targetRaw).toBe("std");
+		expect(result?.kind).toBe("named");
+		expect(result?.targetRaw).toBe("std");
 	});
 
 	it("returns null when @import.source is missing", () => {

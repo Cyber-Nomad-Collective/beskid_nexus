@@ -1,7 +1,7 @@
-import { EventEmitter } from "events";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { EventEmitter } from "node:events";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { splitRelCsvByLabelPair } from "../../src/core/lbug/lbug-adapter.js";
 
@@ -102,7 +102,7 @@ afterEach(() => {
 
 function writeCsv(lines: string[]): string {
 	const csvPath = path.join(tmpDir, "relations.csv");
-	fs.writeFileSync(csvPath, lines.join("\n") + "\n");
+	fs.writeFileSync(csvPath, `${lines.join("\n")}\n`);
 	return csvPath;
 }
 

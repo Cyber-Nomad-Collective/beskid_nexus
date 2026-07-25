@@ -117,7 +117,7 @@ withTestLbugDB(
 				);
 				expect(itemsMismatch).toBeDefined();
 				// useGrants only fetches one route, so confidence should be high
-				expect(itemsMismatch!.confidence).toBe("high");
+				expect(itemsMismatch?.confidence).toBe("high");
 			});
 
 			it("bumps risk level when mismatches exist", async () => {
@@ -142,8 +142,8 @@ withTestLbugDB(
 					(c: any) => c.file === "hooks/useMulti.ts",
 				);
 				expect(multiConsumer).toBeDefined();
-				expect(multiConsumer!.attributionNote).toBeDefined();
-				expect(multiConsumer!.attributionNote).toContain("fetches 2 routes");
+				expect(multiConsumer?.attributionNote).toBeDefined();
+				expect(multiConsumer?.attributionNote).toContain("fetches 2 routes");
 			});
 
 			it("marks multi-fetch mismatches with low confidence", async () => {
@@ -157,7 +157,7 @@ withTestLbugDB(
 					(m: any) => m.field === "meta" && m.consumer === "hooks/useMulti.ts",
 				);
 				expect(metaMismatch).toBeDefined();
-				expect(metaMismatch!.confidence).toBe("low");
+				expect(metaMismatch?.confidence).toBe("low");
 			});
 		});
 
@@ -202,8 +202,8 @@ withTestLbugDB(
 					(r: any) => r.route === "/api/secure",
 				);
 				expect(secureRoute).toBeDefined();
-				expect(secureRoute!.middleware).toContain("withAuth");
-				expect(secureRoute!.middleware).toContain("withRateLimit");
+				expect(secureRoute?.middleware).toContain("withAuth");
+				expect(secureRoute?.middleware).toContain("withRateLimit");
 			});
 		});
 
@@ -258,13 +258,13 @@ withTestLbugDB(
 				expect(grantsRoute).toBeDefined();
 
 				// shapeCheck returns responseKeys and errorKeys separately
-				if (grantsRoute!.responseKeys) {
-					expect(grantsRoute!.responseKeys).toContain("data");
-					expect(grantsRoute!.responseKeys).toContain("pagination");
+				if (grantsRoute?.responseKeys) {
+					expect(grantsRoute?.responseKeys).toContain("data");
+					expect(grantsRoute?.responseKeys).toContain("pagination");
 				}
-				if (grantsRoute!.errorKeys) {
-					expect(grantsRoute!.errorKeys).toContain("error");
-					expect(grantsRoute!.errorKeys).toContain("message");
+				if (grantsRoute?.errorKeys) {
+					expect(grantsRoute?.errorKeys).toContain("error");
+					expect(grantsRoute?.errorKeys).toContain("message");
 				}
 			});
 		});
@@ -285,14 +285,14 @@ withTestLbugDB(
 					(r: any) => r.route === "/api/grants",
 				);
 				expect(rmRoute).toBeDefined();
-				const rmConsumerCount = rmRoute!.consumers.length;
+				const rmConsumerCount = rmRoute?.consumers.length;
 
 				// shape_check consumers
 				const scRoute = shapeCheckResult.routes.find(
 					(r: any) => r.route === "/api/grants",
 				);
 				expect(scRoute).toBeDefined();
-				const scConsumerCount = scRoute!.consumers.length;
+				const scConsumerCount = scRoute?.consumers.length;
 
 				// api_impact consumers
 				const aiConsumerCount = apiImpactResult.consumers.length;

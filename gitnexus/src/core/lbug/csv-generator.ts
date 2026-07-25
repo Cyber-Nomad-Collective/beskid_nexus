@@ -12,10 +12,10 @@
  * - All fields are consistently quoted for safety with code content
  */
 
-import { createWriteStream, type WriteStream } from "fs";
-import fs from "fs/promises";
+import { createWriteStream, type WriteStream } from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
 import type { GraphNode } from "gitnexus-shared";
-import path from "path";
 import type { KnowledgeGraph } from "../graph/types.js";
 import type { NodeTableName } from "./schema.js";
 
@@ -129,7 +129,7 @@ const extractContent = async (
 	if (node.label === "File") {
 		const MAX_FILE_CONTENT = 10000;
 		return content.length > MAX_FILE_CONTENT
-			? content.slice(0, MAX_FILE_CONTENT) + "\n... [truncated]"
+			? `${content.slice(0, MAX_FILE_CONTENT)}\n... [truncated]`
 			: content;
 	}
 
@@ -143,7 +143,7 @@ const extractContent = async (
 	const snippet = lines.slice(start, end + 1).join("\n");
 	const MAX_SNIPPET = 5000;
 	return snippet.length > MAX_SNIPPET
-		? snippet.slice(0, MAX_SNIPPET) + "\n... [truncated]"
+		? `${snippet.slice(0, MAX_SNIPPET)}\n... [truncated]`
 		: snippet;
 };
 
@@ -174,7 +174,7 @@ class BufferedCSVWriter {
 
 	flush(): Promise<void> {
 		if (this.buffer.length === 0) return Promise.resolve();
-		const chunk = this.buffer.join("\n") + "\n";
+		const chunk = `${this.buffer.join("\n")}\n`;
 		this.buffer.length = 0;
 		return new Promise((resolve, reject) => {
 			this.ws.once("error", reject);

@@ -9,9 +9,9 @@
  * - 1-hour TTL cleanup for completed/failed jobs
  */
 
-import type { ChildProcess } from "child_process";
-import { randomUUID } from "crypto";
-import { EventEmitter } from "events";
+import type { ChildProcess } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { EventEmitter } from "node:events";
 
 export interface AnalyzeJobProgress {
 	phase: string;

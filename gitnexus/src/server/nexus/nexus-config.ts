@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { getGlobalDir } from "../../storage/repo-manager.js";
 import type { NexusConfigFile } from "./types.js";
 

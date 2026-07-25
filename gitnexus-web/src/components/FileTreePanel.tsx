@@ -260,7 +260,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
 			const firstLevel = new Set(fileTree.map((n) => n.path));
 			setExpandedPaths(firstLevel);
 		}
-	}, [fileTree.length]); // Only run when tree first loads
+	}, [fileTree.length, expandedPaths.size, fileTree.map]); // Only run when tree first loads
 
 	// Auto-expand to selected file when selectedNode changes (e.g., from graph click)
 	useEffect(() => {
@@ -285,7 +285,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
 				return next;
 			});
 		}
-	}, [selectedNode?.id]); // Trigger when selected node changes
+	}, [selectedNode?.properties?.filePath]); // Trigger when selected node changes
 
 	const toggleExpanded = useCallback((path: string) => {
 		setExpandedPaths((prev) => {

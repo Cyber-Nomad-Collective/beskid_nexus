@@ -71,7 +71,7 @@ withTestLbugDB(
 
 				const routerResult = results.find((r) => r.filePath === "src/router.ts");
 				if (routerResult) {
-					expect(authResult!.score).toBeGreaterThan(routerResult.score);
+					expect(authResult?.score).toBeGreaterThan(routerResult.score);
 				}
 			});
 

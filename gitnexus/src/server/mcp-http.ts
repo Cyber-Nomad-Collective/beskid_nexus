@@ -9,9 +9,9 @@
  * (guards against network drops that never trigger onclose).
  */
 
+import { randomUUID } from "node:crypto";
 import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { randomUUID } from "crypto";
 import type { Express, Request, Response } from "express";
 import { logger } from "../core/logger.js";
 import type { LocalBackend } from "../mcp/local/local-backend.js";

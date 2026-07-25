@@ -6,8 +6,13 @@
  * so the GitNexus MCP server is available in all projects.
  */
 
-import { execFile, execFileSync } from "child_process";
-import fs from "fs/promises";
+import { execFile, execFileSync } from "node:child_process";
+import fs from "node:fs/promises";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { glob } from "glob";
 import {
 	applyEdits,
@@ -16,11 +21,6 @@ import {
 	parse as parseJsonc,
 	parseTree,
 } from "jsonc-parser";
-import { createRequire } from "module";
-import os from "os";
-import path from "path";
-import { fileURLToPath } from "url";
-import { promisify } from "util";
 import { getGlobalDir } from "../storage/repo-manager.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -316,7 +316,7 @@ async function mergeHooksJsonc(
 	const parseErrors: ParseError[] = [];
 	const tree = parseTree(raw, parseErrors);
 
-	if (!tree || tree.type !== "object" || parseErrors.length > 0) {
+	if (tree?.type !== "object" || parseErrors.length > 0) {
 		return false;
 	}
 

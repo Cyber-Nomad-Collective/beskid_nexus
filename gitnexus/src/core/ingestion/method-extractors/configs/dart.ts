@@ -331,7 +331,7 @@ function isDartAbstract(node: SyntaxNode, _ownerNode: SyntaxNode): boolean {
 	if (node.type === "declaration") return true;
 	// For method_signature nodes, check if the next named sibling is a function_body
 	const next = node.nextNamedSibling;
-	return !next || next.type !== "function_body";
+	return next?.type !== "function_body";
 }
 
 /**
@@ -384,7 +384,7 @@ function extractDartAnnotations(node: SyntaxNode): string[] {
 			// e.g. "@deprecated" -> "@deprecated", "@JsonKey(name: 'id')" -> "@JsonKey"
 			const match = text.match(/^@(\w+)/);
 			if (match) {
-				annotations.unshift("@" + match[1]);
+				annotations.unshift(`@${match[1]}`);
 			} else {
 				annotations.unshift(text);
 			}

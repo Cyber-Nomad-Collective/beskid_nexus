@@ -19,7 +19,7 @@ export const swiftPackageStrategy: ImportResolverStrategy = (
 	if (swiftPackageConfig) {
 		const targetDir = swiftPackageConfig.targets.get(rawImportPath);
 		if (targetDir) {
-			const dirPrefix = targetDir + "/";
+			const dirPrefix = `${targetDir}/`;
 			const files: string[] = [];
 			for (let i = 0; i < ctx.normalizedFileList.length; i++) {
 				if (

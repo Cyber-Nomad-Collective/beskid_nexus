@@ -91,7 +91,7 @@ export function routeRubyCall(
 		}
 		const isRelative = calledName === "require_relative";
 		if (isRelative && !importPath.startsWith(".")) {
-			importPath = "./" + importPath;
+			importPath = `./${importPath}`;
 		}
 		return { kind: "import", importPath, isRelative };
 	}

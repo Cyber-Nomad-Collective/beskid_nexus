@@ -6,8 +6,8 @@
  * LadybugDB connections are opened lazily per repo on first query.
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import {
 	isWalCorruptionError,
 	WAL_RECOVERY_SUGGESTION,
@@ -1304,8 +1304,8 @@ export class LocalBackend {
 		const keys = Object.keys(firstRow);
 		if (keys.length === 0) return result;
 
-		const header = "| " + keys.join(" | ") + " |";
-		const separator = "| " + keys.map(() => "---").join(" | ") + " |";
+		const header = `| ${keys.join(" | ")} |`;
+		const separator = `| ${keys.map(() => "---").join(" | ")} |`;
 		const dataRows = result.map(
 			(row: any) =>
 				"| " +
@@ -2074,122 +2074,6 @@ export class LocalBackend {
 	}
 
 	/**
-	 * Legacy explore — kept for backwards compatibility with resources.ts.
-	 * Routes cluster/process types to direct graph queries.
-	 */
-	private async explore(
-		repo: RepoHandle,
-		params: { name: string; type: "symbol" | "cluster" | "process" },
-	): Promise<any> {
-		await this.ensureInitialized(repo.id);
-		const { name, type } = params;
-
-		if (type === "symbol") {
-			return this.context(repo, { name });
-		}
-
-		if (type === "cluster") {
-			const clusters = await executeParameterized(
-				repo.id,
-				`
-        MATCH (c:Community)
-        WHERE c.label = $clusterName OR c.heuristicLabel = $clusterName
-        RETURN c.id AS id, c.label AS label, c.heuristicLabel AS heuristicLabel, c.cohesion AS cohesion, c.symbolCount AS symbolCount
-      `,
-				{ clusterName: name },
-			);
-			if (clusters.length === 0) return { error: `Cluster '${name}' not found` };
-
-			const rawClusters = clusters.map((c: any) => ({
-				id: c.id || c[0],
-				label: c.label || c[1],
-				heuristicLabel: c.heuristicLabel || c[2],
-				cohesion: c.cohesion || c[3],
-				symbolCount: c.symbolCount || c[4],
-			}));
-
-			let totalSymbols = 0,
-				weightedCohesion = 0;
-			for (const c of rawClusters) {
-				const s = c.symbolCount || 0;
-				totalSymbols += s;
-				weightedCohesion += (c.cohesion || 0) * s;
-			}
-
-			const members = await executeParameterized(
-				repo.id,
-				`
-        MATCH (n)-[:CodeRelation {type: 'MEMBER_OF'}]->(c:Community)
-        WHERE c.label = $clusterName OR c.heuristicLabel = $clusterName
-        RETURN DISTINCT n.name AS name, labels(n)[0] AS type, n.filePath AS filePath
-        LIMIT 30
-      `,
-				{ clusterName: name },
-			);
-
-			return {
-				cluster: {
-					id: rawClusters[0].id,
-					label: rawClusters[0].heuristicLabel || rawClusters[0].label,
-					heuristicLabel: rawClusters[0].heuristicLabel || rawClusters[0].label,
-					cohesion: totalSymbols > 0 ? weightedCohesion / totalSymbols : 0,
-					symbolCount: totalSymbols,
-					subCommunities: rawClusters.length,
-				},
-				members: members.map((m: any) => ({
-					name: m.name || m[0],
-					type: m.type || m[1],
-					filePath: m.filePath || m[2],
-				})),
-			};
-		}
-
-		if (type === "process") {
-			const processes = await executeParameterized(
-				repo.id,
-				`
-        MATCH (p:Process)
-        WHERE p.label = $processName OR p.heuristicLabel = $processName
-        RETURN p.id AS id, p.label AS label, p.heuristicLabel AS heuristicLabel, p.processType AS processType, p.stepCount AS stepCount
-        LIMIT 1
-      `,
-				{ processName: name },
-			);
-			if (processes.length === 0) return { error: `Process '${name}' not found` };
-
-			const proc = processes[0];
-			const procId = proc.id || proc[0];
-			const steps = await executeParameterized(
-				repo.id,
-				`
-        MATCH (n)-[r:CodeRelation {type: 'STEP_IN_PROCESS'}]->(p {id: $procId})
-        RETURN n.name AS name, labels(n)[0] AS type, n.filePath AS filePath, r.step AS step
-        ORDER BY r.step
-      `,
-				{ procId },
-			);
-
-			return {
-				process: {
-					id: procId,
-					label: proc.label || proc[1],
-					heuristicLabel: proc.heuristicLabel || proc[2],
-					processType: proc.processType || proc[3],
-					stepCount: proc.stepCount || proc[4],
-				},
-				steps: steps.map((s: any) => ({
-					step: s.step || s[3],
-					name: s.name || s[0],
-					type: s.type || s[1],
-					filePath: s.filePath || s[2],
-				})),
-			};
-		}
-
-		return { error: "Invalid type. Use: symbol, cluster, or process" };
-	}
-
-	/**
 	 * Detect changes — git-diff based impact analysis.
 	 * Maps changed lines to indexed symbols, then finds affected processes.
 	 */
@@ -2203,7 +2087,7 @@ export class LocalBackend {
 		await this.ensureInitialized(repo.id);
 
 		const scope = params.scope || "unstaged";
-		const { execFileSync } = await import("child_process");
+		const { execFileSync } = await import("node:child_process");
 
 		// Build git diff args based on scope (using execFileSync to avoid shell injection)
 		let diffArgs: string[];
@@ -2219,7 +2103,6 @@ export class LocalBackend {
 					return { error: 'base_ref is required for "compare" scope' };
 				diffArgs = ["diff", params.base_ref, "-U0"];
 				break;
-			case "unstaged":
 			default:
 				diffArgs = ["diff", "-U0"];
 				break;
@@ -2324,7 +2207,7 @@ export class LocalBackend {
 							changed_steps: [],
 						});
 					}
-					affectedProcesses.get(pid)!.changed_steps.push({
+					affectedProcesses.get(pid)?.changed_steps.push({
 						symbol: symNameById.get(nodeId) ?? nodeId,
 						step: proc.step || proc[5],
 					});
@@ -2424,8 +2307,8 @@ export class LocalBackend {
 				changes.set(filePath, { file_path: filePath, edits: [] });
 			}
 			changes
-				.get(filePath)!
-				.edits.push({ line, old_text: oldText, new_text: newText, confidence });
+				.get(filePath)
+				?.edits.push({ line, old_text: oldText, new_text: newText, confidence });
 		};
 
 		// The definition itself
@@ -2505,7 +2388,7 @@ export class LocalBackend {
 
 		// Simple text search across the repo for the old name (in files not already covered by graph)
 		try {
-			const { execFileSync } = await import("child_process");
+			const { execFileSync } = await import("node:child_process");
 			const rgArgs = [
 				"-l",
 				"--type-add",
@@ -3572,7 +3455,7 @@ export class LocalBackend {
 						fetchCount = parseInt(fetchesMatch[1], 10);
 					}
 				}
-				routeMap.get(id)!.consumers.push({
+				routeMap.get(id)?.consumers.push({
 					name: consumerName,
 					filePath: consumerFile,
 					...(accessedKeys ? { accessedKeys } : {}),

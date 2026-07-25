@@ -72,9 +72,9 @@ function extractCallCaptures(
 		for (const c of match.captures) {
 			captureMap[c.name] = c.node;
 		}
-		if (captureMap["call"]) {
+		if (captureMap.call) {
 			results.push({
-				callNode: captureMap["call"],
+				callNode: captureMap.call,
 				nameNode: captureMap["call.name"],
 				calledName: captureMap["call.name"]?.text,
 			});
@@ -180,11 +180,11 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("doStuff");
-			expect(result!.callForm).toBe("free");
-			expect(result!.receiverName).toBeUndefined();
+			expect(result?.calledName).toBe("doStuff");
+			expect(result?.callForm).toBe("free");
+			expect(result?.receiverName).toBeUndefined();
 		});
 
 		it("extracts member call with receiver", () => {
@@ -196,11 +196,11 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("save");
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("user");
+			expect(result?.calledName).toBe("save");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("user");
 		});
 
 		it("extracts constructor call", () => {
@@ -212,10 +212,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "User");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("User");
-			expect(result!.callForm).toBe("constructor");
+			expect(result?.calledName).toBe("User");
+			expect(result?.callForm).toBe("constructor");
 		});
 
 		it("extracts argCount", () => {
@@ -227,9 +227,9 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "foo");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.argCount).toBe(3);
+			expect(result?.argCount).toBe(3);
 		});
 
 		it("does not set typeAsReceiverHeuristic", () => {
@@ -241,8 +241,8 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "find");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
-			expect(result!.typeAsReceiverHeuristic).toBeFalsy();
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
+			expect(result?.typeAsReceiverHeuristic).toBeFalsy();
 		});
 	});
 
@@ -258,10 +258,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "do_stuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("do_stuff");
-			expect(result!.callForm).toBe("free");
+			expect(result?.calledName).toBe("do_stuff");
+			expect(result?.callForm).toBe("free");
 		});
 
 		it("extracts member call", () => {
@@ -273,10 +273,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("user");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("user");
 		});
 	});
 
@@ -292,10 +292,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("doStuff");
-			expect(result!.callForm).toBe("free");
+			expect(result?.calledName).toBe("doStuff");
+			expect(result?.callForm).toBe("free");
 		});
 
 		it("extracts member call with receiver", () => {
@@ -307,10 +307,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("user");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("user");
 		});
 
 		it("sets typeAsReceiverHeuristic", () => {
@@ -322,9 +322,9 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "find");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.typeAsReceiverHeuristic).toBe(true);
+			expect(result?.typeAsReceiverHeuristic).toBe(true);
 		});
 	});
 
@@ -340,12 +340,12 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "WriteLine");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("WriteLine");
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("Console");
-			expect(result!.typeAsReceiverHeuristic).toBe(true);
+			expect(result?.calledName).toBe("WriteLine");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("Console");
+			expect(result?.typeAsReceiverHeuristic).toBe(true);
 		});
 
 		it("sets typeAsReceiverHeuristic flag even for lowercase receivers", () => {
@@ -357,12 +357,12 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "Info");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
 			// typeAsReceiverHeuristic is set on the config/extractor level (true for C#),
 			// but the uppercase check happens in parse-worker, not the extractor itself
-			expect(result!.typeAsReceiverHeuristic).toBe(true);
-			expect(result!.receiverName).toBe("logger");
+			expect(result?.typeAsReceiverHeuristic).toBe(true);
+			expect(result?.receiverName).toBe("logger");
 		});
 	});
 
@@ -378,10 +378,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("doStuff");
-			expect(result!.callForm).toBe("free");
+			expect(result?.calledName).toBe("doStuff");
+			expect(result?.callForm).toBe("free");
 		});
 	});
 
@@ -397,9 +397,9 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "do_stuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("do_stuff");
+			expect(result?.calledName).toBe("do_stuff");
 		});
 	});
 
@@ -415,10 +415,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("doStuff");
-			expect(result!.callForm).toBe("free");
+			expect(result?.calledName).toBe("doStuff");
+			expect(result?.callForm).toBe("free");
 		});
 	});
 
@@ -434,9 +434,9 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "doStuff");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("doStuff");
+			expect(result?.calledName).toBe("doStuff");
 		});
 	});
 
@@ -452,10 +452,10 @@ describe("generic call extraction", () => {
 			);
 			const match = captures.find((c) => c.calledName === "save");
 			expect(match).toBeDefined();
-			const result = extractor.extract(match!.callNode, match!.nameNode!);
+			const result = extractor.extract(match?.callNode, match?.nameNode!);
 			expect(result).not.toBeNull();
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("user");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("user");
 		});
 	});
 });
@@ -480,8 +480,8 @@ describe("Java method_reference extraction", () => {
 		if (match) {
 			const result = extractor.extract(match.callNode, undefined);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("User");
-			expect(result!.callForm).toBe("constructor");
+			expect(result?.calledName).toBe("User");
+			expect(result?.callForm).toBe("constructor");
 		}
 	});
 
@@ -495,10 +495,10 @@ describe("Java method_reference extraction", () => {
 		if (match) {
 			const result = extractor.extract(match.callNode, undefined);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("getName");
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("User");
-			expect(result!.typeAsReceiverHeuristic).toBe(true);
+			expect(result?.calledName).toBe("getName");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("User");
+			expect(result?.typeAsReceiverHeuristic).toBe(true);
 		}
 	});
 
@@ -512,9 +512,9 @@ describe("Java method_reference extraction", () => {
 		if (match) {
 			const result = extractor.extract(match.callNode, undefined);
 			expect(result).not.toBeNull();
-			expect(result!.calledName).toBe("process");
-			expect(result!.callForm).toBe("member");
-			expect(result!.receiverName).toBe("this");
+			expect(result?.calledName).toBe("process");
+			expect(result?.callForm).toBe("member");
+			expect(result?.receiverName).toBe("this");
 		}
 	});
 
@@ -527,12 +527,12 @@ describe("Java method_reference extraction", () => {
 		const match = captures.find((c) => c.calledName === "doStuff");
 		expect(match).toBeDefined();
 		// Language seed should be null for regular calls
-		const langSeed = extractor.extract(match!.callNode, undefined);
+		const langSeed = extractor.extract(match?.callNode, undefined);
 		expect(langSeed).toBeNull();
 		// But full extraction with callNameNode should work
-		const full = extractor.extract(match!.callNode, match!.nameNode!);
+		const full = extractor.extract(match?.callNode, match?.nameNode!);
 		expect(full).not.toBeNull();
-		expect(full!.calledName).toBe("doStuff");
+		expect(full?.calledName).toBe("doStuff");
 	});
 });
 

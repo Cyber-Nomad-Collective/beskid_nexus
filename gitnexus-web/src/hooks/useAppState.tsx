@@ -251,7 +251,7 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
 		setCodePanelOpen(true);
 	}, []);
 
-	const fileNodeByPath = useMemo(() => {
+	const _fileNodeByPath = useMemo(() => {
 		if (!graph) return new Map<string, string>();
 		const map = new Map<string, string>();
 		for (const n of graph.nodes) {
@@ -527,8 +527,6 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
 		},
 		[
 			serverBaseUrl,
-			setProgress,
-			setProjectName,
 			setGraph,
 			startEmbeddingsWithFallback,
 			setHighlightedNodeIds,

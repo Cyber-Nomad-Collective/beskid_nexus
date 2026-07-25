@@ -9,9 +9,9 @@
  * wrapper or server worker) is responsible for process lifecycle.
  */
 
-import { execFileSync } from "child_process";
-import fs from "fs/promises";
-import path from "path";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { generateAIContextFiles } from "../cli/ai-context.js";
 import { computeFileHashes, diffFileHashes } from "../storage/file-hash.js";
 import {
@@ -411,7 +411,7 @@ export async function runFullAnalysis(
 		allFilePaths.length > 0;
 
 	const hashDiff = isIncremental
-		? diffFileHashes(newFileHashes, existingMeta!.fileHashes)
+		? diffFileHashes(newFileHashes, existingMeta?.fileHashes)
 		: undefined;
 
 	if (isIncremental && hashDiff) {

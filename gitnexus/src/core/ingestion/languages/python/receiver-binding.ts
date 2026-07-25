@@ -41,7 +41,7 @@ function hasDecorator(fnNode: SyntaxNode, decoratorName: string): boolean {
 	for (let i = 0; i < parent.namedChildCount; i++) {
 		const child = parent.namedChild(i);
 		if (child === null || child.type !== "decorator") continue;
-		const text = child.text.replace(/^@/, "").split("(")[0]!.trim();
+		const text = child.text.replace(/^@/, "").split("(")[0]?.trim();
 		const tail = text.split(".").pop();
 		if (tail === decoratorName) return true;
 	}

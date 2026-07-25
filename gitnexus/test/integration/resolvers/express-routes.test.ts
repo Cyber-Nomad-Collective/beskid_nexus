@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	FIXTURES,
@@ -36,11 +36,11 @@ describe("Express/Hono route detection", () => {
 
 		const usersRoute = edges.find((e) => e.target === "/api/users");
 		expect(usersRoute).toBeDefined();
-		expect(usersRoute!.sourceFilePath).toContain("server.ts");
+		expect(usersRoute?.sourceFilePath).toContain("server.ts");
 
 		const itemsRoute = edges.find((e) => e.target === "/api/items");
 		expect(itemsRoute).toBeDefined();
-		expect(itemsRoute!.sourceFilePath).toContain("app.js");
+		expect(itemsRoute?.sourceFilePath).toContain("app.js");
 	});
 
 	it("detects multiple HTTP methods on same path as single route", () => {
@@ -57,6 +57,6 @@ describe("Express/Hono route detection", () => {
 		const edges = getRelationships(result, "HANDLES_ROUTE");
 		const healthEdge = edges.find((e) => e.target === "/api/health");
 		expect(healthEdge).toBeDefined();
-		expect(healthEdge!.sourceFilePath).toContain("server.ts");
+		expect(healthEdge?.sourceFilePath).toContain("server.ts");
 	});
 });

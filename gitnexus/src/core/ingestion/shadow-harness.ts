@@ -131,7 +131,7 @@ export interface ShadowHarness {
  * env var in the hot path.
  */
 export function createShadowHarness(): ShadowHarness {
-	const enabled = parseShadowModeEnv(process.env["GITNEXUS_SHADOW_MODE"]);
+	const enabled = parseShadowModeEnv(process.env.GITNEXUS_SHADOW_MODE);
 
 	interface Accumulated {
 		readonly language: SupportedLanguages;

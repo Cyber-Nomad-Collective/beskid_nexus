@@ -175,7 +175,7 @@ describe("runPipeline", () => {
 		}
 
 		expect(caught).toBeDefined();
-		const msg = caught!.message;
+		const msg = caught?.message;
 		// Cycle path must include both A and B
 		expect(msg).toMatch(/Cycle detected in pipeline phases: /);
 		expect(msg).toMatch(/\ba\b/);
@@ -205,7 +205,7 @@ describe("runPipeline", () => {
 		}
 
 		expect(caught).toBeDefined();
-		const msg = caught!.message;
+		const msg = caught?.message;
 		expect(msg).toMatch(/Cycle detected in pipeline phases: /);
 		// All three names must appear
 		expect(msg).toMatch(/\ba\b/);

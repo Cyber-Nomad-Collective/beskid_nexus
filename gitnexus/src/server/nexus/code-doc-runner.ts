@@ -1,9 +1,9 @@
+import { type ChildProcess, fork } from "node:child_process";
+import { createHash } from "node:crypto";
+import fs from "node:fs/promises";
 import { createRequire } from "node:module";
-import { type ChildProcess, fork } from "child_process";
-import { createHash } from "crypto";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { logger } from "../../core/logger.js";
 import { getStoragePath } from "../../storage/repo-manager.js";
 import {
@@ -218,7 +218,7 @@ const generateSpecLinks = async (
 		(call) => call.name === "resolve_spec_links",
 	);
 	const searchTerms = Array.isArray(resolveCall?.arguments.searchTerms)
-		? resolveCall!.arguments.searchTerms.map(String)
+		? resolveCall?.arguments.searchTerms.map(String)
 		: [entity.name];
 
 	const hits = searchSpecPages(index, searchTerms.join(" "), 5);

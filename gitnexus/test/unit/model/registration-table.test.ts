@@ -128,7 +128,7 @@ describe("class-like behavior group — all 6 labels route to types.registerClas
 				type: label,
 				qualifiedName: `app.User`,
 			});
-			table.get(label)!("User", def);
+			table.get(label)?.("User", def);
 			expect(deps.types.lookupClassByName("User")).toHaveLength(1);
 		});
 	}
@@ -144,7 +144,7 @@ describe("method-like behavior group — Method and Constructor route to methods
 				type: label,
 				ownerId: "class:User",
 			});
-			table.get(label)!("save", def);
+			table.get(label)?.("save", def);
 			expect(deps.methods.lookupMethodByOwner("class:User", "save")?.nodeId).toBe(
 				`${label.toLowerCase()}:save`,
 			);
@@ -161,7 +161,7 @@ describe("behavior group isolation", () => {
 			type: "Class",
 			ownerId: "unrelated",
 		});
-		table.get("Class")!("User", def);
+		table.get("Class")?.("User", def);
 		// No method or field registered — class hook is isolated to types.
 		expect(deps.methods.lookupMethodByOwner("unrelated", "User")).toBeUndefined();
 		expect(deps.fields.lookupFieldByOwner("unrelated", "User")).toBeUndefined();
@@ -171,7 +171,7 @@ describe("behavior group isolation", () => {
 		const deps = makeDeps();
 		const table = createRegistrationTable(deps);
 		const def = makeDef({ nodeId: "impl:User", type: "Impl" });
-		table.get("Impl")!("User", def);
+		table.get("Impl")?.("User", def);
 		expect(deps.types.lookupImplByName("User")).toHaveLength(1);
 		expect(deps.types.lookupClassByName("User")).toHaveLength(0);
 	});
@@ -190,7 +190,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 			type: "Class",
 			qualifiedName: "app.User",
 		});
-		table.get("Class")!("User", def);
+		table.get("Class")?.("User", def);
 		expect(deps.types.lookupClassByName("User")).toHaveLength(1);
 		expect(deps.types.lookupClassByQualifiedName("app.User")).toHaveLength(1);
 	});
@@ -199,7 +199,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 		const deps = makeDeps();
 		const table = createRegistrationTable(deps);
 		const def = makeDef({ nodeId: "class:User", type: "Class" });
-		table.get("Class")!("User", def);
+		table.get("Class")?.("User", def);
 		expect(deps.types.lookupClassByQualifiedName("User")).toHaveLength(1);
 	});
 
@@ -211,7 +211,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 			type: "Method",
 			ownerId: "class:User",
 		});
-		table.get("Method")!("save", def);
+		table.get("Method")?.("save", def);
 		expect(deps.methods.lookupMethodByOwner("class:User", "save")?.nodeId).toBe(
 			"mtd:save",
 		);
@@ -221,7 +221,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 		const deps = makeDeps();
 		const table = createRegistrationTable(deps);
 		const def = makeDef({ nodeId: "mtd:free", type: "Method" });
-		table.get("Method")!("free", def);
+		table.get("Method")?.("free", def);
 		expect(deps.methods.lookupMethodByOwner("", "free")).toBeUndefined();
 	});
 
@@ -234,7 +234,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 			ownerId: "class:User",
 			declaredType: "string",
 		});
-		table.get("Property")!("name", def);
+		table.get("Property")?.("name", def);
 		expect(deps.fields.lookupFieldByOwner("class:User", "name")?.nodeId).toBe(
 			"prop:name",
 		);
@@ -244,7 +244,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 		const deps = makeDeps();
 		const table = createRegistrationTable(deps);
 		const def = makeDef({ nodeId: "prop:orphan", type: "Property" });
-		table.get("Property")!("orphan", def);
+		table.get("Property")?.("orphan", def);
 		expect(deps.fields.lookupFieldByOwner("", "orphan")).toBeUndefined();
 	});
 
@@ -252,7 +252,7 @@ describe("hook behavior (real registries, no mocks)", () => {
 		const deps = makeDeps();
 		const table = createRegistrationTable(deps);
 		const def = makeDef({ nodeId: "impl:User", type: "Impl" });
-		table.get("Impl")!("User", def);
+		table.get("Impl")?.("User", def);
 		expect(deps.types.lookupImplByName("User")).toHaveLength(1);
 		// Critical: Impl must not pollute classByName — heritage resolution
 		// would otherwise treat an Impl as a parent type candidate.
@@ -271,11 +271,11 @@ describe("factory-per-instance isolation", () => {
 		const tableA = createRegistrationTable(depsA);
 		const tableB = createRegistrationTable(depsB);
 
-		tableA.get("Class")!(
+		tableA.get("Class")?.(
 			"UserA",
 			makeDef({ nodeId: "class:UserA", type: "Class" }),
 		);
-		tableB.get("Class")!(
+		tableB.get("Class")?.(
 			"UserB",
 			makeDef({ nodeId: "class:UserB", type: "Class" }),
 		);

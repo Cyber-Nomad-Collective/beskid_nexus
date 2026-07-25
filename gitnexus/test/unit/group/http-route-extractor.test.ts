@@ -99,8 +99,8 @@ public class UserController {
 				(c) => c.contractId === "http::GET::/api/v2/users",
 			);
 			expect(getRoute).toBeDefined();
-			expect(getRoute!.confidence).toBe(0.9);
-			expect(getRoute!.symbolUid).not.toBe("file-uid-ctrl");
+			expect(getRoute?.confidence).toBe(0.9);
+			expect(getRoute?.symbolUid).not.toBe("file-uid-ctrl");
 		});
 	});
 
@@ -138,8 +138,8 @@ public class UserController {
 				(c) => c.contractId === "http::GET::/api/v2/users",
 			);
 			expect(listRoute).toBeDefined();
-			expect(listRoute!.meta.method).toBe("GET");
-			expect(listRoute!.meta.path).toBe("/api/v2/users");
+			expect(listRoute?.meta.method).toBe("GET");
+			expect(listRoute?.meta.path).toBe("/api/v2/users");
 
 			const createRoute = providers.find(
 				(c) => c.contractId === "http::POST::/api/v2/users",

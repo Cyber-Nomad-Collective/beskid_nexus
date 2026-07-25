@@ -7,7 +7,7 @@
  * Docs: https://cursor.com/docs/cli/headless
  */
 
-import { execSync, spawn } from "child_process";
+import { execSync, spawn } from "node:child_process";
 import { logger } from "../logger.js";
 import type { CallLLMOptions, LLMResponse } from "./llm-client.js";
 export interface CursorConfig {

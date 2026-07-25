@@ -138,11 +138,11 @@ const scanConstructorBinding: ConstructorBindingScanner = (node) => {
 		}
 	}
 	// Only handle implicit_type (var) — explicit types handled by extractDeclaration
-	if (!typeNode || typeNode.type !== "implicit_type") return undefined;
+	if (typeNode?.type !== "implicit_type") return undefined;
 	if (!declarator) return undefined;
 	const nameNode =
 		declarator.childForFieldName("name") ?? declarator.firstNamedChild;
-	if (!nameNode || nameNode.type !== "identifier") return undefined;
+	if (nameNode?.type !== "identifier") return undefined;
 	// Find the initializer value: either inside equals_value_clause or as a direct child
 	// (tree-sitter-c-sharp puts invocation_expression directly inside variable_declarator)
 	let value: SyntaxNode | null = null;
@@ -230,7 +230,7 @@ const findCSharpParamElementType = (
 			if (paramsNode) {
 				for (let i = 0; i < paramsNode.namedChildCount; i++) {
 					const param = paramsNode.namedChild(i);
-					if (!param || param.type !== "parameter") continue;
+					if (param?.type !== "parameter") continue;
 					const nameNode = param.childForFieldName("name");
 					if (nameNode?.text !== iterableName) continue;
 					const typeNode = param.childForFieldName("type");
@@ -414,7 +414,7 @@ const extractPatternBinding: PatternBindingExtractor = (
 				const literal = inner.firstNamedChild ?? inner.firstChild;
 				if (literal?.type === "null_literal" || literal?.text === "null") {
 					const expr = node.childForFieldName("expression");
-					if (!expr || expr.type !== "identifier") return undefined;
+					if (expr?.type !== "identifier") return undefined;
 					const varName = expr.text;
 					const resolvedType = scopeEnv.get(varName);
 					if (!resolvedType) return undefined;
@@ -496,7 +496,7 @@ const extractPendingAssignment: PendingAssignmentExtractor = (
 		return undefined;
 	for (let i = 0; i < node.namedChildCount; i++) {
 		const child = node.namedChild(i);
-		if (!child || child.type !== "variable_declarator") continue;
+		if (child?.type !== "variable_declarator") continue;
 		const nameNode = child.childForFieldName("name");
 		if (!nameNode) continue;
 		const lhs = nameNode.text;

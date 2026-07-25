@@ -1,6 +1,6 @@
-import { execSync } from "child_process";
-import fs from "fs/promises";
-import path from "path";
+import { execSync } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
 	DEFAULT_EMBEDDING_NODE_LIMIT,

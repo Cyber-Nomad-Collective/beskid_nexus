@@ -15,12 +15,12 @@ async function fetchRepo(path) {
 	return new Repo(path);
 }
 
-async function processUser() {
+async function _processUser() {
 	const user = await fetchUser("alice");
 	user.save();
 }
 
-async function processRepo() {
+async function _processRepo() {
 	const repo = await fetchRepo("/data");
 	repo.save();
 }

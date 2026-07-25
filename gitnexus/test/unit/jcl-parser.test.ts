@@ -210,7 +210,7 @@ describe("parseJcl", () => {
 			// Pad to 71 then add non-blank at col 72.
 			const base = "//DD1     DD DSN=MY.VERY.LONG.DATASET.NAME.THAT.KEEPS.GOING,";
 			const padding = " ".repeat(71 - base.length);
-			const line1 = base + padding + "X"; // col 72 is 'X' (non-blank) -> continuation
+			const line1 = `${base + padding}X`; // col 72 is 'X' (non-blank) -> continuation
 			const line2 = "//             DISP=SHR";
 			const jcl = [
 				"//MYJOB   JOB (ACCT)",

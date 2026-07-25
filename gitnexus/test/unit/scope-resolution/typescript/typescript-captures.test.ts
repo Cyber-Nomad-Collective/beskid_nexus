@@ -47,7 +47,7 @@ describe("emitTsScopeCaptures — scopes", () => {
 			(t) => t.includes("@declaration.method"),
 		);
 		expect(match).toBeDefined();
-		expect(match!["@declaration.name"].text).toBe("afterPadding");
+		expect(match?.["@declaration.name"].text).toBe("afterPadding");
 	});
 
 	it("parses UTF-8-heavy cache-miss files with a byte-sized buffer", () => {
@@ -57,7 +57,7 @@ describe("emitTsScopeCaptures — scopes", () => {
 			(t) => t.includes("@declaration.method"),
 		);
 		expect(match).toBeDefined();
-		expect(match!["@declaration.name"].text).toBe("afterPadding");
+		expect(match?.["@declaration.name"].text).toBe("afterPadding");
 	});
 
 	it("captures internal_module as @scope.namespace", () => {
@@ -128,7 +128,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.class"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("User");
+		expect(m?.["@declaration.name"].text).toBe("User");
 	});
 
 	it("captures abstract class declarations under @declaration.class", () => {
@@ -136,7 +136,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.class"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Base");
+		expect(m?.["@declaration.name"].text).toBe("Base");
 	});
 
 	it("captures interface declarations distinctly from class declarations", () => {
@@ -144,7 +144,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.interface"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("IUser");
+		expect(m?.["@declaration.name"].text).toBe("IUser");
 	});
 
 	it("captures enum declarations under @declaration.enum", () => {
@@ -152,7 +152,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.enum"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Status");
+		expect(m?.["@declaration.name"].text).toBe("Status");
 	});
 
 	it("captures type-alias declarations under @declaration.type", () => {
@@ -160,7 +160,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.type"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("ID");
+		expect(m?.["@declaration.name"].text).toBe("ID");
 	});
 
 	it("captures namespace declarations under @declaration.namespace", () => {
@@ -168,7 +168,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.namespace"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("NS");
+		expect(m?.["@declaration.name"].text).toBe("NS");
 	});
 
 	it("captures function declarations with their name", () => {
@@ -176,7 +176,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("compute");
+		expect(m?.["@declaration.name"].text).toBe("compute");
 	});
 
 	it("captures function_signature (overload decl) under @declaration.function", () => {
@@ -187,7 +187,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("f");
+		expect(m?.["@declaration.name"].text).toBe("f");
 	});
 
 	it("captures generator function declarations", () => {
@@ -195,7 +195,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.function"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("gen");
+		expect(m?.["@declaration.name"].text).toBe("gen");
 	});
 
 	it("captures `const fn = () => {}` as both @declaration.function and @declaration.variable", () => {
@@ -234,7 +234,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.method"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("#secret");
+		expect(m?.["@declaration.name"].text).toBe("#secret");
 	});
 
 	it("captures class fields under @declaration.property", () => {
@@ -242,7 +242,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.property"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("x");
+		expect(m?.["@declaration.name"].text).toBe("x");
 	});
 
 	it("captures private (#) fields under @declaration.property", () => {
@@ -250,7 +250,7 @@ describe("emitTsScopeCaptures — declarations", () => {
 			t.includes("@declaration.property"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("#x");
+		expect(m?.["@declaration.name"].text).toBe("#x");
 	});
 
 	it("captures parameter properties as both @declaration.property AND @type-binding.parameter", () => {
@@ -298,7 +298,7 @@ describe("emitTsScopeCaptures — imports (decomposed)", () => {
 		const kinds = tagsFor(src)
 			.filter((tags) => tags.includes("@import.statement"))
 			.map((tags) => {
-				const idx = tags.findIndex((t) => t === "@import.kind");
+				const idx = tags.indexOf("@import.kind");
 				return idx >= 0 ? tags[idx] : null;
 			});
 		expect(kinds).toHaveLength(4);
@@ -315,7 +315,7 @@ describe("emitTsScopeCaptures — imports (decomposed)", () => {
 
 		const m = findMatch(src, (t) => t.includes("@import.statement"));
 		expect(m).toBeDefined();
-		expect(m!["@import.source"].text).toBe("./m");
+		expect(m?.["@import.source"].text).toBe("./m");
 	});
 
 	it("decomposes re-exports with `from` source into @import.statement + kind markers", () => {
@@ -343,29 +343,29 @@ describe("emitTsScopeCaptures — imports (decomposed)", () => {
 		const src = "const m = import('./m');";
 		const m = findMatch(src, (t) => t.includes("@import.statement"));
 		expect(m).toBeDefined();
-		expect(m!["@import.kind"].text).toBe("dynamic");
-		expect(m!["@import.source"].text).toBe("./m");
+		expect(m?.["@import.kind"].text).toBe("dynamic");
+		expect(m?.["@import.source"].text).toBe("./m");
 	});
 
 	it("marks literal dynamic imports with @import.literal so the interpreter can flag them resolvable", () => {
 		const src = "const m = import('./m');";
 		const m = findMatch(src, (t) => t.includes("@import.statement"));
 		expect(m).toBeDefined();
-		expect(m!["@import.literal"]).toBeDefined();
+		expect(m?.["@import.literal"]).toBeDefined();
 	});
 
 	it("does NOT mark non-literal dynamic imports with @import.literal", () => {
 		const src = "const m = import(spec);";
 		const m = findMatch(src, (t) => t.includes("@import.statement"));
 		expect(m).toBeDefined();
-		expect(m!["@import.literal"]).toBeUndefined();
+		expect(m?.["@import.literal"]).toBeUndefined();
 	});
 
 	it('emits a synthetic @declaration.namespace for `export * as ns from "./m"` (barrel binding)', () => {
 		const src = "export * as Models from './base';";
 		const m = findMatch(src, (t) => t.includes("@declaration.namespace"));
 		expect(m).toBeDefined();
-		expect(m!["@declaration.name"].text).toBe("Models");
+		expect(m?.["@declaration.name"].text).toBe("Models");
 	});
 });
 
@@ -378,8 +378,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.parameter"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures variable annotations", () => {
@@ -387,8 +387,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.annotation"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures constructor-inferred `const u = new User()`", () => {
@@ -396,8 +396,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.constructor"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures qualified constructor `const u = new ns.User()`", () => {
@@ -406,7 +406,7 @@ describe("emitTsScopeCaptures — type bindings", () => {
 		);
 		expect(m).toBeDefined();
 		// member_expression text is the dotted path; resolver handles.
-		expect(m!["@type-binding.type"].text).toBe("ns.User");
+		expect(m?.["@type-binding.type"].text).toBe("ns.User");
 	});
 
 	it("captures call-result alias `const u = factory()`", () => {
@@ -414,8 +414,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.alias"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("factory");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("factory");
 	});
 
 	it("captures member-call alias `const u = svc.getUser()`", () => {
@@ -423,8 +423,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.alias"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("svc.getUser");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("svc.getUser");
 	});
 
 	it("captures await alias `const u = await factory()`", () => {
@@ -433,8 +433,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			(t) => t.includes("@type-binding.alias"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("factory");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("factory");
 	});
 
 	it("captures identifier alias `const u2 = u`", () => {
@@ -442,8 +442,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.alias"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u2");
-		expect(m!["@type-binding.type"].text).toBe("u");
+		expect(m?.["@type-binding.name"].text).toBe("u2");
+		expect(m?.["@type-binding.type"].text).toBe("u");
 	});
 
 	it("captures `as` assertion `const u = x as User`", () => {
@@ -451,8 +451,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.assertion"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("documents limitation: member-expression `instanceof` narrowing is not synthesized", () => {
@@ -475,12 +475,12 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.annotation"),
 		);
 		expect(annotation).toBeDefined();
-		expect(annotation!["@type-binding.name"].text).toBe("city");
-		expect(annotation!["@type-binding.type"].text).toBe("City");
+		expect(annotation?.["@type-binding.name"].text).toBe("city");
+		expect(annotation?.["@type-binding.type"].text).toBe("City");
 
 		const decl = findMatch(src, (t) => t.includes("@declaration.property"));
 		expect(decl).toBeDefined();
-		expect(decl!["@declaration.name"].text).toBe("city");
+		expect(decl?.["@declaration.name"].text).toBe("city");
 	});
 
 	it("captures method return type `save(): User { }`", () => {
@@ -488,8 +488,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.return"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("save");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("save");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures function return type `function f(): User { }`", () => {
@@ -497,8 +497,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 			t.includes("@type-binding.return"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("f");
-		expect(m!["@type-binding.type"].text).toBe("User");
+		expect(m?.["@type-binding.name"].text).toBe("f");
+		expect(m?.["@type-binding.type"].text).toBe("User");
 	});
 
 	it("captures for-of element binding `for (const u of users)`", () => {
@@ -510,8 +510,8 @@ describe("emitTsScopeCaptures — type bindings", () => {
 				t.includes("@type-binding.alias") && !t.includes("@reference.call.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@type-binding.name"].text).toBe("u");
-		expect(m!["@type-binding.type"].text).toBe("users");
+		expect(m?.["@type-binding.name"].text).toBe("u");
+		expect(m?.["@type-binding.type"].text).toBe("users");
 	});
 });
 
@@ -521,7 +521,7 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.call.free"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("factory");
+		expect(m?.["@reference.name"].text).toBe("factory");
 	});
 
 	it("captures member calls `obj.method()`", () => {
@@ -529,8 +529,8 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.call.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("method");
-		expect(m!["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("method");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
 	});
 
 	it("captures `this.method()` — this is a named node, receiver captured via (_)", () => {
@@ -543,8 +543,8 @@ describe("emitTsScopeCaptures — references", () => {
 				t.includes("@reference.call.member") && t.includes("@reference.receiver"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.receiver"].text).toBe("this");
-		expect(m!["@reference.name"].text).toBe("save");
+		expect(m?.["@reference.receiver"].text).toBe("this");
+		expect(m?.["@reference.name"].text).toBe("save");
 	});
 
 	it("captures `super.method()` — super is a named node too", () => {
@@ -555,8 +555,8 @@ describe("emitTsScopeCaptures — references", () => {
 		);
 		expect(m).toBeDefined();
 		// Multiple member calls in this fixture (just one expected though)
-		expect(m!["@reference.receiver"].text).toBe("super");
-		expect(m!["@reference.name"].text).toBe("save");
+		expect(m?.["@reference.receiver"].text).toBe("super");
+		expect(m?.["@reference.name"].text).toBe("save");
 	});
 
 	it("captures optional-chaining member calls `obj?.m()`", () => {
@@ -568,8 +568,8 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.call.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("m");
-		expect(m!["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("m");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
 	});
 
 	it("captures constructor calls `new User()`", () => {
@@ -577,7 +577,7 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.call.constructor"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("User");
+		expect(m?.["@reference.name"].text).toBe("User");
 	});
 
 	it("captures qualified constructor calls `new ns.User()`", () => {
@@ -585,7 +585,7 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.call.constructor.qualified"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.call.constructor.qualified"].text).toBe("ns.User");
+		expect(m?.["@reference.call.constructor.qualified"].text).toBe("ns.User");
 	});
 
 	it("captures member writes `obj.x = 1`", () => {
@@ -593,8 +593,8 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.write.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("x");
-		expect(m!["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("x");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
 	});
 
 	it("captures compound assignment writes `obj.x += 1`", () => {
@@ -602,8 +602,8 @@ describe("emitTsScopeCaptures — references", () => {
 			t.includes("@reference.write.member"),
 		);
 		expect(m).toBeDefined();
-		expect(m!["@reference.name"].text).toBe("x");
-		expect(m!["@reference.receiver"].text).toBe("obj");
+		expect(m?.["@reference.name"].text).toBe("x");
+		expect(m?.["@reference.receiver"].text).toBe("obj");
 	});
 });
 

@@ -144,7 +144,7 @@ import { alias } from './util';
 		// TS extractor's annotation capture (return-type vs inferred-from-
 		// call); we assert the chain has collapsed away from the
 		// intermediate `getUser` / `user` / `alias` rawNames.
-		expect(appAlias!.rawName).toBe("User");
+		expect(appAlias?.rawName).toBe("User");
 	});
 
 	it("respects local-annotation guard: explicit local typeBinding wins over import-derived", () => {
@@ -185,7 +185,7 @@ const user: Account = new Account();
 		// is shielded.
 		const appUser = moduleTypeBinding(parsedFiles, "app.ts", "user");
 		expect(appUser).toBeDefined();
-		expect(appUser!.rawName).toBe("Account");
+		expect(appUser?.rawName).toBe("Account");
 	});
 
 	it("skips imports whose source module has no typeBinding (no crash, no phantom binding)", () => {

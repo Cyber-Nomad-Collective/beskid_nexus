@@ -7,9 +7,9 @@
  * definition node range (#22).
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { getLanguageFromFilename, SupportedLanguages } from "gitnexus-shared";
-import path from "path";
 import { describe, expect, it } from "vitest";
 import { getProvider } from "../../src/core/ingestion/languages/index.js";
 import {
@@ -130,7 +130,7 @@ describe("parsing", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("identifier", "foo");
 				// visibility_modifier is a sibling of the name inside function_item
-				const fnDecl = mockNode("function_item", "pub fn foo() {}", undefined, [
+				const _fnDecl = mockNode("function_item", "pub fn foo() {}", undefined, [
 					visMod,
 					nameNode,
 				]);
@@ -139,7 +139,7 @@ describe("parsing", () => {
 
 			it("non-pub function is not exported", () => {
 				const nameNode = mockNode("identifier", "foo");
-				const fnDecl = mockNode("function_item", "fn foo() {}", undefined, [
+				const _fnDecl = mockNode("function_item", "fn foo() {}", undefined, [
 					nameNode,
 				]);
 				expect(isNodeExported(nameNode, "foo", "rust")).toBe(false);
@@ -204,7 +204,7 @@ describe("parsing", () => {
 		describe("c/cpp", () => {
 			it("C functions without static are exported (external linkage)", () => {
 				const nameNode = mockNode("identifier", "add");
-				const fnDef = mockNode(
+				const _fnDef = mockNode(
 					"function_definition",
 					"int add(int a, int b) {}",
 					undefined,
@@ -215,7 +215,7 @@ describe("parsing", () => {
 
 			it("C++ functions without static are exported", () => {
 				const nameNode = mockNode("identifier", "helperFunction");
-				const fnDef = mockNode(
+				const _fnDef = mockNode(
 					"function_definition",
 					"void helperFunction() {}",
 					undefined,
@@ -227,7 +227,7 @@ describe("parsing", () => {
 			it("static C function is not exported", () => {
 				const nameNode = mockNode("identifier", "internalHelper");
 				const staticSpec = mockNode("storage_class_specifier", "static");
-				const fnDef = mockNode(
+				const _fnDef = mockNode(
 					"function_definition",
 					"static void internalHelper() {}",
 					undefined,
@@ -243,7 +243,7 @@ describe("parsing", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "Add");
 				// modifier is a sibling of nameNode inside method_declaration
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"public int Add() {}",
 					undefined,
@@ -254,7 +254,7 @@ describe("parsing", () => {
 
 			it("no public modifier means not exported", () => {
 				const nameNode = mockNode("identifier", "Helper");
-				const classDecl = mockNode(
+				const _classDecl = mockNode(
 					"class_declaration",
 					"class Helper {}",
 					undefined,
@@ -269,7 +269,7 @@ describe("parsing", () => {
 			it("public method is exported", () => {
 				const modifiers = mockNode("modifiers", "public");
 				const nameNode = mockNode("identifier", "getUser");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"public User getUser() {}",
 					undefined,
@@ -280,7 +280,7 @@ describe("parsing", () => {
 
 			it("public class method via text check is exported", () => {
 				const nameNode = mockNode("identifier", "doGet");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"public void doGet() {}",
 					undefined,
@@ -293,7 +293,7 @@ describe("parsing", () => {
 			it("private method is not exported", () => {
 				const modifiers = mockNode("modifiers", "private");
 				const nameNode = mockNode("identifier", "helper");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"private void helper() {}",
 					undefined,
@@ -304,7 +304,7 @@ describe("parsing", () => {
 
 			it("package-private (no modifier) is not exported", () => {
 				const nameNode = mockNode("identifier", "internal");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"void internal() {}",
 					undefined,
@@ -318,7 +318,7 @@ describe("parsing", () => {
 		describe("kotlin", () => {
 			it("function without visibility modifier is public by default", () => {
 				const nameNode = mockNode("identifier", "greet");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_declaration",
 					"fun greet() {}",
 					undefined,
@@ -331,7 +331,7 @@ describe("parsing", () => {
 				const visMod = mockNode("visibility_modifier", "public");
 				const modifiers = mockNode("modifiers", "public", undefined, [visMod]);
 				const nameNode = mockNode("identifier", "greet");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_declaration",
 					"public fun greet() {}",
 					undefined,
@@ -344,7 +344,7 @@ describe("parsing", () => {
 				const visMod = mockNode("visibility_modifier", "private");
 				const modifiers = mockNode("modifiers", "private", undefined, [visMod]);
 				const nameNode = mockNode("identifier", "secret");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_declaration",
 					"private fun secret() {}",
 					undefined,
@@ -357,7 +357,7 @@ describe("parsing", () => {
 				const visMod = mockNode("visibility_modifier", "internal");
 				const modifiers = mockNode("modifiers", "internal", undefined, [visMod]);
 				const nameNode = mockNode("identifier", "moduleOnly");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_declaration",
 					"internal fun moduleOnly() {}",
 					undefined,
@@ -372,7 +372,7 @@ describe("parsing", () => {
 			it("internal modifier is not exported", () => {
 				const modifier = mockNode("modifier", "internal");
 				const nameNode = mockNode("identifier", "InternalService");
-				const classDecl = mockNode(
+				const _classDecl = mockNode(
 					"class_declaration",
 					"internal class InternalService {}",
 					undefined,
@@ -384,7 +384,7 @@ describe("parsing", () => {
 			it("private modifier is not exported", () => {
 				const modifier = mockNode("modifier", "private");
 				const nameNode = mockNode("identifier", "helper");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"private void helper() {}",
 					undefined,
@@ -396,7 +396,7 @@ describe("parsing", () => {
 			it("struct with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "Point");
-				const structDecl = mockNode(
+				const _structDecl = mockNode(
 					"struct_declaration",
 					"public struct Point {}",
 					undefined,
@@ -408,7 +408,7 @@ describe("parsing", () => {
 			it("enum with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "Status");
-				const enumDecl = mockNode(
+				const _enumDecl = mockNode(
 					"enum_declaration",
 					"public enum Status {}",
 					undefined,
@@ -420,7 +420,7 @@ describe("parsing", () => {
 			it("record with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "UserDto");
-				const recordDecl = mockNode(
+				const _recordDecl = mockNode(
 					"record_declaration",
 					"public record UserDto {}",
 					undefined,
@@ -432,7 +432,7 @@ describe("parsing", () => {
 			it("interface with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "IService");
-				const ifaceDecl = mockNode(
+				const _ifaceDecl = mockNode(
 					"interface_declaration",
 					"public interface IService {}",
 					undefined,
@@ -447,7 +447,7 @@ describe("parsing", () => {
 			it("pub(crate) is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub(crate)");
 				const nameNode = mockNode("identifier", "internal_fn");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_item",
 					"pub(crate) fn internal_fn() {}",
 					undefined,
@@ -459,7 +459,7 @@ describe("parsing", () => {
 			it("pub struct is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("type_identifier", "Config");
-				const structDecl = mockNode(
+				const _structDecl = mockNode(
 					"struct_item",
 					"pub struct Config {}",
 					undefined,
@@ -470,7 +470,7 @@ describe("parsing", () => {
 
 			it("private struct is not exported", () => {
 				const nameNode = mockNode("type_identifier", "Inner");
-				const structDecl = mockNode("struct_item", "struct Inner {}", undefined, [
+				const _structDecl = mockNode("struct_item", "struct Inner {}", undefined, [
 					nameNode,
 				]);
 				expect(isNodeExported(nameNode, "Inner", "rust")).toBe(false);
@@ -479,17 +479,19 @@ describe("parsing", () => {
 			it("pub enum is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("type_identifier", "ErrorKind");
-				const enumDecl = mockNode("enum_item", "pub enum ErrorKind {}", undefined, [
-					visMod,
-					nameNode,
-				]);
+				const _enumDecl = mockNode(
+					"enum_item",
+					"pub enum ErrorKind {}",
+					undefined,
+					[visMod, nameNode],
+				);
 				expect(isNodeExported(nameNode, "ErrorKind", "rust")).toBe(true);
 			});
 
 			it("pub trait is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("type_identifier", "Handler");
-				const traitDecl = mockNode(
+				const _traitDecl = mockNode(
 					"trait_item",
 					"pub trait Handler {}",
 					undefined,
@@ -504,7 +506,7 @@ describe("parsing", () => {
 			it("static C++ function is not exported", () => {
 				const nameNode = mockNode("identifier", "localHelper");
 				const staticSpec = mockNode("storage_class_specifier", "static");
-				const fnDef = mockNode(
+				const _fnDef = mockNode(
 					"function_definition",
 					"static int localHelper() {}",
 					undefined,
@@ -515,7 +517,7 @@ describe("parsing", () => {
 
 			it("declaration (not definition) without static is exported", () => {
 				const nameNode = mockNode("identifier", "compute");
-				const decl = mockNode("declaration", "int compute(int x);", undefined, [
+				const _decl = mockNode("declaration", "int compute(int x);", undefined, [
 					nameNode,
 				]);
 				expect(isNodeExported(nameNode, "compute", "c")).toBe(true);
@@ -524,7 +526,7 @@ describe("parsing", () => {
 			it("static declaration is not exported", () => {
 				const nameNode = mockNode("identifier", "internalFn");
 				const staticSpec = mockNode("storage_class_specifier", "static");
-				const decl = mockNode(
+				const _decl = mockNode(
 					"declaration",
 					"static int internalFn(void);",
 					undefined,
@@ -547,7 +549,7 @@ describe("parsing", () => {
 					[nameNode],
 				);
 				// Anonymous namespace: namespace_definition with no name field
-				const anonNs = mockNode(
+				const _anonNs = mockNode(
 					"namespace_definition",
 					"namespace { void anonHelper() {} }",
 					undefined,
@@ -565,7 +567,7 @@ describe("parsing", () => {
 					[nameNode],
 				);
 				const nsName = mockNode("namespace_identifier", "utils");
-				const namedNs = mockNode(
+				const _namedNs = mockNode(
 					"namespace_definition",
 					"namespace utils { void namedHelper() {} }",
 					undefined,
@@ -653,7 +655,7 @@ describe("parsing", () => {
 					undefined,
 					[fnDef],
 				);
-				const outerNs = mockNode(
+				const _outerNs = mockNode(
 					"namespace_definition",
 					"namespace outer { }",
 					undefined,
@@ -672,7 +674,7 @@ describe("parsing", () => {
 					undefined,
 					[staticSpec, nameNode],
 				);
-				const ns = mockNode(
+				const _ns = mockNode(
 					"namespace_definition",
 					"namespace foo { }",
 					undefined,
@@ -687,7 +689,7 @@ describe("parsing", () => {
 			it("extern storage class is not confused with static", () => {
 				const nameNode = mockNode("identifier", "externFn");
 				const externSpec = mockNode("storage_class_specifier", "extern");
-				const fnDef = mockNode(
+				const _fnDef = mockNode(
 					"function_definition",
 					"extern void externFn() {}",
 					undefined,
@@ -702,7 +704,7 @@ describe("parsing", () => {
 			it("pub(super) is treated as exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub(super)");
 				const nameNode = mockNode("identifier", "parent_fn");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_item",
 					"pub(super) fn parent_fn() {}",
 					undefined,
@@ -714,7 +716,7 @@ describe("parsing", () => {
 			it("pub union is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("type_identifier", "MyUnion");
-				const unionDecl = mockNode(
+				const _unionDecl = mockNode(
 					"union_item",
 					"pub union MyUnion {}",
 					undefined,
@@ -725,7 +727,7 @@ describe("parsing", () => {
 
 			it("private union is not exported", () => {
 				const nameNode = mockNode("type_identifier", "InternalUnion");
-				const unionDecl = mockNode(
+				const _unionDecl = mockNode(
 					"union_item",
 					"union InternalUnion {}",
 					undefined,
@@ -737,17 +739,19 @@ describe("parsing", () => {
 			it("pub type alias is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("type_identifier", "Result");
-				const typeDecl = mockNode("type_item", "pub type Result = ...", undefined, [
-					visMod,
-					nameNode,
-				]);
+				const _typeDecl = mockNode(
+					"type_item",
+					"pub type Result = ...",
+					undefined,
+					[visMod, nameNode],
+				);
 				expect(isNodeExported(nameNode, "Result", "rust")).toBe(true);
 			});
 
 			it("pub const is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("identifier", "MAX_SIZE");
-				const constDecl = mockNode(
+				const _constDecl = mockNode(
 					"const_item",
 					"pub const MAX_SIZE: usize = 100;",
 					undefined,
@@ -758,7 +762,7 @@ describe("parsing", () => {
 
 			it("private const is not exported", () => {
 				const nameNode = mockNode("identifier", "INTERNAL_LIMIT");
-				const constDecl = mockNode(
+				const _constDecl = mockNode(
 					"const_item",
 					"const INTERNAL_LIMIT: usize = 50;",
 					undefined,
@@ -770,7 +774,7 @@ describe("parsing", () => {
 			it("pub static is exported", () => {
 				const visMod = mockNode("visibility_modifier", "pub");
 				const nameNode = mockNode("identifier", "INSTANCE");
-				const staticDecl = mockNode(
+				const _staticDecl = mockNode(
 					"static_item",
 					"pub static INSTANCE: ...",
 					undefined,
@@ -781,7 +785,7 @@ describe("parsing", () => {
 
 			it("associated_type without pub is not exported", () => {
 				const nameNode = mockNode("type_identifier", "Item");
-				const assocType = mockNode("associated_type", "type Item;", undefined, [
+				const _assocType = mockNode("associated_type", "type Item;", undefined, [
 					nameNode,
 				]);
 				expect(isNodeExported(nameNode, "Item", "rust")).toBe(false);
@@ -793,7 +797,7 @@ describe("parsing", () => {
 			it("protected modifier is not exported", () => {
 				const modifier = mockNode("modifier", "protected");
 				const nameNode = mockNode("identifier", "OnInit");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"protected void OnInit() {}",
 					undefined,
@@ -806,7 +810,7 @@ describe("parsing", () => {
 				const mod1 = mockNode("modifier", "protected");
 				const mod2 = mockNode("modifier", "internal");
 				const nameNode = mockNode("identifier", "Setup");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"protected internal void Setup() {}",
 					undefined,
@@ -819,7 +823,7 @@ describe("parsing", () => {
 			it("record_struct with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "Coord");
-				const recStruct = mockNode(
+				const _recStruct = mockNode(
 					"record_struct_declaration",
 					"public record struct Coord {}",
 					undefined,
@@ -831,7 +835,7 @@ describe("parsing", () => {
 			it("record_class with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "UserRecord");
-				const recClass = mockNode(
+				const _recClass = mockNode(
 					"record_class_declaration",
 					"public record class UserRecord {}",
 					undefined,
@@ -843,7 +847,7 @@ describe("parsing", () => {
 			it("file_scoped_namespace_declaration is a valid context", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "MyClass");
-				const classDecl = mockNode(
+				const _classDecl = mockNode(
 					"class_declaration",
 					"public class MyClass {}",
 					undefined,
@@ -856,7 +860,7 @@ describe("parsing", () => {
 			it("delegate with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "OnChange");
-				const delegateDecl = mockNode(
+				const _delegateDecl = mockNode(
 					"delegate_declaration",
 					"public delegate void OnChange();",
 					undefined,
@@ -868,7 +872,7 @@ describe("parsing", () => {
 			it("event with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "Changed");
-				const eventDecl = mockNode(
+				const _eventDecl = mockNode(
 					"event_declaration",
 					"public event EventHandler Changed;",
 					undefined,
@@ -880,7 +884,7 @@ describe("parsing", () => {
 			it("property with public modifier is exported", () => {
 				const modifier = mockNode("modifier", "public");
 				const nameNode = mockNode("identifier", "Name");
-				const propDecl = mockNode(
+				const _propDecl = mockNode(
 					"property_declaration",
 					"public string Name { get; set; }",
 					undefined,
@@ -896,7 +900,7 @@ describe("parsing", () => {
 				const visMod = mockNode("visibility_modifier", "protected");
 				const modifiers = mockNode("modifiers", "protected", undefined, [visMod]);
 				const nameNode = mockNode("identifier", "onInit");
-				const fnDecl = mockNode(
+				const _fnDecl = mockNode(
 					"function_declaration",
 					"protected fun onInit() {}",
 					undefined,
@@ -911,7 +915,7 @@ describe("parsing", () => {
 			it("protected method is not exported", () => {
 				const modifiers = mockNode("modifiers", "protected");
 				const nameNode = mockNode("identifier", "onInit");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"protected void onInit() {}",
 					undefined,
@@ -923,7 +927,7 @@ describe("parsing", () => {
 			it("static public method is exported", () => {
 				const modifiers = mockNode("modifiers", "public static");
 				const nameNode = mockNode("identifier", "main");
-				const methodDecl = mockNode(
+				const _methodDecl = mockNode(
 					"method_declaration",
 					"public static void main(String[] args) {}",
 					undefined,
@@ -1046,8 +1050,7 @@ describe("parsing", () => {
 			// and a mix of high-byte sequences that are not valid UTF-8 when treated as Latin-1.
 			// JavaScript strings are UTF-16 internally, so this is always a valid string —
 			// but it exercises tree-sitter's ability to handle unusual byte patterns.
-			const binaryLikeContent =
-				"\uFFFD\u0000\u0001\u001F" + "\xFF\xFE".repeat(10) + "\uFFFD";
+			const binaryLikeContent = `\uFFFD\u0000\u0001\u001F${"\xFF\xFE".repeat(10)}\uFFFD`;
 
 			// Must not throw — tree-sitter should return an error-recovery tree.
 			let tree: any;

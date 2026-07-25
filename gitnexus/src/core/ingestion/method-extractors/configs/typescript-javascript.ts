@@ -265,10 +265,10 @@ function extractDecoratorName(decorator: SyntaxNode): string | undefined {
 	if (!expr) return undefined;
 	if (expr.type === "call_expression") {
 		const fn = expr.childForFieldName("function");
-		return fn ? "@" + fn.text : undefined;
+		return fn ? `@${fn.text}` : undefined;
 	}
-	if (expr.type === "identifier") return "@" + expr.text;
-	if (expr.type === "member_expression") return "@" + expr.text;
+	if (expr.type === "identifier") return `@${expr.text}`;
+	if (expr.type === "member_expression") return `@${expr.text}`;
 	return undefined;
 }
 

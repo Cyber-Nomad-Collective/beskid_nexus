@@ -2,7 +2,7 @@
  * C++: diamond inheritance + include-based imports + ambiguous #include disambiguation
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -77,7 +77,7 @@ describe("C++ diamond inheritance", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 });
@@ -120,7 +120,7 @@ describe("C++ ambiguous symbol resolution", () => {
 		for (const edge of getRelationships(result, "EXTENDS")) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -163,8 +163,8 @@ describe("C++ member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.targetFilePath).toBe("user.h");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.targetFilePath).toBe("user.h");
 	});
 
 	it("detects User class and save method", () => {
@@ -199,10 +199,10 @@ describe("C++ constructor-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("processUser");
-		expect(ctorCall!.targetLabel).toBe("Class");
-		expect(ctorCall!.targetFilePath).toBe("user.h");
-		expect(ctorCall!.rel.reason).toBe("import-resolved");
+		expect(ctorCall?.source).toBe("processUser");
+		expect(ctorCall?.targetLabel).toBe("Class");
+		expect(ctorCall?.targetFilePath).toBe("user.h");
+		expect(ctorCall?.rel.reason).toBe("import-resolved");
 	});
 
 	it("detects User class and save method", () => {
@@ -250,8 +250,8 @@ describe("C++ receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
-		expect(repoSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 });
 
@@ -285,7 +285,7 @@ describe("C++ constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/User.h",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves repo.save() to models/Repo.h via constructor-inferred type", () => {
@@ -294,7 +294,7 @@ describe("C++ constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "models/Repo.h",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -322,8 +322,8 @@ describe("C++ variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const logCall = calls.find((c) => c.target === "log_entry");
 		expect(logCall).toBeDefined();
-		expect(logCall!.source).toBe("main");
-		expect(logCall!.targetFilePath).toBe("logger.h");
+		expect(logCall?.source).toBe("main");
+		expect(logCall?.targetFilePath).toBe("logger.h");
 	});
 });
 
@@ -345,7 +345,7 @@ describe("C++ local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/main.cpp");
+		expect(saveCall?.targetFilePath).toBe("src/main.cpp");
 	});
 
 	it("does NOT resolve save to utils.h", () => {
@@ -384,7 +384,7 @@ describe("C++ this resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("src/User.cpp");
+		expect(saveCall?.targetFilePath).toBe("src/User.cpp");
 	});
 });
 
@@ -474,7 +474,7 @@ describe("C++ scoped brace-init resolution (ns::Type{})", () => {
 			(c) => c.target === "connect" && c.targetFilePath === "models.h",
 		);
 		expect(connectCall).toBeDefined();
-		expect(connectCall!.source).toBe("run");
+		expect(connectCall?.source).toBe("run");
 	});
 
 	it("resolves client.send() via ns::HttpClient{} scoped brace-init", () => {
@@ -483,7 +483,7 @@ describe("C++ scoped brace-init resolution (ns::Type{})", () => {
 			(c) => c.target === "send" && c.targetFilePath === "models.h",
 		);
 		expect(sendCall).toBeDefined();
-		expect(sendCall!.source).toBe("run");
+		expect(sendCall?.source).toBe("run");
 	});
 });
 
@@ -973,13 +973,13 @@ describe("Field type resolution (C++)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.isReadonly).toBe(false);
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.isReadonly).toBe(false);
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
+		expect(addr?.properties.visibility).toBe("public");
 	});
 });
 
@@ -1535,8 +1535,8 @@ describe("C++ const-qualified method overload disambiguation", () => {
 		const callConst = methods.find((m) => m.name === "callConst");
 		expect(callNonConst).toBeDefined();
 		expect(callConst).toBeDefined();
-		expect(callNonConst!.properties.isConst).toBeFalsy();
-		expect(callConst!.properties.isConst).toBe(true);
+		expect(callNonConst?.properties.isConst).toBeFalsy();
+		expect(callConst?.properties.isConst).toBe(true);
 	});
 });
 
@@ -1730,8 +1730,8 @@ describe("C++ template specialization disambiguation across files", () => {
 			);
 			expect(sourceOwnerEdge).toBeDefined();
 			expect(targetOwnerEdge).toBeDefined();
-			expect(sourceOwnerEdge!.rel.sourceId).toBe(targetOwnerEdge!.rel.sourceId);
-			const ownerNode = result.graph.getNode(sourceOwnerEdge!.rel.sourceId);
+			expect(sourceOwnerEdge?.rel.sourceId).toBe(targetOwnerEdge?.rel.sourceId);
+			const ownerNode = result.graph.getNode(sourceOwnerEdge?.rel.sourceId);
 			const fp = ownerNode?.properties.templateArguments?.join(",");
 			if (fp) ownerFingerprints.add(fp);
 		}
@@ -1747,7 +1747,7 @@ describe("C++ template specialization disambiguation across files", () => {
 			(e) => e.rel.targetId === persistUserCalls[0].rel.sourceId,
 		);
 		expect(userSaveOwner).toBeDefined();
-		const userOwnerNode = result.graph.getNode(userSaveOwner!.rel.sourceId);
+		const userOwnerNode = result.graph.getNode(userSaveOwner?.rel.sourceId);
 		expect(userOwnerNode?.properties.templateArguments).toEqual(["User"]);
 
 		const persistOrderCalls = calls.filter((c) => c.target === "persistOrder");
@@ -1756,7 +1756,7 @@ describe("C++ template specialization disambiguation across files", () => {
 			(e) => e.rel.targetId === persistOrderCalls[0].rel.sourceId,
 		);
 		expect(orderSaveOwner).toBeDefined();
-		const orderOwnerNode = result.graph.getNode(orderSaveOwner!.rel.sourceId);
+		const orderOwnerNode = result.graph.getNode(orderSaveOwner?.rel.sourceId);
 		expect(orderOwnerNode?.properties.templateArguments).toEqual(["Order"]);
 	});
 
@@ -1771,10 +1771,10 @@ describe("C++ template specialization disambiguation across files", () => {
 		expect(edge).toBeDefined();
 
 		const ownerEdge = getRelationships(result, "HAS_METHOD").find(
-			(e) => e.rel.targetId === edge!.rel.targetId,
+			(e) => e.rel.targetId === edge?.rel.targetId,
 		);
 		expect(ownerEdge).toBeDefined();
-		const ownerNode = result.graph.getNode(ownerEdge!.rel.sourceId);
+		const ownerNode = result.graph.getNode(ownerEdge?.rel.sourceId);
 		expect(ownerNode?.properties.templateArguments).toEqual(["User"]);
 	});
 });
@@ -1880,7 +1880,7 @@ describe("C++ Child extends Parent — inherited method resolution (SM-9)", () =
 			(c) => c.target === "parentMethod" && c.targetFilePath.includes("Parent.h"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });
 
@@ -1917,7 +1917,7 @@ describe("C++ Derived : A, B — diamond inheritance via leftmost-base MRO (SM-1
 			(c) => c.target === "method" && c.targetFilePath.includes("Base.h"),
 		);
 		expect(methodCall).toBeDefined();
-		expect(methodCall!.source).toBe("run");
+		expect(methodCall?.source).toBe("run");
 	});
 });
 

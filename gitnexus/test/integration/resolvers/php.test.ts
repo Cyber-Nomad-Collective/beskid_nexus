@@ -2,7 +2,7 @@
  * PHP: PSR-4 imports, extends, implements, trait use, enums, calls + ambiguous disambiguation
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect } from "vitest";
 import {
 	CROSS_FILE_FIXTURES,
@@ -157,7 +157,7 @@ describe("PHP heritage & import resolution", () => {
 		for (const edge of overrides) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.label).not.toBe("Property");
+			expect(target?.label).not.toBe("Property");
 		}
 	});
 
@@ -181,7 +181,7 @@ describe("PHP heritage & import resolution", () => {
 		for (const edge of [...extends_, ...implements_]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -237,7 +237,7 @@ describe("PHP ambiguous symbol resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -280,8 +280,8 @@ describe("PHP member-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
-		expect(saveCall!.targetFilePath).toBe("app/Models/User.php");
+		expect(saveCall?.source).toBe("processUser");
+		expect(saveCall?.targetFilePath).toBe("app/Models/User.php");
 	});
 
 	it("detects User class and save method", () => {
@@ -316,17 +316,17 @@ describe("PHP constructor-call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const ctorCall = calls.find((c) => c.target === "User");
 		expect(ctorCall).toBeDefined();
-		expect(ctorCall!.source).toBe("processUser");
-		expect(ctorCall!.targetLabel).toBe("Class");
-		expect(ctorCall!.targetFilePath).toBe("Models/User.php");
-		expect(ctorCall!.rel.reason).toBe("import-resolved");
+		expect(ctorCall?.source).toBe("processUser");
+		expect(ctorCall?.targetLabel).toBe("Class");
+		expect(ctorCall?.targetFilePath).toBe("Models/User.php");
+		expect(ctorCall?.rel.reason).toBe("import-resolved");
 	});
 
 	it("also resolves $user->save() as a member call", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("processUser");
+		expect(saveCall?.source).toBe("processUser");
 	});
 
 	it("detects User class, __construct method, and save method", () => {
@@ -373,8 +373,8 @@ describe("PHP receiver-constrained resolution", () => {
 
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
-		expect(repoSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 });
 
@@ -404,14 +404,14 @@ describe("PHP alias import resolution", () => {
 		const persistCall = calls.find((c) => c.target === "persist");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("run");
-		expect(saveCall!.targetLabel).toBe("Method");
-		expect(saveCall!.targetFilePath).toBe("app/Models/User.php");
+		expect(saveCall?.source).toBe("run");
+		expect(saveCall?.targetLabel).toBe("Method");
+		expect(saveCall?.targetFilePath).toBe("app/Models/User.php");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("run");
-		expect(persistCall!.targetLabel).toBe("Method");
-		expect(persistCall!.targetFilePath).toBe("app/Models/Repo.php");
+		expect(persistCall?.source).toBe("run");
+		expect(persistCall?.targetLabel).toBe("Method");
+		expect(persistCall?.targetFilePath).toBe("app/Models/Repo.php");
 	});
 
 	it("emits exactly 2 IMPORTS edges via alias resolution", () => {
@@ -447,8 +447,8 @@ describe("PHP grouped import with alias", () => {
 		const persistCall = calls.find((c) => c.target === "persist");
 
 		expect(persistCall).toBeDefined();
-		expect(persistCall!.source).toBe("run");
-		expect(persistCall!.targetFilePath).toBe("app/Models/Repo.php");
+		expect(persistCall?.source).toBe("run");
+		expect(persistCall?.targetFilePath).toBe("app/Models/Repo.php");
 	});
 
 	it("resolves $u->save() to User.php via grouped import", () => {
@@ -456,8 +456,8 @@ describe("PHP grouped import with alias", () => {
 		const saveCall = calls.find((c) => c.target === "save");
 
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.source).toBe("run");
-		expect(saveCall!.targetFilePath).toBe("app/Models/User.php");
+		expect(saveCall?.source).toBe("run");
+		expect(saveCall?.targetFilePath).toBe("app/Models/User.php");
 	});
 
 	it("resolves non-aliased User via NamedImportMap (not just the aliased Repo)", () => {
@@ -469,8 +469,8 @@ describe("PHP grouped import with alias", () => {
 		);
 		expect(saveCall).toBeDefined();
 		expect(persistCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("app/Models/User.php");
-		expect(persistCall!.targetFilePath).toBe("app/Models/Repo.php");
+		expect(saveCall?.targetFilePath).toBe("app/Models/User.php");
+		expect(persistCall?.targetFilePath).toBe("app/Models/Repo.php");
 	});
 });
 
@@ -492,8 +492,8 @@ describe("PHP variadic call resolution", () => {
 		const calls = getRelationships(result, "CALLS");
 		const recordCall = calls.find((c) => c.target === "record");
 		expect(recordCall).toBeDefined();
-		expect(recordCall!.source).toBe("run");
-		expect(recordCall!.targetFilePath).toBe("app/Utils/Logger.php");
+		expect(recordCall?.source).toBe("run");
+		expect(recordCall?.targetFilePath).toBe("app/Utils/Logger.php");
 	});
 
 	it("detects Logger class and record method", () => {
@@ -700,7 +700,7 @@ describe("PHP local definition shadows import", () => {
 		const calls = getRelationships(result, "CALLS");
 		const saveCall = calls.find((c) => c.target === "save" && c.source === "run");
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("app/Services/Main.php");
+		expect(saveCall?.targetFilePath).toBe("app/Services/Main.php");
 	});
 
 	it("does NOT resolve save to Logger.php", () => {
@@ -742,7 +742,7 @@ describe("PHP constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "app/Models/User.php",
 		);
 		expect(userSave).toBeDefined();
-		expect(userSave!.source).toBe("processEntities");
+		expect(userSave?.source).toBe("processEntities");
 	});
 
 	it("resolves $repo->save() to app/Models/Repo.php via constructor-inferred type", () => {
@@ -751,7 +751,7 @@ describe("PHP constructor-inferred type resolution", () => {
 			(c) => c.target === "save" && c.targetFilePath === "app/Models/Repo.php",
 		);
 		expect(repoSave).toBeDefined();
-		expect(repoSave!.source).toBe("processEntities");
+		expect(repoSave?.source).toBe("processEntities");
 	});
 
 	it("emits exactly 2 save() CALLS edges (one per receiver type)", () => {
@@ -789,7 +789,7 @@ describe("PHP $this resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("app/Models/User.php");
+		expect(saveCall?.targetFilePath).toBe("app/Models/User.php");
 	});
 });
 
@@ -833,7 +833,7 @@ describe("PHP parent class resolution", () => {
 		]) {
 			const target = result.graph.getNode(edge.rel.targetId);
 			expect(target).toBeDefined();
-			expect(target!.properties.name).toBe(edge.target);
+			expect(target?.properties.name).toBe(edge.target);
 		}
 	});
 });
@@ -943,7 +943,7 @@ describe("PHP typed class property resolution", () => {
 			(c) => c.target === "save" && c.source === "process",
 		);
 		expect(saveCall).toBeDefined();
-		expect(saveCall!.targetFilePath).toBe("app/Models/UserRepo.php");
+		expect(saveCall?.targetFilePath).toBe("app/Models/UserRepo.php");
 	});
 });
 
@@ -1306,7 +1306,7 @@ describe("PHP assignment chain propagation", () => {
 		);
 		expect(userSave).toBeDefined();
 		expect(repoSave).toBeDefined();
-		expect(userSave!.targetFilePath).not.toBe(repoSave!.targetFilePath);
+		expect(userSave?.targetFilePath).not.toBe(repoSave?.targetFilePath);
 	});
 });
 
@@ -1562,14 +1562,14 @@ describe("Field type resolution (PHP)", () => {
 
 		const city = properties.find((p) => p.name === "city");
 		expect(city).toBeDefined();
-		expect(city!.properties.visibility).toBe("public");
-		expect(city!.properties.isStatic).toBe(false);
-		expect(city!.properties.declaredType).toBe("string");
+		expect(city?.properties.visibility).toBe("public");
+		expect(city?.properties.isStatic).toBe(false);
+		expect(city?.properties.declaredType).toBe("string");
 
 		const addr = properties.find((p) => p.name === "address");
 		expect(addr).toBeDefined();
-		expect(addr!.properties.visibility).toBe("public");
-		expect(addr!.properties.declaredType).toBe("Address");
+		expect(addr?.properties.visibility).toBe("public");
+		expect(addr?.properties.declaredType).toBe("Address");
 	});
 });
 
@@ -1724,11 +1724,11 @@ describe("Write access tracking (PHP)", () => {
 		const addressWrite = writes.find((e) => e.target === "address");
 		const countWrite = writes.find((e) => e.target === "count");
 		expect(nameWrite).toBeDefined();
-		expect(nameWrite!.source).toBe("updateUser");
+		expect(nameWrite?.source).toBe("updateUser");
 		expect(addressWrite).toBeDefined();
-		expect(addressWrite!.source).toBe("updateUser");
+		expect(addressWrite?.source).toBe("updateUser");
 		expect(countWrite).toBeDefined();
-		expect(countWrite!.source).toBe("updateUser");
+		expect(countWrite?.source).toBe("updateUser");
 	});
 
 	it("emits ACCESSES write edge for static property assignment", () => {
@@ -1736,7 +1736,7 @@ describe("Write access tracking (PHP)", () => {
 		const writes = accesses.filter((e) => e.rel.reason === "write");
 		const countWrite = writes.find((e) => e.target === "count");
 		expect(countWrite).toBeDefined();
-		expect(countWrite!.source).toBe("updateUser");
+		expect(countWrite?.source).toBe("updateUser");
 	});
 
 	it("write ACCESSES edges have confidence 1.0", () => {
@@ -2283,7 +2283,7 @@ describe("PHP Child extends ParentClass — inherited method resolution (SM-9)",
 				c.target === "parentMethod" && c.targetFilePath.includes("Parent.php"),
 		);
 		expect(parentMethodCall).toBeDefined();
-		expect(parentMethodCall!.source).toBe("run");
+		expect(parentMethodCall?.source).toBe("run");
 	});
 });
 

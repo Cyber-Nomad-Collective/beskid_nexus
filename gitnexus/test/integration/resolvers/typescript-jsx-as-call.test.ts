@@ -22,7 +22,7 @@
  *   - HOF + JSX `const F = () => <X/>` — hof-jsx.tsx (combined-fix probe)
  */
 
-import path from "path";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	edgeSet,

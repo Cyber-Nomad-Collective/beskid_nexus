@@ -99,7 +99,7 @@ export function generateProcessMermaid(process: ProcessData): string {
 
 	if (useClusters) {
 		// Generate subgraphs for each cluster
-		let clusterIndex = 0;
+		let _clusterIndex = 0;
 
 		for (const [clusterName, clusterSteps] of clusterGroups) {
 			lines.push(
@@ -116,7 +116,7 @@ export function generateProcessMermaid(process: ProcessData): string {
 				);
 			}
 			lines.push("  end");
-			clusterIndex++;
+			_clusterIndex++;
 		}
 
 		// Add unclustered steps

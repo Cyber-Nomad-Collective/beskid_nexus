@@ -165,8 +165,8 @@ describe("syncGroup", () => {
 			resolveRepoHandle: async (_name, groupPath) => ({
 				id: groupPath,
 				path: groupPath,
-				repoPath: "/tmp/" + groupPath,
-				storagePath: "/tmp/" + groupPath + "/.gitnexus",
+				repoPath: `/tmp/${groupPath}`,
+				storagePath: `/tmp/${groupPath}/.gitnexus`,
 			}),
 			skipWrite: true,
 		});
@@ -201,8 +201,8 @@ describe("syncGroup", () => {
 				resolveRepoHandle: async (_name, groupPath) => ({
 					id: groupPath.replace(/\//g, "-"),
 					path: groupPath,
-					repoPath: "/tmp/" + groupPath,
-					storagePath: "/tmp/" + groupPath + "/.gitnexus",
+					repoPath: `/tmp/${groupPath}`,
+					storagePath: `/tmp/${groupPath}/.gitnexus`,
 				}),
 				skipWrite: true,
 			}).catch(() => {});

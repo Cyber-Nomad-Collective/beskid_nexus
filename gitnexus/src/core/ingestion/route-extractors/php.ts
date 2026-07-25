@@ -10,7 +10,7 @@ export function phpFileToRouteURL(filePath: string): string | null {
 	// Only match files in api/ directory
 	const apiMatch = normalized.match(/^(api\/.+?)\.php$/);
 	if (apiMatch) {
-		const fileName = normalized.split("/").pop()!.replace(".php", "");
+		const fileName = normalized.split("/").pop()?.replace(".php", "");
 		// Skip non-handler files — use word-boundary matching to avoid false negatives
 		// on names like "contest", "attestation", "base64_encode"
 		if (
@@ -21,7 +21,7 @@ export function phpFileToRouteURL(filePath: string): string | null {
 		) {
 			return null;
 		}
-		return "/" + apiMatch[1];
+		return `/${apiMatch[1]}`;
 	}
 
 	return null;

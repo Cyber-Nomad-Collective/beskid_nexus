@@ -44,7 +44,7 @@ export function loadPhpComposerConfig(repoPath: string): ComposerConfig | null {
 		if (typeof parsed !== "object" || parsed === null) return null;
 
 		const composer = parsed as Record<string, unknown>;
-		const autoload = composer["autoload"] as Record<string, unknown> | undefined;
+		const autoload = composer.autoload as Record<string, unknown> | undefined;
 		if (autoload === undefined) return null;
 
 		const psr4Raw = (autoload["psr-4"] ?? {}) as Record<

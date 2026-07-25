@@ -1023,8 +1023,8 @@ describe("proto-aware source scanners", () => {
 
 		const goProvider = contracts.find((c) => c.meta.source === "go_register");
 		expect(goProvider).toBeDefined();
-		expect(goProvider!.contractId).toBe("grpc::com.example.UserService/*");
-		expect(goProvider!.confidence).toBe(0.8);
+		expect(goProvider?.contractId).toBe("grpc::com.example.UserService/*");
+		expect(goProvider?.confidence).toBe(0.8);
 	});
 
 	it("test_go_provider_without_proto_reduced_confidence", async () => {
@@ -1038,8 +1038,8 @@ describe("proto-aware source scanners", () => {
 
 		const goProvider = contracts.find((c) => c.meta.source === "go_register");
 		expect(goProvider).toBeDefined();
-		expect(goProvider!.contractId).toBe("grpc::Foo/*");
-		expect(goProvider!.confidence).toBe(0.65);
+		expect(goProvider?.contractId).toBe("grpc::Foo/*");
+		expect(goProvider?.confidence).toBe(0.65);
 	});
 
 	it("test_go_consumer_with_proto_uses_canonical_service_id", async () => {
@@ -1058,8 +1058,8 @@ describe("proto-aware source scanners", () => {
 
 		const goConsumer = contracts.find((c) => c.meta.source === "go_client");
 		expect(goConsumer).toBeDefined();
-		expect(goConsumer!.contractId).toBe("grpc::com.example.UserService/*");
-		expect(goConsumer!.confidence).toBe(0.75);
+		expect(goConsumer?.contractId).toBe("grpc::com.example.UserService/*");
+		expect(goConsumer?.confidence).toBe(0.75);
 	});
 
 	it("test_java_provider_with_proto_uses_canonical_service_id", async () => {
@@ -1086,8 +1086,8 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 			(c) => c.meta.source === "java_grpc_service",
 		);
 		expect(javaProvider).toBeDefined();
-		expect(javaProvider!.contractId).toBe("grpc::com.example.UserService/*");
-		expect(javaProvider!.confidence).toBe(0.8);
+		expect(javaProvider?.contractId).toBe("grpc::com.example.UserService/*");
+		expect(javaProvider?.confidence).toBe(0.8);
 	});
 
 	it("test_python_consumer_with_proto_uses_canonical_service_id", async () => {
@@ -1107,8 +1107,8 @@ stub = UserServiceStub(channel)`,
 
 		const pyConsumer = contracts.find((c) => c.meta.source === "python_stub");
 		expect(pyConsumer).toBeDefined();
-		expect(pyConsumer!.contractId).toBe("grpc::com.example.UserService/*");
-		expect(pyConsumer!.confidence).toBe(0.75);
+		expect(pyConsumer?.contractId).toBe("grpc::com.example.UserService/*");
+		expect(pyConsumer?.confidence).toBe(0.75);
 	});
 
 	it("test_ts_provider_with_proto_adds_package", async () => {
@@ -1127,8 +1127,8 @@ stub = UserServiceStub(channel)`,
 
 		const tsProvider = contracts.find((c) => c.meta.source === "ts_grpc_method");
 		expect(tsProvider).toBeDefined();
-		expect(tsProvider!.contractId).toBe("grpc::com.example.UserService/GetUser");
-		expect(tsProvider!.confidence).toBe(0.8);
+		expect(tsProvider?.contractId).toBe("grpc::com.example.UserService/GetUser");
+		expect(tsProvider?.confidence).toBe(0.8);
 	});
 
 	it("test_proto_provider_inherits_package_from_imported_definition", async () => {
@@ -1153,6 +1153,6 @@ service AuthService {
 			(c) => c.symbolRef.filePath === "proto/services/auth.proto",
 		);
 		expect(protoProvider).toBeDefined();
-		expect(protoProvider!.contractId).toBe("grpc::auth.v1.AuthService/Login");
+		expect(protoProvider?.contractId).toBe("grpc::auth.v1.AuthService/Login");
 	});
 });

@@ -11,12 +11,12 @@
  * Accepts status === null (timeout) as valid on slow CI runners.
  */
 
-import { spawnSync } from "child_process";
-import fs from "fs";
-import { createRequire } from "module";
-import os from "os";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));

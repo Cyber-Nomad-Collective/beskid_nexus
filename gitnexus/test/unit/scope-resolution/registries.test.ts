@@ -160,7 +160,7 @@ describe("Step 1: lexical scope-chain walk", () => {
 		const results = registry.lookup("User", "scope:m");
 
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(userClass);
+		expect(results[0]?.def).toBe(userClass);
 		expect(evidenceOfKind(results[0]!, "local")?.weight).toBe(
 			EvidenceWeights.local,
 		);
@@ -182,7 +182,7 @@ describe("Step 1: lexical scope-chain walk", () => {
 		const ctx = makeCtx([mod, fn], [userClass]);
 		const results = buildClassRegistry(ctx).lookup("User", "scope:f");
 
-		expect(results[0]!.def).toBe(userClass);
+		expect(results[0]?.def).toBe(userClass);
 		const scopeChain = evidenceOfKind(results[0]!, "scope-chain");
 		expect(scopeChain?.weight).toBe(EvidenceWeights.scopeChainPerDepth * 1);
 	});
@@ -256,7 +256,7 @@ describe("Step 5: arity filter", () => {
 			callsite: { arity: 1 },
 		});
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def.nodeId).toBe("def:save-one");
+		expect(results[0]?.def.nodeId).toBe("def:save-one");
 		expect(evidenceOfKind(results[0]!, "arity-match")?.weight).toBe(
 			EvidenceWeights.arityMatchCompatible,
 		);
@@ -358,7 +358,7 @@ describe("Step 6: global-qualified fallback", () => {
 		const ctx = makeCtx([mod], [cls]);
 		const results = buildClassRegistry(ctx).lookup("app.User", "scope:m");
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(cls);
+		expect(results[0]?.def).toBe(cls);
 		expect(evidenceOfKind(results[0]!, "global-qualified")?.weight).toBe(
 			EvidenceWeights.globalQualified,
 		);
@@ -379,7 +379,7 @@ describe("Step 6: global-qualified fallback", () => {
 		const ctx = makeCtx([mod], [localCls, globalCls]);
 		const results = buildClassRegistry(ctx).lookup("User", "scope:m");
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(localCls);
+		expect(results[0]?.def).toBe(localCls);
 	});
 
 	it("does NOT apply the global fallback for non-dotted names", () => {
@@ -418,7 +418,7 @@ describe("Step 7: tie-break cascade", () => {
 		const results = buildClassRegistry(ctx).lookup("User", "scope:f");
 
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(nearClass);
+		expect(results[0]?.def).toBe(nearClass);
 	});
 
 	it("orders multiple same-scope candidates by confidence DESC", () => {
@@ -440,9 +440,9 @@ describe("Step 7: tie-break cascade", () => {
 		const ctx = makeCtx([mod], [localClass, wildcardClass]);
 		const results = buildClassRegistry(ctx).lookup("User", "scope:m");
 		expect(results).toHaveLength(2);
-		expect(results[0]!.def).toBe(localClass); // local (0.55) > wildcard (0.30)
-		expect(results[1]!.def).toBe(wildcardClass);
-		expect(results[0]!.confidence).toBeGreaterThan(results[1]!.confidence);
+		expect(results[0]?.def).toBe(localClass); // local (0.55) > wildcard (0.30)
+		expect(results[1]?.def).toBe(wildcardClass);
+		expect(results[0]?.confidence).toBeGreaterThan(results[1]?.confidence);
 	});
 
 	it("breaks ties by DefId.localeCompare when all secondary keys are equal", () => {
@@ -455,8 +455,8 @@ describe("Step 7: tie-break cascade", () => {
 		});
 		const ctx = makeCtx([mod], [a, b]);
 		const results = buildClassRegistry(ctx).lookup("User", "scope:m");
-		expect(results[0]!.def.nodeId).toBe("def:aaa");
-		expect(results[1]!.def.nodeId).toBe("def:bbb");
+		expect(results[0]?.def.nodeId).toBe("def:aaa");
+		expect(results[1]?.def.nodeId).toBe("def:bbb");
 	});
 });
 
@@ -561,7 +561,7 @@ describe("lookupQualified (§4.5)", () => {
 			ctx,
 		);
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(cls);
+		expect(results[0]?.def).toBe(cls);
 	});
 
 	it("returns empty for unknown qualified names", () => {
@@ -616,7 +616,7 @@ describe("Step 3: owner-scoped contributor", () => {
 			},
 		});
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(saveMethod);
+		expect(results[0]?.def).toBe(saveMethod);
 		expect(evidenceOfKind(results[0]!, "local")?.weight).toBe(
 			EvidenceWeights.local,
 		);
@@ -651,7 +651,7 @@ describe("Step 2: type-binding + MRO walk", () => {
 			explicitReceiver: { name: "user" },
 		});
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(saveMethod);
+		expect(results[0]?.def).toBe(saveMethod);
 		const typeBinding = evidenceOfKind(results[0]!, "type-binding");
 		expect(typeBinding?.weight).toBe(EvidenceWeights.typeBindingByMroDepth[0]);
 	});
@@ -698,8 +698,8 @@ describe("Step 2: type-binding + MRO walk", () => {
 		});
 		expect(results).toHaveLength(2);
 		// DefId.localeCompare: 'def:aaa.impl' < 'def:bbb.impl'.
-		expect(results[0]!.def).toBe(implA);
-		expect(results[1]!.def).toBe(implB);
+		expect(results[0]?.def).toBe(implA);
+		expect(results[1]?.def).toBe(implB);
 		// Demotion invariant: Step-2-only candidates have no `signals.origin`,
 		// so composeEvidence never emits a where-found signal for them.
 		for (const res of results) {
@@ -738,7 +738,7 @@ describe("Step 2: type-binding + MRO walk", () => {
 			explicitReceiver: { name: "d" },
 		});
 		expect(results).toHaveLength(1);
-		expect(results[0]!.def).toBe(saveOnBase);
+		expect(results[0]?.def).toBe(saveOnBase);
 		// MRO depth for Base when receiver is Derived = 1.
 		expect(evidenceOfKind(results[0]!, "type-binding")?.weight).toBe(
 			EvidenceWeights.typeBindingByMroDepth[1],
@@ -758,9 +758,9 @@ describe("§4.7 invariants", () => {
 		});
 		const ctx = makeCtx([mod], [cls]);
 		const results = buildClassRegistry(ctx).lookup("X", "scope:m");
-		expect(typeof results[0]!.confidence).toBe("number");
-		expect(results[0]!.confidence).toBeGreaterThan(0);
-		expect(results[0]!.confidence).toBeLessThanOrEqual(1);
+		expect(typeof results[0]?.confidence).toBe("number");
+		expect(results[0]?.confidence).toBeGreaterThan(0);
+		expect(results[0]?.confidence).toBeLessThanOrEqual(1);
 	});
 
 	it("Resolution confidence is capped at 1.0", () => {
@@ -779,7 +779,7 @@ describe("§4.7 invariants", () => {
 		});
 		const ctx = makeCtx([mod], [cls], { arity: () => "compatible" });
 		const results = buildClassRegistry(ctx).lookup("X", "scope:m");
-		expect(results[0]!.confidence).toBeLessThanOrEqual(1);
+		expect(results[0]?.confidence).toBeLessThanOrEqual(1);
 	});
 
 	it("kind-match evidence is always present (weight 0) for debuggability", () => {
@@ -792,7 +792,7 @@ describe("§4.7 invariants", () => {
 		const ctx = makeCtx([mod], [cls]);
 		const results = buildClassRegistry(ctx).lookup("X", "scope:m");
 		expect(evidenceOfKind(results[0]!, "kind-match")).toBeDefined();
-		expect(evidenceOfKind(results[0]!, "kind-match")!.weight).toBe(0);
+		expect(evidenceOfKind(results[0]!, "kind-match")?.weight).toBe(0);
 	});
 
 	it("caller can read [0] for one-shot answers", () => {
@@ -804,7 +804,7 @@ describe("§4.7 invariants", () => {
 		});
 		const ctx = makeCtx([mod], [cls]);
 		const results = buildClassRegistry(ctx).lookup("X", "scope:m");
-		expect(results[0]!.def).toBe(cls);
+		expect(results[0]?.def).toBe(cls);
 	});
 });
 

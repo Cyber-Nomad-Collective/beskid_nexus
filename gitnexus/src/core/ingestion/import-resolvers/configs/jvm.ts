@@ -100,7 +100,7 @@ export const kotlinJvmStrategy: ImportResolverStrategy = (
 			lastSeg[0] &&
 			lastSeg[0] === lastSeg[0].toLowerCase()
 		) {
-			const pkgWildcard = segments.slice(0, -1).join(".") + ".*";
+			const pkgWildcard = `${segments.slice(0, -1).join(".")}.*`;
 			let dirFiles = resolveJvmWildcard(
 				pkgWildcard,
 				ctx.normalizedFileList,

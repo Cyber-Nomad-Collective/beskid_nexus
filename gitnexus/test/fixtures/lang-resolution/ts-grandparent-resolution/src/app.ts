@@ -1,6 +1,6 @@
 import { C } from "./derived";
 
-function process() {
+function _process() {
 	const c = new C();
 	c.greet().save();
 }

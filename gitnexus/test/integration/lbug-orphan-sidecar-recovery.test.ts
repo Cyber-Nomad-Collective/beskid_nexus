@@ -10,8 +10,8 @@
  * `lbug-checkpoint-lifecycle.test.ts` with a real-filesystem,
  * real-LadybugDB integration proof required by DoD §2.7.
  */
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createTempDir } from "../helpers/test-db.js";
 
