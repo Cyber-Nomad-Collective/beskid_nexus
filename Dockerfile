@@ -17,7 +17,13 @@ WORKDIR /src/beskid_nexus
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates wget libgomp1 libatomic1 \
   && rm -rf /var/lib/apt/lists/*
-RUN npm install -g pnpm@10.17.1
+# The gitnexus build contract invokes Bun for the shared package, auth client,
+# and bundled web UI. Keep both pinned package managers in the builder so the
+# immutable image reproduces the repository build without relying on a runner
+# preinstall.
+RUN npm install -g pnpm@10.17.1 bun@1.3.14 \
+  && pnpm --version \
+  && bun --version
 
 # CI uses workspace file: links — no BuildKit secret mounts needed.
 
