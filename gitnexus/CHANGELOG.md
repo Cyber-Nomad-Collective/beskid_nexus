@@ -6,6 +6,8 @@ All notable changes to GitNexus will be documented in this file.
 
 ### Fixed
 
+- Declare `path-scurry` and `graphology-types` as direct GitNexus runtime
+  dependencies so the isolated image TypeScript build has its imported modules.
 - Restore the WikiGenerator storage-path field so the Nexus package TypeScript
   build succeeds.
 - Package the canonical OpenSpec catalog as an explicit read-only BuildKit
