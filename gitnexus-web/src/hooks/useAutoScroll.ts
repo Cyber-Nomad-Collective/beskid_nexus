@@ -23,8 +23,8 @@ function isNearBottom(element: HTMLElement, threshold: number): boolean {
 }
 
 export function useAutoScroll<T>(
-	_chatMessages: T[],
-	_isChatLoading: boolean,
+	chatMessages: T[],
+	isChatLoading: boolean,
 	bottomThreshold = DEFAULT_BOTTOM_THRESHOLD,
 ): UseAutoScrollResult {
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -140,12 +140,12 @@ export function useAutoScroll<T>(
 				resizeFrameId = null;
 			}
 		};
-	}, [scrollToBottom, syncScrollState]);
+	}, [chatMessages.length, scrollToBottom, syncScrollState]);
 
 	useLayoutEffect(() => {
 		if (!shouldStickToBottomRef.current) return;
 		scrollToBottom("auto");
-	}, [scrollToBottom]);
+	}, [chatMessages.length, isChatLoading, scrollToBottom]);
 
 	return {
 		scrollContainerRef,

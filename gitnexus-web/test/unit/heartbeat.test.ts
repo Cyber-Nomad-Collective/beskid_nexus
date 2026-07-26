@@ -21,7 +21,7 @@ beforeEach(() => {
 	// declaration here. The production code calls `new EventSource(...)`.
 	vi.stubGlobal(
 		"EventSource",
-		vi.fn().mockImplementation(() => {
+		vi.fn().mockImplementation(function () {
 			lastEventSource = new MockEventSource();
 			return lastEventSource;
 		}),
