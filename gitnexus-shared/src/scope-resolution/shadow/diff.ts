@@ -114,15 +114,17 @@ function computeEvidenceDelta(
 	agreement: ShadowAgreement,
 ): readonly ResolutionEvidence[] {
 	if (agreement === "both-agree" || agreement === "both-empty") return [];
-	if (agreement === "only-legacy") return legacy?.evidence;
-	if (agreement === "only-new") return newResult?.evidence;
+	if (agreement === "only-legacy") return legacy?.evidence ?? [];
+	if (agreement === "only-new") return newResult?.evidence ?? [];
 
 	// both-disagree: symmetric difference keyed on `kind`
-	const legacyKinds = new Set(legacy?.evidence.map((e) => e.kind));
-	const newKinds = new Set(newResult?.evidence.map((e) => e.kind));
+	const legacyEvidence = legacy?.evidence ?? [];
+	const newEvidence = newResult?.evidence ?? [];
+	const legacyKinds = new Set(legacyEvidence.map((e) => e.kind));
+	const newKinds = new Set(newEvidence.map((e) => e.kind));
 
-	const onlyInLegacy = legacy?.evidence.filter((e) => !newKinds.has(e.kind));
-	const onlyInNew = newResult?.evidence.filter((e) => !legacyKinds.has(e.kind));
+	const onlyInLegacy = legacyEvidence.filter((e) => !newKinds.has(e.kind));
+	const onlyInNew = newEvidence.filter((e) => !legacyKinds.has(e.kind));
 
 	return [...onlyInLegacy, ...onlyInNew];
 }
