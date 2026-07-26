@@ -8,6 +8,8 @@ All notable changes to GitNexus will be documented in this file.
 
 - Package the canonical OpenSpec catalog as an explicit read-only BuildKit
   context and configure the deployed server to index that immutable catalog.
+- Align the standalone Nexus lockfile with its local `@beskid/auth-client`
+  dependency so immutable image installs remain frozen and reproducible.
 
 ## [1.6.5] - 2026-05-16
 
