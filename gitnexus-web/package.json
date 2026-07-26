@@ -23,6 +23,7 @@
 	"dependencies": {
 		"@beskid/beskid-ui": "file:../../beskid_web_common/packages/beskid-ui",
 		"@beskid/ui-react": "file:../../beskid_web_common/packages/beskid-ui-react",
+		"@cyber-nomad-collective/trudoc": "file:../../beskid_web_common/packages/trudoc",
 		"@sigma/edge-curve": "^3.1.0",
 		"@tailwindcss/vite": "^4.2.4",
 		"axios": "^1.16.0",
