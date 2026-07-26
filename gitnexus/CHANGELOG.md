@@ -11,9 +11,9 @@ All notable changes to GitNexus will be documented in this file.
   deployed explorer.
 - Keep graph-first E2E repository-list and repository-metadata route mocks
   disjoint so each bootstrap request receives its real contract shape.
-- Pin the bundled Nexus web UI's `trudoc` dependency to the copied local
-  shared-package source so immutable image builds never fetch a private registry
-  tarball.
+- Pin the bundled Nexus web UI's `trudoc` dependency in both Bun and pnpm locks
+  to the copied local shared-package source so immutable image builds and shared
+  frozen-install gates never fetch a private registry tarball.
 - Declare `path-scurry` and `graphology-types` as direct GitNexus runtime
   dependencies so the isolated image TypeScript build has its imported modules.
 - Restore the WikiGenerator storage-path field so the Nexus package TypeScript
