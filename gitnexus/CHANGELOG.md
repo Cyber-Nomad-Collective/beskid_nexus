@@ -6,6 +6,8 @@ All notable changes to GitNexus will be documented in this file.
 
 ### Fixed
 
+- Restore the WikiGenerator storage-path field so the Nexus package TypeScript
+  build succeeds.
 - Package the canonical OpenSpec catalog as an explicit read-only BuildKit
   context and configure the deployed server to index that immutable catalog.
 - Align the standalone Nexus lockfile with its local `@beskid/auth-client`

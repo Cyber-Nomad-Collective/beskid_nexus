@@ -100,6 +100,7 @@ const WIKI_DIR = "wiki";
 
 export class WikiGenerator {
 	private repoPath: string;
+	private storagePath: string;
 	private wikiDir: string;
 	private lbugPath: string;
 	private llmConfig: LLMConfig;
