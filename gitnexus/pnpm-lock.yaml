@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@beskid/auth-client':
-        specifier: npm:@cyber-nomad-collective/beskid-auth-client@^0.2.9
-        version: '@cyber-nomad-collective/beskid-auth-client@0.2.9'
+        specifier: file:../../beskid_web_common/packages/beskid-auth-client
+        version: file:../../beskid_web_common/packages/beskid-auth-client
       '@huggingface/transformers':
         specifier: ^4.1.0
         version: 4.2.0
@@ -199,8 +199,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@cyber-nomad-collective/beskid-auth-client@0.2.9':
-    resolution: {integrity: sha512-wsbUV78HTYS1np/HfqZAvbOiphv/z0AavxVUvQDo7RRNXolPL4IIIK8/AAPwa1vrgFOM6RaWbhy9GuQVPV5OUQ==, tarball: https://npm.pkg.github.com/download/@cyber-nomad-collective/beskid-auth-client/0.2.9/601fa820c31295ae41e6d47b03d7856de3f8a020}
+  '@beskid/auth-client@file:../../beskid_web_common/packages/beskid-auth-client':
+    resolution: {directory: ../../beskid_web_common/packages/beskid-auth-client, type: directory}
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -2184,7 +2184,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@cyber-nomad-collective/beskid-auth-client@0.2.9':
+  '@beskid/auth-client@file:../../beskid_web_common/packages/beskid-auth-client':
     dependencies:
       jose: 6.2.4
 
