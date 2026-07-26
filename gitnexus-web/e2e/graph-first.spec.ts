@@ -82,8 +82,6 @@ async function mockGraphFirstApi(page: import("@playwright/test").Page) {
 		});
 	});
 
-	// Order: `**/api/repos` registered first so Playwright matches it
-	// before the broader `**/api/repo**` on GET /api/repos requests.
 	await page.route("**/api/repos", async (route) => {
 		await route.fulfill({
 			status: 200,
@@ -95,8 +93,10 @@ async function mockGraphFirstApi(page: import("@playwright/test").Page) {
 		});
 	});
 
-	// `**/api/repo**` matches /api/repo?repo=alpha (query string included).
-	await page.route("**/api/repo**", async (route) => {
+	// Match only the singular endpoint. A glob for `/api/repo**` also captures
+	// `/api/repos`; because Playwright evaluates later routes first, that makes
+	// the repository-list response incorrectly look like repository metadata.
+	await page.route(/\/api\/repo(?:\?.*)?$/, async (route) => {
 		const url = new URL(route.request().url());
 		const repo = url.searchParams.get("repo") ?? "alpha";
 		await route.fulfill({

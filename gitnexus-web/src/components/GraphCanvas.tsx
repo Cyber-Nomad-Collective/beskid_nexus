@@ -114,25 +114,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
 		setSelectedNode(null);
 	}, [setSelectedNode]);
 
-	const handleToggleAIHighlights = useCallback(() => {
-		if (isAIHighlightsEnabled) {
-			clearAIToolHighlights();
-			clearAICitationHighlights();
-			clearBlastRadius();
-			setSelectedNode(null);
-			setSigmaSelectedNode(null);
-		}
-		toggleAIHighlights();
-	}, [
-		isAIHighlightsEnabled,
-		clearAIToolHighlights,
-		clearAICitationHighlights,
-		clearBlastRadius,
-		setSelectedNode,
-		toggleAIHighlights,
-		setSigmaSelectedNode,
-	]);
-
 	const {
 		containerRef,
 		sigmaRef,
@@ -155,6 +136,25 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
 		animatedNodes: effectiveAnimatedNodes,
 		visibleEdgeTypes,
 	});
+
+	const handleToggleAIHighlights = useCallback(() => {
+		if (isAIHighlightsEnabled) {
+			clearAIToolHighlights();
+			clearAICitationHighlights();
+			clearBlastRadius();
+			setSelectedNode(null);
+			setSigmaSelectedNode(null);
+		}
+		toggleAIHighlights();
+	}, [
+		isAIHighlightsEnabled,
+		clearAIToolHighlights,
+		clearAICitationHighlights,
+		clearBlastRadius,
+		setSelectedNode,
+		toggleAIHighlights,
+		setSigmaSelectedNode,
+	]);
 
 	// Expose focusNode to parent via ref
 	useImperativeHandle(
