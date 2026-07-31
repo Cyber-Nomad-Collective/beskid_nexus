@@ -49,7 +49,6 @@ RUN pnpm install --dir /src/beskid_web_common --frozen-lockfile
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
 RUN pnpm --dir gitnexus install --frozen-lockfile \
-  && pnpm --dir gitnexus add --save-optional @ladybugdb/core-linux-x64@0.16.1 \
   && ln -sf ../core-linux-x64/lbugjs.node gitnexus/node_modules/@ladybugdb/core/lbugjs.node \
   && pnpm --dir gitnexus build
 
