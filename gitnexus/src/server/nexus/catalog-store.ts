@@ -31,6 +31,27 @@ const withCatalogLock = async <T>(fn: () => Promise<T>): Promise<T> => {
 
 const emptyCatalog = (): NexusCatalogFile => ({ version: 1, entries: [] });
 
+export const BESKID_CATALOG_SEEDS = [
+	{
+		id: "beskid-corelib",
+		displayName: "Beskid Corelib",
+		description:
+			"The canonical Beskid standard library: core types, language primitives, and bootstrap sources.",
+		gitUrl: "https://github.com/Cyber-Nomad-Collective/beskid_standard.git",
+		defaultBranch: "main",
+		sortOrder: 10,
+	},
+	{
+		id: "beskid-runtime",
+		displayName: "Beskid Runtime",
+		description:
+			"The Beskid compiler repository containing the native runtime, runtime handlers, and host integration.",
+		gitUrl: "https://github.com/Cyber-Nomad-Collective/beskid_compiler.git",
+		defaultBranch: "main",
+		sortOrder: 20,
+	},
+] as const;
+
 export const readCatalog = async (): Promise<NexusCatalogFile> => {
 	try {
 		const raw = await fs.readFile(catalogPath(), "utf-8");
@@ -65,6 +86,47 @@ export const listCatalogEntries = async (): Promise<NexusCatalogEntry[]> => {
 		(a, b) =>
 			a.sortOrder - b.sortOrder || a.displayName.localeCompare(b.displayName),
 	);
+};
+
+/**
+ * Add the Beskid-owned Corelib and Runtime catalog entries on first boot.
+ *
+ * The catalog is persisted in GITNEXUS_HOME, so deployment images cannot
+ * safely ship a replacement catalog file. This operation is intentionally
+ * additive and matches by normalized Git URL to preserve existing admin
+ * customisations and avoid duplicate registrations.
+ */
+export const ensureBeskidCatalogEntries = async (): Promise<NexusCatalogEntry[]> => {
+	if (process.env.NEXUS_SEED_BESKID_REPOS?.trim() === "0") {
+		return listCatalogEntries();
+	}
+
+	return withCatalogLock(async () => {
+		const catalog = await readCatalog();
+		const existingUrls = new Set(
+			catalog.entries.map((entry) => normalizeGitRepoUrl(entry.gitUrl)),
+		);
+		const now = new Date().toISOString();
+		let changed = false;
+
+		for (const seed of BESKID_CATALOG_SEEDS) {
+			if (existingUrls.has(normalizeGitRepoUrl(seed.gitUrl))) continue;
+			catalog.entries.push({
+				...seed,
+				enabled: true,
+				createdAt: now,
+				updatedAt: now,
+			});
+			existingUrls.add(normalizeGitRepoUrl(seed.gitUrl));
+			changed = true;
+		}
+
+		if (changed) await writeCatalog(catalog);
+		return [...catalog.entries].sort(
+			(a, b) =>
+				a.sortOrder - b.sortOrder || a.displayName.localeCompare(b.displayName),
+		);
+	});
 };
 
 export const getCatalogEntry = async (

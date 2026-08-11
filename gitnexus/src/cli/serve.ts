@@ -1,5 +1,6 @@
 import { flushLoggerSync, logger } from "../core/logger.js";
 import { createServer } from "../server/api.js";
+import { ensureBeskidCatalogEntries } from "../server/nexus/catalog-store.js";
 import { cliError } from "./cli-message.js";
 
 // Catch anything that would cause a silent exit. Pino v10's default
@@ -35,6 +36,7 @@ export const serveCommand = async (options?: {
 	const host = options?.host ?? "localhost";
 
 	try {
+		await ensureBeskidCatalogEntries();
 		await createServer(port, host);
 	} catch (err: any) {
 		if (err.code === "EADDRINUSE") {

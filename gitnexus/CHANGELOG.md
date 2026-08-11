@@ -6,6 +6,9 @@ All notable changes to GitNexus will be documented in this file.
 
 ### Fixed
 
+- Seed the Beskid Corelib and Runtime repositories into the persistent Nexus
+  catalog on first server boot, with Git URL matching and an opt-out flag to
+  preserve existing deployment catalog customisations.
 - Initialize the Sigma selection setter before the graph canvas highlight
   callback captures it, restoring graph-first startup in browser tests and the
   deployed explorer.
