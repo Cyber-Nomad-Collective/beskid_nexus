@@ -37,6 +37,7 @@ import {
 	getOpenRouterSettingsPublic,
 	updateOpenRouterSettings,
 } from "./openrouter-settings.js";
+import { approveAuthHubPairing, type AuthAppId } from "@beskid/auth-client";
 import { getRemoteHead } from "./remote-git.js";
 import {
 	appendSetCookie,
@@ -198,6 +199,25 @@ const verifySetupToken = (req: Request): boolean => {
 	return bodyToken === expected;
 };
 
+const verifyNexusRepairToken = async (req: Request): Promise<boolean> => {
+	const header = req.headers.authorization?.replace(/^Bearer\s+/i, "");
+	if (!header) return false;
+
+	const config = await loadNexusConfigFile();
+	const expected = (
+		config?.authHubServiceToken?.trim() ||
+		config?.authHubHandoffSecret?.trim() ||
+		""
+	).trim();
+	if (!expected || expected.length !== header.length) return false;
+
+	try {
+		return timingSafeEqual(Buffer.from(header), Buffer.from(expected));
+	} catch {
+		return false;
+	}
+};
+
 export const mountNexusRoutes = (
 	app: Express,
 	deps: MountNexusRoutesDeps,
@@ -345,16 +365,34 @@ export const mountNexusRoutes = (
 
 	app.post(
 		"/api/admin/auth/pair",
-		requireAdmin,
 		createRouteLimiter({ limit: 10 }),
 		async (req, res) => {
 			try {
-				const { code, publicUrl } = req.body ?? {};
-				if (typeof code !== "string" || typeof publicUrl !== "string") {
+				const repairToken = await verifyNexusRepairToken(req);
+				const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+				const publicUrl = typeof req.body?.publicUrl === "string"
+					? req.body.publicUrl.trim()
+					: "";
+				if (!code || !publicUrl) {
 					res.status(400).json({ error: "code and publicUrl are required" });
 					return;
 				}
-				const session = (req as any).nexusSession as { login: string };
+				let approverLogin: string;
+				if (!repairToken) {
+					const session = await getSessionFromRequest(req);
+					if (!session) {
+						res.status(401).json({ error: "Not authenticated" });
+						return;
+					}
+					if (!(await isNexusAdmin(session.login))) {
+						res.status(403).json({ error: "Admin access required" });
+						return;
+					}
+					approverLogin = session.login;
+				} else {
+					approverLogin = "service-repair";
+				}
+
 				const hubBase =
 					process.env.AUTH_HUB_PUBLIC_URL?.trim() ||
 					(await loadNexusConfigFile())?.authHubUrl?.trim();
@@ -362,20 +400,30 @@ export const mountNexusRoutes = (
 					res.status(503).json({ error: "AUTH_HUB_PUBLIC_URL is not configured" });
 					return;
 				}
-				const { BeskidAuthClient } = await import("@beskid/auth-client");
-				const client = new BeskidAuthClient({ baseUrl: hubBase });
-				const result = await client.approvePairing({
-					code: code.trim(),
-					appId: "nexus",
-					publicUrl: publicUrl.trim(),
-					approverLogin: session.login,
-				});
-				const existing = (await loadNexusConfigFile()) ?? {
-					ownerLogin: session.login,
-					adminLogins: [session.login],
+				const existingConfig = await loadNexusConfigFile();
+				const existing = existingConfig ?? {
+					ownerLogin: approverLogin.toLowerCase(),
+					adminLogins: [approverLogin.toLowerCase()],
 				};
+				const result = await approveAuthHubPairing({
+					hubUrl: hubBase,
+					appId: "nexus" as AuthAppId,
+					code,
+					publicUrl,
+					approverLogin,
+				});
+				if (!result.ok) {
+					res.status(400).json({
+						error:
+							result.reason === "not_configured"
+								? "AUTH_HUB_PUBLIC_URL is not configured on this service."
+								: "Invalid pairing request",
+					});
+					return;
+				}
 				await saveNexusConfigFile({
 					...existing,
+					ownerLogin: existing.ownerLogin,
 					authHubUrl: hubBase.replace(/\/$/, ""),
 					authHubServiceToken: result.serviceToken,
 				});
