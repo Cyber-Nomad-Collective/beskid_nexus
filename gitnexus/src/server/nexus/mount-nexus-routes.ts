@@ -370,9 +370,8 @@ export const mountNexusRoutes = (
 			try {
 				const repairToken = await verifyNexusRepairToken(req);
 				const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
-				const publicUrl = typeof req.body?.publicUrl === "string"
-					? req.body.publicUrl.trim()
-					: "";
+				const publicUrl =
+					typeof req.body?.publicUrl === "string" ? req.body.publicUrl.trim() : "";
 				if (!code || !publicUrl) {
 					res.status(400).json({ error: "code and publicUrl are required" });
 					return;
@@ -412,7 +411,10 @@ export const mountNexusRoutes = (
 					publicUrl,
 					approverLogin,
 				});
-				if (!result.ok) {
+				// `result.ok === false` (not `!result.ok`) narrows the discriminated
+				// union: this project compiles with strictNullChecks off, where the
+				// truthy check does not narrow `ok: true | false` to the error variant.
+				if (result.ok === false) {
 					res.status(400).json({
 						error:
 							result.reason === "not_configured"
