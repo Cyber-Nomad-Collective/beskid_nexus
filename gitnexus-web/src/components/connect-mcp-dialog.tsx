@@ -23,7 +23,7 @@ export function ConnectMcpDialog({
 	open,
 	onOpenChange,
 	mcpUrl,
-	docsHref = "/platform-spec/tooling/nexus/contracts-and-edge-cases#mcp",
+	docsHref = "https://beskid-lang.org/docs/standard/",
 }: ConnectMcpDialogProps) {
 	const [copiedField, setCopiedField] = useState<"url" | "auth" | null>(null);
 
@@ -112,7 +112,7 @@ export function ConnectMcpDialog({
 							href={docsHref}
 							className="text-primary underline-offset-2 hover:underline"
 						>
-							Platform spec: MCP connect
+							Standard: MCP protocol notes
 						</a>
 					</p>
 				</div>

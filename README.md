@@ -8,7 +8,7 @@ Graph-first public explorer for Beskid repositories — cached knowledge graphs,
 | MCP | StreamableHTTP at `/api/mcp` via `gitnexus serve` |
 | Deploy | Docker / Coolify — [COOLIFY.md](COOLIFY.md) |
 
-Normative contracts: [platform spec — Nexus](https://beskid-lang.org/platform-spec/tooling/nexus/).
+Normative contracts: [Beskid Standard](https://beskid-lang.org/docs/standard/).
 
 ## Checkout
 

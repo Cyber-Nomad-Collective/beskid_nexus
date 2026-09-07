@@ -54,5 +54,9 @@ describe("ConnectMcpDialog", () => {
 		expect(
 			screen.getByDisplayValue("https://nexus.example/api/mcp"),
 		).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: /protocol notes/i })).toHaveAttribute(
+			"href",
+			"https://beskid-lang.org/docs/standard/",
+		);
 	});
 });

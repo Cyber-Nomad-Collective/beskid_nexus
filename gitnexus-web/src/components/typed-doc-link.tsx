@@ -33,8 +33,7 @@ export function parseTypedDocLink(
 
 export function typedDocHref(link: TypedDocLink): string {
 	if (link.kind === "spec") {
-		const [capability, requirement] = link.ref.split("#", 2);
-		return `https://spec.beskid-lang.org/platform-spec/${encodeURIComponent(capability!)}/${requirement ? `#${encodeURIComponent(requirement)}` : ""}`;
+		return "https://beskid-lang.org/docs/standard/";
 	}
 	if (link.kind === "book")
 		return `https://beskid-lang.org/book/${link.ref.replace(/^\/+|\/+$/g, "")}/`;

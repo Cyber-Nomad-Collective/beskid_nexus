@@ -18,7 +18,7 @@ describe("typed documentation links", () => {
 		expect(anchor).toHaveAttribute("data-doc-link", "spec");
 		expect(anchor).toHaveAttribute(
 			"href",
-			expect.stringContaining("tooling--nexus--design-model"),
+			"https://beskid-lang.org/docs/standard/",
 		);
 	});
 
