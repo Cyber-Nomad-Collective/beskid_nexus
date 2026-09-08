@@ -2,16 +2,6 @@
  * Beskid Nexus catalog, auth, and admin API (same-origin, session cookies).
  */
 
-export interface SetupStatus {
-	oauthConfigured: boolean;
-	authHubConfigured: boolean;
-	authHubUrl: string | null;
-	adminConfigured: boolean;
-	oauthSource: "hub" | "env" | "file" | "none";
-	hasSessionSecret: boolean;
-	hasSetupToken: boolean;
-}
-
 export interface AuthUser {
 	login: string;
 	name: string | null;
@@ -64,27 +54,8 @@ async function nexusFetch<T>(path: string, init?: RequestInit): Promise<T> {
 	return res.json() as Promise<T>;
 }
 
-export const fetchSetupStatus = (): Promise<SetupStatus> =>
-	nexusFetch<SetupStatus>("/api/admin/setup/status");
-
-export const submitAuthHubSetup = (body: {
-	authHubPublicUrl?: string;
-	pairingCode: string;
-	nexusPublicUrl: string;
-	ownerLogin: string;
-	adminLogins: string;
-	setupToken?: string;
-}): Promise<{ ok: boolean }> =>
-	nexusFetch("/api/admin/setup", {
-		method: "POST",
-		body: JSON.stringify(body),
-	});
-
 export const fetchAuthMe = (): Promise<AuthUser> =>
 	nexusFetch<AuthUser>("/api/auth/me");
-
-export const logout = (): Promise<{ ok: boolean }> =>
-	nexusFetch("/api/auth/logout", { method: "POST" });
 
 export const fetchPublicCatalog = (): Promise<PublicCatalogEntry[]> =>
 	nexusFetch<PublicCatalogEntry[]>("/api/catalog");
@@ -156,5 +127,3 @@ export const updateOpenRouterSettings = (body: {
 		method: "PATCH",
 		body: JSON.stringify(body),
 	});
-
-export const githubLoginUrl = (): string => "/api/auth/github";

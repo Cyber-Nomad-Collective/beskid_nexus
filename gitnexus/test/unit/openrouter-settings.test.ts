@@ -11,17 +11,18 @@ import {
 	getOpenRouterSettingsPublic,
 	resolveDocModel,
 } from "../../src/server/nexus/openrouter-settings.js";
-import { sealSession } from "../../src/server/nexus/session.js";
 
 describe("openrouter-settings", () => {
 	let tmpHome: string;
 	let savedGitnexusHome: string | undefined;
+	let savedAuthentikAdminGroups: string | undefined;
 	let savedOpenRouterKey: string | undefined;
 	let savedDocModel: string | undefined;
 
 	beforeEach(async () => {
 		tmpHome = await mkdtemp(path.join(tmpdir(), "nexus-or-"));
 		savedGitnexusHome = process.env.GITNEXUS_HOME;
+		savedAuthentikAdminGroups = process.env.NEXUS_AUTHENTIK_ADMIN_GROUPS;
 		savedOpenRouterKey = process.env.OPENROUTER_API_KEY;
 		savedDocModel = process.env.NEXUS_DOC_MODEL;
 		process.env.GITNEXUS_HOME = tmpHome;
@@ -33,6 +34,11 @@ describe("openrouter-settings", () => {
 		await rm(tmpHome, { recursive: true, force: true });
 		if (savedGitnexusHome === undefined) delete process.env.GITNEXUS_HOME;
 		else process.env.GITNEXUS_HOME = savedGitnexusHome;
+		if (savedAuthentikAdminGroups === undefined) {
+			delete process.env.NEXUS_AUTHENTIK_ADMIN_GROUPS;
+		} else {
+			process.env.NEXUS_AUTHENTIK_ADMIN_GROUPS = savedAuthentikAdminGroups;
+		}
 		if (savedOpenRouterKey === undefined) delete process.env.OPENROUTER_API_KEY;
 		else process.env.OPENROUTER_API_KEY = savedOpenRouterKey;
 		if (savedDocModel === undefined) delete process.env.NEXUS_DOC_MODEL;
@@ -83,33 +89,19 @@ describe("openrouter admin settings routes", () => {
 	let tmpHome: string;
 	let server: Server;
 	let baseUrl: string;
-	let savedSessionSecret: string | undefined;
 	let savedGitnexusHome: string | undefined;
 	const jobManager = new JobManager();
 
-	const adminSession = {
-		login: "nexus-admin",
-		name: "Admin",
-		avatarUrl: "https://avatars.example/admin",
-		hubUserToken: "hub-token",
-		hubSessionId: "sess-admin",
-	};
 
 	beforeEach(async () => {
 		tmpHome = await mkdtemp(path.join(tmpdir(), "nexus-or-routes-"));
 		savedGitnexusHome = process.env.GITNEXUS_HOME;
-		savedSessionSecret = process.env.SESSION_SECRET;
 		process.env.GITNEXUS_HOME = tmpHome;
-		process.env.SESSION_SECRET = "test-session-secret-at-least-32-chars!!";
+		process.env.NEXUS_AUTHENTIK_ADMIN_GROUPS = "nexus-admin";
 
 		await writeFile(
 			path.join(tmpHome, "nexus-config.json"),
-			JSON.stringify({
-				ownerLogin: "nexus-admin",
-				adminLogins: ["nexus-admin"],
-				authHubUrl: "https://auth.example",
-				authHubServiceToken: "a".repeat(32),
-			}),
+			JSON.stringify({}),
 			"utf-8",
 		);
 
@@ -136,15 +128,13 @@ describe("openrouter admin settings routes", () => {
 		await rm(tmpHome, { recursive: true, force: true });
 		if (savedGitnexusHome === undefined) delete process.env.GITNEXUS_HOME;
 		else process.env.GITNEXUS_HOME = savedGitnexusHome;
-		if (savedSessionSecret === undefined) delete process.env.SESSION_SECRET;
-		else process.env.SESSION_SECRET = savedSessionSecret;
 		vi.clearAllMocks();
 	});
 
-	async function authCookie(login = adminSession.login): Promise<string> {
-		const token = await sealSession({ ...adminSession, login });
-		return `beskid_nexus_session=${encodeURIComponent(token)}`;
-	}
+	const authentikHeaders = (groups = "nexus-admin") => ({
+		"X-Authentik-Username": "nexus-admin",
+		"X-Authentik-Groups": groups,
+	});
 
 	it("returns 401 for unauthenticated GET openrouter settings", async () => {
 		const res = await fetch(`${baseUrl}/api/admin/settings/openrouter`);
@@ -152,16 +142,15 @@ describe("openrouter admin settings routes", () => {
 	});
 
 	it("returns 403 for non-admin GET openrouter settings", async () => {
-		const token = await sealSession({ ...adminSession, login: "random-user" });
 		const res = await fetch(`${baseUrl}/api/admin/settings/openrouter`, {
-			headers: { Cookie: `beskid_nexus_session=${encodeURIComponent(token)}` },
+			headers: authentikHeaders("readers"),
 		});
 		expect(res.status).toBe(403);
 	});
 
 	it("allows admin to GET and PATCH openrouter settings", async () => {
 		const getRes = await fetch(`${baseUrl}/api/admin/settings/openrouter`, {
-			headers: { Cookie: await authCookie() },
+			headers: authentikHeaders(),
 		});
 		expect(getRes.status).toBe(200);
 		const initial = await getRes.json();
@@ -172,7 +161,7 @@ describe("openrouter admin settings routes", () => {
 			method: "PATCH",
 			headers: {
 				"Content-Type": "application/json",
-				Cookie: await authCookie(),
+				...authentikHeaders(),
 			},
 			body: JSON.stringify({ apiKey: "sk-test-admin-key" }),
 		});
@@ -186,7 +175,7 @@ describe("openrouter admin settings routes", () => {
 			method: "PATCH",
 			headers: {
 				"Content-Type": "application/json",
-				Cookie: await authCookie(),
+				...authentikHeaders(),
 			},
 			body: JSON.stringify({ model: "anthropic/claude-3.5-sonnet" }),
 		});

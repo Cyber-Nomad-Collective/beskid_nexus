@@ -4,6 +4,18 @@ All notable changes to GitNexus will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Replace the retired Beskid Auth Hub pairing and GitHub OAuth flow with
+  Authentik proxy identity headers. Nexus now relies on Caddy `forward_auth`,
+  exposes no local login or session route, and uses configured Authentik users
+  or groups for catalog administration.
+
+### Removed
+
+- Remove Auth Hub setup, handoff, session, GitHub-owner authorization, and the
+  corresponding browser setup wizard from active Nexus production paths.
+
 ### Fixed
 
 - Seed the Beskid Corelib and Runtime repositories into the persistent Nexus

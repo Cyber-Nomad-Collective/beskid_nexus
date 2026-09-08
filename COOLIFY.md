@@ -19,27 +19,34 @@ Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `ma
 
 | Variable | Required | Notes |
 |----------|----------|--------|
-| `SESSION_SECRET` | yes | ≥32 chars; seals session cookies |
-| `AUTH_HUB_PUBLIC_URL` | yes | Shared [auth hub](../site/auth/COOLIFY.md); GitHub OAuth lives on the hub only |
-| `NEXUS_SETUP_TOKEN` | recommended (production) | Protects `POST /api/admin/setup` before the hub is paired |
+| `NEXUS_AUTHENTIK_ADMIN_GROUPS` | yes | Comma-separated Authentik groups allowed to administer the catalog; default `nexus-admin` |
+| `NEXUS_AUTHENTIK_ADMIN_USERS` | optional | Comma-separated Authentik usernames allowed to administer the catalog |
 | `NEXUS_MCP_AUTH_TOKEN` | recommended (production) | Bearer token for MCP and protected `/api/*` routes |
 | `GITHUB_WEBHOOK_SECRET` | optional | Verifies `POST /api/webhooks/github` push events for re-index |
 | `OPENROUTER_API_KEY` | optional | Enables server-side code-doc maintenance after analyze (no public UI) |
 | `NEXUS_DOC_MODEL` | optional | OpenRouter model id (e.g. `openrouter/free`); default applied when key is set |
 | `NEXUS_OPEN_SPEC_CATALOG` | optional | Path to the mounted `openspec/catalog.json` used for typed standard links (not copied into code docs) |
 | `GITNEXUS_HOME` | set in compose | `/data/gitnexus` (volume) |
-| `PORT` | optional | Default **8452** |
+| `PORT` | optional | Default **8452**; bind the host port to loopback only |
 
-`NEXUS_ADMIN_GITHUB_LOGINS` remains supported for **instance setup** pairing only; per-repo catalog CRUD is gated by **GitHub repo ownership**, not a global admin roster.
+Nexus has no local login, OAuth client, session secret, or pairing token. Caddy is
+the only public entry point. Its Authentik `forward_auth` configuration must copy
+`X-Authentik-Username`, `X-Authentik-Name`, `X-Authentik-Email`, and
+`X-Authentik-Groups` to Nexus; the server uses those headers solely for the
+already Caddy-protected request.
 
-Pairing stores `authHubServiceToken` in `nexus-config.json` under `GITNEXUS_HOME`. Do not set per-app `GITHUB_CLIENT_ID` on Nexus.
+Do not publish port 8452 directly. The supplied Compose files bind it to
+`127.0.0.1:8452` so Caddy can be the external trust boundary.
 
 ## First boot
 
-1. Map public URL to container port **8452**.
-2. Deploy and pair the [auth hub](../site/auth/COOLIFY.md) (GitHub OAuth app + hub admin).
-3. Open Nexus → **Connect Beskid Auth** setup: auth hub URL, pairing code from hub **Admin → Pairing** (app `nexus`), this Nexus public URL.
-4. Sign in with GitHub (via hub). **Repo owners** add their repositories under **Manage repo**; the landing page opens the first indexed graph.
+1. Configure Authentik and Caddy to protect the Nexus hostname, forwarding the
+   four `X-Authentik-*` headers above.
+2. Keep the Nexus container reachable only through the loopback mapping.
+3. Set `NEXUS_AUTHENTIK_ADMIN_GROUPS` (or the explicit-user override) in
+   Coolify, then deploy.
+4. An Authentik administrator can add repositories under **Manage repo**; the
+   landing page opens the first indexed graph.
 
 ## Code documentation (operator)
 
@@ -47,7 +54,9 @@ When `OPENROUTER_API_KEY` is set, analyze completion triggers a background job t
 
 ## MCP over HTTP
 
-`https://<nexus-host>:8452/api/mcp` with `Authorization: Bearer <NEXUS_MCP_AUTH_TOKEN>` when the token is set. Signed-in repo owners can copy the URL from **Connect MCP** in the web UI.
+`https://<nexus-host>/api/mcp` with `Authorization: Bearer <NEXUS_MCP_AUTH_TOKEN>`
+when the token is set. Authentik administrators can copy the URL from **Connect
+MCP** in the web UI.
 
 ## Health
 
@@ -59,7 +68,8 @@ When `OPENROUTER_API_KEY` is set, analyze completion triggers a background job t
 docker compose up --build
 ```
 
-Then open the mapped port: graph-first landing, repo selector, and (when signed in as a GitHub repo owner) **Manage repo** and **Connect MCP**.
+Then open the Caddy-protected hostname: graph-first landing, repo selector, and
+(for an Authentik administrator) **Manage repo** and **Connect MCP**.
 
 ## Platform matrix
 

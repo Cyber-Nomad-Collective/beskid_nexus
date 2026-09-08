@@ -58,22 +58,6 @@ const MOCK_GRAPH = {
 };
 
 async function mockGraphFirstApi(page: import("@playwright/test").Page) {
-	await page.route("**/api/admin/setup/status", async (route) => {
-		await route.fulfill({
-			status: 200,
-			contentType: "application/json",
-			body: JSON.stringify({
-				oauthConfigured: true,
-				authHubConfigured: true,
-				authHubUrl: null,
-				adminConfigured: true,
-				oauthSource: "hub",
-				hasSessionSecret: true,
-				hasSetupToken: false,
-			}),
-		});
-	});
-
 	await page.route("**/api/health", async (route) => {
 		await route.fulfill({
 			status: 200,
