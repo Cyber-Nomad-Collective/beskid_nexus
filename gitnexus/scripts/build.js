@@ -3,7 +3,6 @@
  * Build script that compiles gitnexus and inlines gitnexus-shared into the dist.
  *
  * Steps:
- *  0. Ensure @beskid/auth-client dist exists (node_modules)
  *  1. Build gitnexus-shared (tsc via bun)
  *  2. Build gitnexus (tsc via bun)
  *  3. Copy gitnexus-shared/dist → dist/_shared
@@ -12,7 +11,6 @@
  */
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,41 +19,10 @@ const ROOT = path.resolve(__dirname, "..");
 const SHARED_ROOT = path.resolve(ROOT, "..", "gitnexus-shared");
 const DIST = path.join(ROOT, "dist");
 const SHARED_DEST = path.join(DIST, "_shared");
-const require = createRequire(path.join(ROOT, "package.json"));
 
 const run = (cmd, cwd) => {
 	execSync(cmd, { cwd, stdio: "inherit", timeout: 120_000, shell: true });
 };
-
-function resolveAuthClientRoot() {
-	const candidate = path.join(ROOT, "node_modules", "@beskid", "auth-client");
-	if (fs.existsSync(path.join(candidate, "package.json"))) {
-		return candidate;
-	}
-	try {
-		const entry = require.resolve("@beskid/auth-client");
-		let dir = path.dirname(entry);
-		while (dir !== path.dirname(dir)) {
-			if (fs.existsSync(path.join(dir, "package.json"))) {
-				return dir;
-			}
-			dir = path.dirname(dir);
-		}
-	} catch {
-		return null;
-	}
-	return null;
-}
-
-// ── 0. Build @beskid/auth-client when installed from source without dist ──
-const authClientRoot = resolveAuthClientRoot();
-if (
-	authClientRoot &&
-	!fs.existsSync(path.join(authClientRoot, "dist/index.js"))
-) {
-	console.log("[build] compiling @beskid/auth-client…");
-	run("bun run build", authClientRoot);
-}
 
 // ── 1. Build gitnexus-shared ───────────────────────────────────────
 console.log("[build] compiling gitnexus-shared…");

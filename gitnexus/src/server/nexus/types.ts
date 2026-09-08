@@ -18,24 +18,10 @@ export interface NexusCatalogFile {
 }
 
 export interface NexusConfigFile {
-	ownerLogin: string;
-	adminLogins: string[];
-	authHubUrl?: string;
-	/** @deprecated use authHubServiceToken */
-	authHubHandoffSecret?: string;
-	authHubServiceToken?: string;
 	openRouter?: {
 		apiKey?: string;
 		model?: string;
 	};
-}
-
-export interface NexusSessionPayload {
-	login: string;
-	avatarUrl: string;
-	name: string | null;
-	hubUserToken: string;
-	hubSessionId: string;
 }
 
 /** Repo-scoped AI code documentation — separate from platform spec body text. */

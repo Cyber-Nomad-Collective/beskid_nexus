@@ -8,7 +8,6 @@ import {
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { NexusServiceUnavailable } from "./components/NexusServiceUnavailable";
 import { NexusAppShell } from "./components/nexus-app-shell";
-import { OAuthSetupWizard } from "./components/OAuthSetupWizard";
 import { RepoSelector } from "./components/repo-selector";
 import { ERROR_RESET_DELAY_MS } from "./config/ui-constants";
 import { createKnowledgeGraph } from "./core/graph/graph";
@@ -27,11 +26,9 @@ import {
 	type AuthUser,
 	fetchAuthMe,
 	fetchPublicCatalog,
-	fetchSetupStatus,
-	githubLoginUrl,
 } from "./services/nexus-api";
 
-type ShellPhase = "boot" | "setup" | "server-down" | "explorer";
+type ShellPhase = "boot" | "server-down" | "explorer";
 
 const AppContent = () => {
 	const [shellPhase, setShellPhase] = useState<ShellPhase>("boot");
@@ -149,21 +146,6 @@ const AppContent = () => {
 			return;
 		}
 
-		const setup = await fetchSetupStatus().catch(() => ({
-			oauthConfigured: true,
-			authHubConfigured: true,
-			authHubUrl: null,
-			adminConfigured: true,
-			oauthSource: "hub" as const,
-			hasSessionSecret: false,
-			hasSetupToken: false,
-		}));
-
-		if (!setup.oauthConfigured) {
-			setShellPhase("setup");
-			return;
-		}
-
 		const me = await fetchAuthMe().catch(() => null);
 		setAuthUser(me);
 		setShellPhase("explorer");
@@ -255,19 +237,6 @@ const AppContent = () => {
 		);
 	}
 
-	if (shellPhase === "setup") {
-		return (
-			<div className="flex min-h-screen items-center justify-center bg-background p-4">
-				<OAuthSetupWizard
-					onComplete={() => {
-						bootstrapped.current = false;
-						void runBoot();
-					}}
-				/>
-			</div>
-		);
-	}
-
 	if (shellPhase === "server-down") {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -315,20 +284,13 @@ const AppContent = () => {
 					{catalogError ? (
 						<p className="text-sm text-destructive">{catalogError}</p>
 					) : null}
-					{!authUser ? (
-						<a
-							href={githubLoginUrl()}
-							className="inline-flex h-9 items-center rounded-4xl bg-primary px-4 text-sm font-medium text-primary-foreground"
-						>
-							Sign in with GitHub
-						</a>
-					) : authUser.isAdmin ? (
+					{authUser?.isAdmin ? (
 						<p className="text-sm text-muted-foreground">
 							Open settings to add and index a repository.
 						</p>
 					) : (
 						<p className="text-sm text-muted-foreground">
-							Ask a Nexus administrator to register and index a repository.
+							Access is managed by the Authentik proxy. Ask a Nexus administrator to register and index a repository.
 						</p>
 					)}
 				</div>

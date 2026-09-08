@@ -56,8 +56,6 @@ export const updateOpenRouterSettings = async (body: {
 	apiKey?: string;
 }): Promise<OpenRouterSettingsPublic> => {
 	const existing = (await loadNexusConfigFile()) ?? {
-		ownerLogin: "",
-		adminLogins: [],
 	};
 
 	const nextKey =

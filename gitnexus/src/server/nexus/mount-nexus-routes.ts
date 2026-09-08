@@ -22,31 +22,13 @@ import {
 	updateCatalogEntry,
 } from "./catalog-store.js";
 import { startCodeDocJob } from "./code-doc-runner.js";
-import { isUserRepoOwner } from "./github-ownership.js";
-import { authHubLoginUrl, verifyHubHandoff } from "./hub-handoff.js";
-import {
-	isAdminRosterConfigured,
-	isAuthHubConfigured,
-	isNexusAdmin,
-	isOAuthConfigured,
-	loadNexusConfigFile,
-	saveNexusConfigFile,
-} from "./nexus-config.js";
+import { getAuthentikIdentity, isAuthentikAdmin } from "./authentik-identity.js";
 import {
 	FREE_DOC_MODEL,
 	getOpenRouterSettingsPublic,
 	updateOpenRouterSettings,
 } from "./openrouter-settings.js";
-import { approveAuthHubPairing, type AuthAppId } from "@beskid/auth-client";
 import { getRemoteHead } from "./remote-git.js";
-import {
-	appendSetCookie,
-	clearSessionCookieHeader,
-	getSessionFromRequest,
-	sealSession,
-	sessionCookieHeader,
-} from "./session.js";
-import type { NexusSessionPayload } from "./types.js";
 
 export interface MountNexusRoutesDeps extends AnalyzeRunnerDeps {
 	backend: LocalBackend;
@@ -61,162 +43,22 @@ const requireAdmin = async (
 	next: NextFunction,
 ) => {
 	try {
-		const session = await getSessionFromRequest(req);
-		if (!session) {
+		const identity = getAuthentikIdentity(req);
+		if (!identity) {
 			res.status(401).json({ error: "Not authenticated" });
 			return;
 		}
-		if (!(await isNexusAdmin(session.login))) {
+		if (!isAuthentikAdmin(identity)) {
 			res.status(403).json({ error: "Admin access required" });
 			return;
 		}
-		(req as any).nexusSession = session;
+		(req as any).nexusIdentity = identity;
 		next();
 	} catch (err: any) {
 		res.status(500).json({ error: err.message || "Auth check failed" });
 	}
 };
 
-const listOwnedRepoIds = async (
-	session: NexusSessionPayload,
-): Promise<string[]> => {
-	const entries = await listCatalogEntries();
-	const owned: string[] = [];
-	await Promise.all(
-		entries.map(async (entry) => {
-			if (
-				await isUserRepoOwner(session.login, entry.gitUrl, {
-					hubUserToken: session.hubUserToken,
-				})
-			) {
-				owned.push(entry.id);
-			}
-		}),
-	);
-	return owned.sort();
-};
-
-const requireRepoOwnerForGitUrl = async (
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) => {
-	try {
-		const session = await getSessionFromRequest(req);
-		if (!session) {
-			res.status(401).json({ error: "Not authenticated" });
-			return;
-		}
-		const gitUrl = typeof req.body?.gitUrl === "string" ? req.body.gitUrl : "";
-		if (!gitUrl.trim()) {
-			res.status(400).json({ error: "gitUrl is required" });
-			return;
-		}
-		const owned = await isUserRepoOwner(session.login, gitUrl, {
-			hubUserToken: session.hubUserToken,
-		});
-		if (!owned) {
-			res.status(403).json({ error: "GitHub repo owner access required" });
-			return;
-		}
-		(req as any).nexusSession = session;
-		next();
-	} catch (err: any) {
-		res.status(500).json({ error: err.message || "Auth check failed" });
-	}
-};
-
-const requireRepoOwnerForEntry = async (
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) => {
-	try {
-		const session = await getSessionFromRequest(req);
-		if (!session) {
-			res.status(401).json({ error: "Not authenticated" });
-			return;
-		}
-		const entry = await getCatalogEntry(req.params.id);
-		if (!entry) {
-			res.status(404).json({ error: "Catalog entry not found" });
-			return;
-		}
-		const owned = await isUserRepoOwner(session.login, entry.gitUrl, {
-			hubUserToken: session.hubUserToken,
-		});
-		if (!owned) {
-			res.status(403).json({ error: "GitHub repo owner access required" });
-			return;
-		}
-		(req as any).nexusSession = session;
-		next();
-	} catch (err: any) {
-		res.status(500).json({ error: err.message || "Auth check failed" });
-	}
-};
-
-const requireAdminOrRepoOwnerForEntry = async (
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) => {
-	try {
-		const session = await getSessionFromRequest(req);
-		if (!session) {
-			res.status(401).json({ error: "Not authenticated" });
-			return;
-		}
-		const entry = await getCatalogEntry(req.params.id);
-		if (!entry) {
-			res.status(404).json({ error: "Catalog entry not found" });
-			return;
-		}
-		const isAdmin = await isNexusAdmin(session.login);
-		const owned = await isUserRepoOwner(session.login, entry.gitUrl, {
-			hubUserToken: session.hubUserToken,
-		});
-		if (!isAdmin && !owned) {
-			res
-				.status(403)
-				.json({ error: "Admin or GitHub repo owner access required" });
-			return;
-		}
-		(req as any).nexusSession = session;
-		next();
-	} catch (err: any) {
-		res.status(500).json({ error: err.message || "Auth check failed" });
-	}
-};
-
-const verifySetupToken = (req: Request): boolean => {
-	const expected = process.env.NEXUS_SETUP_TOKEN?.trim();
-	if (!expected) return false;
-	const header = req.headers.authorization;
-	if (header === `Bearer ${expected}`) return true;
-	const bodyToken =
-		typeof req.body?.setupToken === "string" ? req.body.setupToken : "";
-	return bodyToken === expected;
-};
-
-const verifyNexusRepairToken = async (req: Request): Promise<boolean> => {
-	const header = req.headers.authorization?.replace(/^Bearer\s+/i, "");
-	if (!header) return false;
-
-	const config = await loadNexusConfigFile();
-	const expected = (
-		config?.authHubServiceToken?.trim() ||
-		config?.authHubHandoffSecret?.trim() ||
-		""
-	).trim();
-	if (!expected || expected.length !== header.length) return false;
-
-	try {
-		return timingSafeEqual(Buffer.from(header), Buffer.from(expected));
-	} catch {
-		return false;
-	}
-};
 
 export const mountNexusRoutes = (
 	app: Express,
@@ -229,266 +71,23 @@ export const mountNexusRoutes = (
 		releaseRepoLock: deps.releaseRepoLock,
 	};
 
-	// ── Setup ─────────────────────────────────────────────────────────────
+	// ── Authentik proxy identity ──────────────────────────────────────────
 
-	app.get("/api/admin/setup/status", async (_req, res) => {
-		const configured = await isOAuthConfigured();
-		const hubConfigured = await isAuthHubConfigured();
-		const file = await loadNexusConfigFile();
-		const hubUrl =
-			process.env.AUTH_HUB_PUBLIC_URL?.trim() || file?.authHubUrl?.trim() || null;
-		res.json({
-			oauthConfigured: configured,
-			authHubConfigured: hubConfigured,
-			authHubUrl: hubUrl,
-			adminConfigured: await isAdminRosterConfigured(),
-			oauthSource: hubConfigured ? "hub" : "none",
-			hasSessionSecret: !!(
-				process.env.SESSION_SECRET?.trim() &&
-				process.env.SESSION_SECRET.length >= 32
-			),
-			hasSetupToken: !!process.env.NEXUS_SETUP_TOKEN?.trim(),
-		});
-	});
-
-	app.post(
-		"/api/admin/setup",
-		createRouteLimiter({ limit: 5 }),
-		async (req, res) => {
-			try {
-				const already = await isOAuthConfigured();
-				const setupTokenRequired = !!process.env.NEXUS_SETUP_TOKEN?.trim();
-				if (already && !verifySetupToken(req)) {
-					res.status(403).json({ error: "Auth hub already configured" });
-					return;
-				}
-				if (!already && setupTokenRequired && !verifySetupToken(req)) {
-					res.status(403).json({ error: "Invalid setup token" });
-					return;
-				}
-
-				const {
-					authHubPublicUrl,
-					pairingCode,
-					nexusPublicUrl,
-					ownerLogin,
-					adminLogins,
-				} = req.body ?? {};
-
-				if (typeof ownerLogin !== "string" || !ownerLogin.trim()) {
-					res.status(400).json({ error: "ownerLogin is required" });
-					return;
-				}
-
-				const hubBase = (
-					(typeof authHubPublicUrl === "string" ? authHubPublicUrl.trim() : "") ||
-					process.env.AUTH_HUB_PUBLIC_URL?.trim() ||
-					(await loadNexusConfigFile())?.authHubUrl?.trim() ||
-					""
-				).replace(/\/$/, "");
-
-				if (!hubBase) {
-					res.status(400).json({
-						error: "authHubPublicUrl or AUTH_HUB_PUBLIC_URL is required",
-					});
-					return;
-				}
-
-				const admins: string[] = Array.isArray(adminLogins)
-					? adminLogins
-							.map((s: string) => String(s).trim().toLowerCase())
-							.filter(Boolean)
-					: String(adminLogins || "")
-							.split(",")
-							.map((s) => s.trim().toLowerCase())
-							.filter(Boolean);
-
-				const owner = ownerLogin.trim().toLowerCase();
-				if (!admins.includes(owner)) admins.push(owner);
-
-				const existingConfig = await loadNexusConfigFile();
-				let serviceToken =
-					existingConfig?.authHubServiceToken?.trim() ||
-					existingConfig?.authHubHandoffSecret?.trim() ||
-					"";
-
-				if (
-					typeof pairingCode === "string" &&
-					pairingCode.trim() &&
-					typeof nexusPublicUrl === "string" &&
-					nexusPublicUrl.trim()
-				) {
-					const approveRes = await fetch(`${hubBase}/api/v1/pairing/approve`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							code: pairingCode.trim(),
-							appId: "nexus",
-							publicUrl: nexusPublicUrl.trim(),
-							approverLogin: owner,
-						}),
-					});
-					if (!approveRes.ok) {
-						const errBody = await approveRes.text();
-						res.status(400).json({
-							error: errBody || "Auth hub pairing failed",
-						});
-						return;
-					}
-					const approved = (await approveRes.json()) as { serviceToken?: string };
-					serviceToken = approved.serviceToken?.trim() || "";
-				}
-
-				if (!serviceToken || serviceToken.length < 32) {
-					res.status(400).json({
-						error:
-							"Provide a pairing code from the auth hub admin, or pair later while signed in as admin",
-					});
-					return;
-				}
-
-				await saveNexusConfigFile({
-					ownerLogin: owner,
-					adminLogins: admins,
-					authHubUrl: hubBase,
-					authHubServiceToken: serviceToken,
-				});
-
-				res.json({ ok: true });
-			} catch (err: any) {
-				res.status(500).json({ error: err.message || "Setup failed" });
-			}
-		},
-	);
-
-	// ── Auth ──────────────────────────────────────────────────────────────
-
-	app.post(
-		"/api/admin/auth/pair",
-		createRouteLimiter({ limit: 10 }),
-		async (req, res) => {
-			try {
-				const repairToken = await verifyNexusRepairToken(req);
-				const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
-				const publicUrl =
-					typeof req.body?.publicUrl === "string" ? req.body.publicUrl.trim() : "";
-				if (!code || !publicUrl) {
-					res.status(400).json({ error: "code and publicUrl are required" });
-					return;
-				}
-				let approverLogin: string;
-				if (!repairToken) {
-					const session = await getSessionFromRequest(req);
-					if (!session) {
-						res.status(401).json({ error: "Not authenticated" });
-						return;
-					}
-					if (!(await isNexusAdmin(session.login))) {
-						res.status(403).json({ error: "Admin access required" });
-						return;
-					}
-					approverLogin = session.login;
-				} else {
-					approverLogin = "service-repair";
-				}
-
-				const hubBase =
-					process.env.AUTH_HUB_PUBLIC_URL?.trim() ||
-					(await loadNexusConfigFile())?.authHubUrl?.trim();
-				if (!hubBase) {
-					res.status(503).json({ error: "AUTH_HUB_PUBLIC_URL is not configured" });
-					return;
-				}
-				const existingConfig = await loadNexusConfigFile();
-				const existing = existingConfig ?? {
-					ownerLogin: approverLogin.toLowerCase(),
-					adminLogins: [approverLogin.toLowerCase()],
-				};
-				const result = await approveAuthHubPairing({
-					hubUrl: hubBase,
-					appId: "nexus" as AuthAppId,
-					code,
-					publicUrl,
-					approverLogin,
-				});
-				// `result.ok === false` (not `!result.ok`) narrows the discriminated
-				// union: this project compiles with strictNullChecks off, where the
-				// truthy check does not narrow `ok: true | false` to the error variant.
-				if (result.ok === false) {
-					res.status(400).json({
-						error:
-							result.reason === "not_configured"
-								? "AUTH_HUB_PUBLIC_URL is not configured on this service."
-								: "Invalid pairing request",
-					});
-					return;
-				}
-				await saveNexusConfigFile({
-					...existing,
-					ownerLogin: existing.ownerLogin,
-					authHubUrl: hubBase.replace(/\/$/, ""),
-					authHubServiceToken: result.serviceToken,
-				});
-				res.json({ ok: true });
-			} catch (err: any) {
-				res.status(400).json({ error: err.message || "Pairing failed" });
-			}
-		},
-	);
-
-	app.get("/api/auth/github", async (_req, res) => {
-		const hubUrl = await authHubLoginUrl();
-		if (hubUrl) {
-			res.redirect(hubUrl);
-			return;
-		}
-		res.status(503).json({
-			error:
-				"Beskid Auth hub is not configured. Set AUTH_HUB_PUBLIC_URL and complete setup pairing.",
-		});
-	});
-
-	app.get("/api/auth/hub-finish", async (req, res) => {
-		const handoff =
-			typeof req.query.handoff === "string" ? req.query.handoff : "";
-		if (!handoff) {
-			res.redirect("/?error=oauth_failed");
-			return;
-		}
-		const payload = await verifyHubHandoff(handoff);
-		if (!payload) {
-			res.redirect("/?error=oauth_failed");
-			return;
-		}
-		try {
-			const token = await sealSession(payload);
-			appendSetCookie(res, sessionCookieHeader(token));
-			res.redirect("/?auth=ok");
-		} catch (err) {
-			logger.error({ err }, "Auth hub handoff failed");
-			appendSetCookie(res, clearSessionCookieHeader());
-			res.redirect("/?error=oauth_failed");
-		}
-	});
-
-	app.get("/api/auth/me", async (req, res) => {
-		const session = await getSessionFromRequest(req);
-		if (!session) {
-			res.status(401).json({ error: "Not authenticated" });
+	app.get("/api/auth/me", (req, res) => {
+		const identity = getAuthentikIdentity(req);
+		if (!identity) {
+			res.status(401).json({
+				error: "Authentik proxy identity is required. Route Nexus through Caddy forward_auth.",
+			});
 			return;
 		}
 		res.json({
-			login: session.login,
-			name: session.name,
-			avatarUrl: session.avatarUrl,
-			isAdmin: await isNexusAdmin(session.login),
-			ownedRepoIds: await listOwnedRepoIds(session),
+			login: identity.username,
+			name: identity.name,
+			avatarUrl: "",
+			isAdmin: isAuthentikAdmin(identity),
+			ownedRepoIds: [],
 		});
-	});
-
-	app.post("/api/auth/logout", (_req, res) => {
-		appendSetCookie(res, clearSessionCookieHeader());
-		res.json({ ok: true });
 	});
 
 	// ── Public catalog ────────────────────────────────────────────────────
@@ -532,7 +131,7 @@ export const mountNexusRoutes = (
 
 	app.post(
 		"/api/admin/catalog",
-		requireRepoOwnerForGitUrl,
+		requireAdmin,
 		createRouteLimiter({ limit: 30 }),
 		async (req, res) => {
 			try {
@@ -570,7 +169,7 @@ export const mountNexusRoutes = (
 
 	app.patch(
 		"/api/admin/catalog/:id",
-		requireRepoOwnerForEntry,
+		requireAdmin,
 		async (req, res) => {
 			try {
 				const entry = await updateCatalogEntry(req.params.id, req.body ?? {});
@@ -585,7 +184,7 @@ export const mountNexusRoutes = (
 
 	app.delete(
 		"/api/admin/catalog/:id",
-		requireRepoOwnerForEntry,
+		requireAdmin,
 		async (req, res) => {
 			try {
 				await deleteCatalogEntry(req.params.id);
@@ -600,7 +199,7 @@ export const mountNexusRoutes = (
 
 	app.post(
 		"/api/admin/catalog/:id/analyze",
-		requireAdminOrRepoOwnerForEntry,
+		requireAdmin,
 		createRouteLimiter({ limit: 10 }),
 		async (req, res) => {
 			try {
@@ -641,7 +240,7 @@ export const mountNexusRoutes = (
 
 	app.post(
 		"/api/admin/catalog/:id/refresh-docs",
-		requireAdminOrRepoOwnerForEntry,
+		requireAdmin,
 		createRouteLimiter({ limit: 10 }),
 		async (req, res) => {
 			try {

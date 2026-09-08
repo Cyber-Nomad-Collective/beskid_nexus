@@ -1,6 +1,6 @@
 # Beskid Nexus
 
-Graph-first public explorer for Beskid repositories — cached knowledge graphs, repo-scoped code documentation, and owner-gated catalog administration. Built on a trimmed [GitNexus](https://github.com/abhigyanpatwari/GitNexus) fork (`v1.6.5` — see [UPSTREAM.md](UPSTREAM.md)).
+Graph-first explorer for Beskid repositories — cached knowledge graphs and Authentik-admin-gated catalog administration. Built on a trimmed [GitNexus](https://github.com/abhigyanpatwari/GitNexus) fork (`v1.6.5` — see [UPSTREAM.md](UPSTREAM.md)).
 
 | Surface | Description |
 |---------|-------------|
@@ -18,7 +18,7 @@ git clone https://github.com/Cyber-Nomad-Collective/beskid_nexus.git
 
 ## Local development
 
-Set `SESSION_SECRET` (32+ chars) and `AUTH_HUB_PUBLIC_URL` in the environment (see [COOLIFY.md](COOLIFY.md) for the full variable list).
+Run local development behind Caddy with Authentik `forward_auth`; Nexus accepts only the forwarded Authentik identity headers.
 
 **Terminal A — API server (port 8452):**
 
@@ -28,8 +28,7 @@ cd ../gitnexus && bun install --frozen-lockfile && bun run build
 
 export GITNEXUS_HOME="$PWD/.data/gitnexus"
 export PORT=8452
-export SESSION_SECRET="dev-secret-at-least-32-characters-long"
-export AUTH_HUB_PUBLIC_URL="http://localhost:8090"
+export NEXUS_AUTHENTIK_ADMIN_GROUPS="nexus-admin"
 # Optional: code-doc pipeline (server-side only, invisible in public UI)
 # export OPENROUTER_API_KEY="..."
 # export NEXUS_DOC_MODEL="openrouter/free"
@@ -47,13 +46,10 @@ Open the Vite URL (typically `http://localhost:5173`).
 
 ### What to expect
 
-- **`/`** loads the first **indexed** catalog entry by `sortOrder`, or an empty state with a sign-in CTA when none are indexed.
+- **`/`** loads the first **indexed** catalog entry by `sortOrder`, or an empty state when none are indexed.
 - **`?repo=<catalog-id>`** deep-links to a repository graph.
 - **Public visitors** browse graphs and read `codeDoc` / `specLinks` on nodes (when the doc pipeline has run).
-- **Signed-in GitHub users** who **own** a repo on GitHub see **Manage repo** (add, re-index, refresh docs, delete) and **Connect MCP**.
-- **Instance operators** pair the auth hub once via setup (`NEXUS_SETUP_TOKEN`); repo CRUD is **not** limited to a global admin roster.
-
-Pair with the shared [auth hub](../site/auth/README.md): hub **Admin → Pairing** (app `nexus`), then sign in via **Connect Beskid Auth**.
+- **Authentik administrators** in `NEXUS_AUTHENTIK_ADMIN_GROUPS` see **Manage repo** and **Connect MCP**.
 
 ## Tests
 
@@ -73,7 +69,7 @@ specs skip cleanly when `gitnexus serve` is unavailable; mock-based specs (e.g.
 `testIgnore`d from `test:e2e`.
 
 ```bash
-cd gitnexus && bun run test test/unit/github-ownership.test.ts test/unit/repo-owner-admin.test.ts test/unit/code-doc-store.test.ts test/unit/spec-link-index.test.ts test/unit/code-doc-validator.test.ts
+cd gitnexus && bun run test test/unit/authentik-identity.test.ts test/unit/code-doc-store.test.ts test/unit/spec-link-index.test.ts test/unit/code-doc-validator.test.ts
 cd ../gitnexus-web && bun run test && bun run build
 # Optional E2E (requires Chromium once): bun run test:e2e:install && bun run test:e2e
 ```
@@ -85,7 +81,7 @@ Root release-gate wiring that invokes these package commands lives in CYB-93.
 ## Container (Podman or Docker)
 
 ```bash
-cp .env.example .env   # SESSION_SECRET, AUTH_HUB_PUBLIC_URL, NEXUS_MCP_AUTH_TOKEN, etc.
+cp .env.example .env   # NEXUS_AUTHENTIK_ADMIN_GROUPS, NEXUS_MCP_AUTH_TOKEN, etc.
 docker buildx build \
   --build-context openspec=../openspec \
   --tag beskid-nexus:local \
@@ -97,13 +93,13 @@ keeping `beskid_nexus` as the primary Docker context. The resulting image sets
 `NEXUS_OPEN_SPEC_CATALOG=/app/openspec/catalog.json`; operators may override
 that variable with an explicit read-only runtime mount when testing another
 catalog. Data persists in the `nexus-data` volume
-(`GITNEXUS_HOME=/data/gitnexus`). Graphs are indexed when **repo owners** add
+(`GITNEXUS_HOME=/data/gitnexus`). Graphs are indexed when Authentik administrators add
 entries or GitHub push webhooks fire.
 
 ## MCP client
 
-See [COOLIFY.md](COOLIFY.md) for `NEXUS_MCP_AUTH_TOKEN` and endpoint URL. In the web UI, signed-in owners use **Connect MCP** for the same-origin URL and Bearer header format.
+See [COOLIFY.md](COOLIFY.md) for `NEXUS_MCP_AUTH_TOKEN` and endpoint URL. In the web UI, Authentik-authenticated users use **Connect MCP** for the same-origin URL and Bearer header format.
 
 ## Auth
 
-GitHub OAuth runs only on the shared [auth hub](../site/auth/README.md). Nexus stores a paired **service token** and signs users in via `/api/auth/hub-finish`.
+Caddy must protect Nexus with Authentik `forward_auth` and copy `X-Authentik-Username`, `X-Authentik-Name`, `X-Authentik-Email`, and `X-Authentik-Groups`. Nexus has no login, session, pairing, or OAuth fallback.

@@ -3,16 +3,14 @@ services:
     image: ghcr.io/cyber-nomad-collective/beskid-nexus:${IMAGE_TAG:-main}
     restart: unless-stopped
     ports:
-      - "8452:8452"
+      - "127.0.0.1:8452:8452"
     environment:
       GITNEXUS_HOME: /data/gitnexus
       NEXUS_MCP_AUTH_TOKEN: ${NEXUS_MCP_AUTH_TOKEN:-}
       PORT: "8452"
       GITNEXUS_SERVE_HOST: "0.0.0.0"
-      AUTH_HUB_PUBLIC_URL: ${AUTH_HUB_PUBLIC_URL:-}
-      SESSION_SECRET: ${SESSION_SECRET:-}
-      NEXUS_ADMIN_GITHUB_LOGINS: ${NEXUS_ADMIN_GITHUB_LOGINS:-}
-      NEXUS_SETUP_TOKEN: ${NEXUS_SETUP_TOKEN:-}
+      NEXUS_AUTHENTIK_ADMIN_GROUPS: ${NEXUS_AUTHENTIK_ADMIN_GROUPS:-nexus-admin}
+      NEXUS_AUTHENTIK_ADMIN_USERS: ${NEXUS_AUTHENTIK_ADMIN_USERS:-}
       GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-}
       NEXUS_OPEN_SPEC_CATALOG: ${NEXUS_OPEN_SPEC_CATALOG:-/app/openspec/catalog.json}
     volumes:

@@ -128,8 +128,6 @@ export const createServer = async (
 		if (p === "/api/health") return true;
 		if (p.startsWith("/api/auth")) return true;
 		if (p === "/api/catalog" || p.startsWith("/api/catalog/")) return true;
-		if (p === "/api/admin/setup/status") return true;
-		if (p === "/api/admin/setup") return true;
 		if (p.startsWith("/api/admin/")) return true;
 		if (p === "/api/webhooks/github") return true;
 		return false;
