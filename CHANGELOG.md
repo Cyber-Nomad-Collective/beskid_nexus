@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Document AppVeyor publication to `cr.beskid-lang.org` and Watchtower-only
+  production reconciliation in place of the retired GitHub/Coolify path.
+
 ### Fixed
 
 - Route live standard and MCP documentation links to the canonical

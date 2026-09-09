@@ -1,17 +1,18 @@
-# Coolify: Beskid Nexus
+# Production: Beskid Nexus
 
 Application: **beskid nexus** (`Cyber-Nomad-Collective/beskid_nexus`, branch `main`, repository root).
 
 ## Compose entry
 
-**Coolify (GHCR):** [`docker-compose.coolify.yml`](docker-compose.coolify.yml)
+**Production:** [`../beskid_sites/deploy/docker-compose.yml`](../beskid_sites/deploy/docker-compose.yml) uses `cr.beskid-lang.org/beskid/nexus:production`; Watchtower owns reconciliation.
 
 **Local build:** [`docker-compose.yml`](docker-compose.yml) or [`infra/docker-compose.yml`](infra/docker-compose.yml)
 
 ## Build
 
-- **GitHub Actions** pushes `ghcr.io/cyber-nomad-collective/beskid-nexus:${IMAGE_TAG}` (`.github/workflows/container-images.yml`).
-- **`NODE_AUTH_TOKEN`** is a GitHub Actions build secret, not Coolify.
+- The root AppVeyor `linux-platform` lane publishes immutable `sha-*` and
+  controlled `production` tags to `cr.beskid-lang.org`.
+- `NODE_AUTH_TOKEN` is a CI build secret, never a production runtime secret.
 - Image runs **`gitnexus serve` on port 8452** (no build-time index; no nginx).
 - Indexes are created at **runtime** when repo owners add catalog entries or GitHub push webhooks fire. Graph data persists in the **`nexus-data`** volume (`GITNEXUS_HOME=/data/gitnexus`).
 
@@ -43,8 +44,8 @@ Do not publish port 8452 directly. The supplied Compose files bind it to
 1. Configure Authentik and Caddy to protect the Nexus hostname, forwarding the
    four `X-Authentik-*` headers above.
 2. Keep the Nexus container reachable only through the loopback mapping.
-3. Set `NEXUS_AUTHENTIK_ADMIN_GROUPS` (or the explicit-user override) in
-   Coolify, then deploy.
+3. Store `NEXUS_AUTHENTIK_ADMIN_GROUPS` (or the explicit-user override) in
+   OpenBao, then apply the production deployment.
 4. An Authentik administrator can add repositories under **Manage repo**; the
    landing page opens the first indexed graph.
 
@@ -73,4 +74,4 @@ Then open the Caddy-protected hostname: graph-first landing, repo selector, and
 
 ## Platform matrix
 
-Cross-service URLs, OpenBao paths, and shared auth variables: [beskid_infra/docs/deploy-matrix.md](../beskid_infra/docs/deploy-matrix.md).
+Cross-service runtime and rollback guidance: [beskid_sites/deploy/README.md](../beskid_sites/deploy/README.md).
