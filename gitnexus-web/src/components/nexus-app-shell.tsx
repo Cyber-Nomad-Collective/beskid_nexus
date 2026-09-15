@@ -34,7 +34,21 @@ export function NexusAppShell({
 		<div className="flex h-screen flex-col overflow-hidden bg-background">
 			<header className="flex h-14 shrink-0 items-center bg-card/50 px-4">
 				<div className="flex min-w-0 items-center gap-1.5">
-					<p className="nexus-kicker hidden shrink-0 sm:block">Beskid</p>
+					<img
+						src="/logo.svg"
+						alt="beskid nexus"
+						width={32}
+						height={32}
+						className="block shrink-0 dark:hidden"
+					/>
+					<img
+						src="/logo-dark.svg"
+						alt="beskid nexus"
+						width={32}
+						height={32}
+						className="hidden shrink-0 dark:block"
+					/>
+					<p className="nexus-kicker hidden shrink-0 sm:block">beskid</p>
 					<span className="text-muted-foreground hidden sm:inline">/</span>
 					<span className="hidden truncate font-semibold md:inline">Nexus</span>
 					{repoSelector ? (
