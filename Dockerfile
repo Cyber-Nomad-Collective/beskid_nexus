@@ -48,6 +48,16 @@ RUN pnpm install --dir /src/beskid_web_common --frozen-lockfile
 
 ENV VITE_NEXUS_DEFAULT_REPO= \
     VITE_NEXUS_HOSTED=1
+# Install the web workspace before `gitnexus build` (whose own `bun install`
+# then has nothing to fetch). On a loaded build host bun intermittently fails
+# with "Fail extracting tarball" on truncated downloads, so bound the
+# concurrency and retry with a clean cache.
+RUN for attempt in 1 2 3; do \
+      (cd gitnexus-web && BUN_CONFIG_MAX_HTTP_REQUESTS=16 bun install --frozen-lockfile) && break; \
+      if [ "$attempt" = 3 ]; then exit 1; fi; \
+      echo "bun install failed (attempt $attempt of 3); retrying with a clean cache" >&2; \
+      rm -rf gitnexus-web/node_modules; bun pm cache rm >/dev/null 2>&1 || true; sleep 15; \
+    done
 RUN pnpm --dir gitnexus install --frozen-lockfile \
   && ln -sf ../core-linux-x64/lbugjs.node gitnexus/node_modules/@ladybugdb/core/lbugjs.node \
   && pnpm --dir gitnexus build
